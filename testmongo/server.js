@@ -1,6 +1,6 @@
 require('dotenv').config();
-const DB_URL = process.env.NODE_ENV == 'production'? process.env.DATABASE_PRO:process.env.DATABASE_DEV;
-const PORT = process.env.NODE_ENV == 'production'? process.env.PORT_PRO:process.env.PORT_DEV;
+console.log('NODE_ENV',process.env.NODE_ENV)
+console.log('db is',process.env.DATABASE_URL)
 
 const express = require('express')
 const app = express()
@@ -18,16 +18,16 @@ app.set('layout', 'layouts/layout')
 app.use(expressLayouts)
 app.use(express.static('public'))
 
-const mongoose = require('mongoose')
-mongoose.connect(DB_URL,{})
-const db = mongoose.connection
-db.on('error',x=>console.log(x))
-db.once('open',()=>console.log('connected to mongoose'))
+// const mongoose = require('mongoose')
+// mongoose.connect(process.env.DATABASE_URL,{})
+// const db = mongoose.connection
+// db.on('error',x=>console.log(x))
+// db.once('open',()=>console.log('connected to mongoose'))
 
 app.use('/', indexRouter);
 app.use('/authors', authorsRouter); //NOTE: path is composed together with paths in ./routes/authors.js
 
-app.listen(PORT)
+app.listen(process.env.PORT)
 
 
 
