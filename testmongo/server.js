@@ -7,7 +7,7 @@ const app = express()
 const expressLayouts = require('express-ejs-layouts')
 
 const indexRouter = require('./routes/index')
-const authorRouter = require('./routes/authors')
+const authorsRouter = require('./routes/authors')
 
 const cors = require('cors');
 app.use(cors());
