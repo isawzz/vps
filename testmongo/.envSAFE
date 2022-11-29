@@ -1,0 +1,10 @@
+DATABASE_DEV='mongodb://localhost/newdb'
+DATABASE_PRO='mongodb+srv://admin:PGJpyMmWw0Npmd2e@cluster0.vuq6gro.mongodb.net/?retryWrites=true&w=majority'
+PORT_DEV=2121
+PORT_PRO=2121
+
+
+
+
+
+
