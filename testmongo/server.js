@@ -6,6 +6,7 @@ const bodyParser = require('body-parser')
 
 const indexRouter = require('./routes/index')
 const authorsRouter = require('./routes/authors')
+const booksRouter = require('./routes/books')
 
 const cors = require('cors');
 app.use(cors());
@@ -26,6 +27,7 @@ db.once('open', () => console.log('connected to mongoose'))
 
 app.use('/', indexRouter);
 app.use('/authors', authorsRouter); //NOTE: path is composed together with paths in ./routes/authors.js
+app.use('/books', booksRouter); 
 
 app.listen(PORT)
 
