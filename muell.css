@@ -1,0 +1,20 @@
+body {
+	height: 100%;
+	margin:0;
+	padding:0;
+	background: url('../base/assets/img/airport/airport1.jpg');
+	/* background-repeat: no-repeat; */
+	/* background-size: cover; */
+	/* background-position: left center; */
+ } 
+
+ body {
+	overflow-y: hidden ! important;
+	overflow-x: hidden ! important;
+	background-color: #f8f8f8;
+	background: url('../base/assets/img/airport/airport1.jpg');
+	/*background-size: cover;*/
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: right;
+}
