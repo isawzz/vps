@@ -1,15 +1,16 @@
-onload = start; TESTING = 'live'; // live | vps | [false] | true (live for live-server, vps for vps) 
+onload = start; TESTING = 'live'; // live | nginx | [false] | true (live for live-server, nginx for nginx) 
 
 async function start() {
 
 	if (TESTING != 'nosockets') {
 		//Socket.on!!!
-		Socket = TESTING == 'live' ? io('http://127.0.0.1:3000') : TESTING == 'vps' ? io('http://216.250.112.218:3000') : io();
+		Socket = TESTING == 'live' ? io('http://127.0.0.1:3000') : TESTING == 'nginx' ? io('http://216.250.112.218:3000') : io();
 		Socket.on('message', x => console.log('got message', x));
 		Socket.on('disconnect', x => console.log('got disconnect', x));
 		Socket.on('update', x => console.log('got update', x));
 
 	}
+
 
 	//rotating monkey
 	await load_syms();

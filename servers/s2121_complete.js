@@ -1,11 +1,17 @@
-const express = require('express');
-const app = express();
-app.use(express.static(__dirname + '/..')); //Serve root directory
+const express = require('express')
+const app = express()
+
+app.use(express.static('..'))
 app.use(express.json());
 
 //#region cors
 const cors = require('cors');
-app.use(cors()); //live-server: brauch ich cors!
+app.use(cors());
+//#endregion
+
+//#region body-parser
+// const bodyParser = require('body-parser')
+// app.use(bodyParser.urlencoded({ limit: '10mb', extended: false }))
 //#endregion
 
 //#region fs
@@ -30,11 +36,20 @@ console.log('db loaded', DB);
 function db_save() { toYamlFile(DB, '../y/db.yaml'); }
 //#endregion
 
+//#region mongoDB
+const { DATABASE_URL, PORT } = require('../conf')
+const mongoose = require('mongoose')
+mongoose.connect(DATABASE_URL, {})
+const db = mongoose.connection;
+db.on('error', x => console.log(x))
+db.once('open', () => console.log('connected to mongoose'))
+//#endregion
+
 //#region POST
 app.post('/post/json', function (req, res) {
 	let o = req.body; // console.log(req.body);
 	if (o.filename && o.data) { toYamlFile(o.data, '../y/' + o.filename + '.yaml'); }
-	else if (o.player && o.move) { update_player_move(o.player, o.move); }
+	else if (o.move && o.player) { update_player_move(o.player, o.move); }
 	else { toYamlFile(o, '../y/test.yaml'); }
 	o.checked = true;
 	res.send(o); //need to send json object!
@@ -47,24 +62,5 @@ app.get('/file', (req, res) => { let filename = `../y/${req.query.name}.yaml`; r
 app.get('/save', (req, res) => { db_save(); res.send(DB); });
 app.get('/test', (req, res) => { res.send('<h1>Hello world</h1>'); });
 
-//#region socket.io
-const http = require('http');
-const { Server } = require("socket.io");
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origins: '*', } });//live-server: brauch ich cors!
 
-// io.on('connection', (socket) => { console.log('a user connected'); }); //testing
-
-io.on('connection', (socket) => {
-	handle_connect(socket.id);
-	socket.on('message', handle_message);
-	socket.on('update', handle_update);
-	socket.on('disconnect', handle_disconnect); // ()=>handle_disconnect(socket.id));
-});
-function handle_connect(id) { console.log('connected', id); io.emit('message', 'someone logged in!'); }
-function handle_disconnect(x) { console.log('disconnected', x); io.emit('message', x); }
-function handle_message(x) { console.log('got message', x); io.emit('message', x); }
-function handle_update(x) { console.log('got update', x); io.emit('update', x); }
-//#endregion
-
-server.listen(3000, () => { console.log('listening on ' + 3000); });
+app.listen(2121);

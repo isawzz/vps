@@ -53,7 +53,7 @@ const { Server } = require("socket.io");
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origins: '*', } });//live-server: brauch ich cors!
 
-// io.on('connection', (socket) => { console.log('a user connected'); }); //testing
+// io.on('connection', (socket) => { console.log('a user connected'); });
 
 io.on('connection', (socket) => {
 	handle_connect(socket.id);
