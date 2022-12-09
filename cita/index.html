@@ -12,19 +12,33 @@
 	<body>
 		<header>
 			<nav class="header-nav">
-				<a class="header-title" href="#" onclick="onclick_code_home()">CITA</a>
+				<a class="header-title" href="#" onclick="db_load()">CITA</a>
 				<ul>
-					<li><a href="javascript:void(0)" onclick="onclick_code_new();return false;">New</a></li>
+					<li><a href="javascript:void(0)" onclick="onclick_list();return false;">List</a></li>
+					<li><a href="javascript:void(0)" onclick="onclick_new();return false;">New</a></li>
 					<li><a href="javascript:void(0)" onclick="onclick_file();return false;">File</a></li>
 					<li><a href="javascript:void(0)" onclick="onclick_save();return false;">Save</a></li>
 					<li><a href="javascript:void(0)" onclick="onclick_test();return false;">Test</a></li>
 				</ul>
 			</nav>
 		</header>
+
+		<form id="fSearch" action="javascript:void(0);" onsubmit="perform_search()" class="form-row vmiddle">
+			<label>Keywords</label>
+			<input id="iKeywords" type="text" name="keywords" style="flex-grow: 1" />
+			<button class="btn btn-primary" type="submit">Search</button>
+		</form>
+
+		<div id="dTable"></div>
+
 		<script src="../base/alibs/anime.min.js"></script>
 		<script src="../base/alibs/jsyaml.js"></script>
 		<script src="../basejs/basemin.js"></script>
 		<script src="../base/alibs/socket.io.js"></script>
+
+		<script src="../cita/db.js"></script>
+		<script src="../cita/test.js"></script>
+		<script src="../cita/ui.js"></script>
 		<script src="../cita/start.js"></script>
 	</body>
 </html>

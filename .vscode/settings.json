@@ -13,7 +13,7 @@
 		"keys": true,
 		"node_modules": true,
 		"package-lock*": true,
-		"jsconfig.json": true,
+		"jsconfig.json": false,
 		".*.php": true,
 		"**/.*.php": true,
 		"_z*":true,

@@ -16,25 +16,48 @@ async function start() {
 	let x = miPic('monkey', document.body, { position: 'fixed', fz: 40, left: 100, top: 20 });
 	anime({ targets: x, translateX: 250, rotate: '1turn', duration: 3000 });
 
+	await db_load();	
+	dTable = mBy('dTable'); mCenterFlex(dTable);
+	show_code_list(DB.code);
 }
 
-async function onclick_test(){
-	let res = await route_path_text('http://localhost:3000/test');
-	console.log('res',res)
-}
+function onclick_list() { show_code_list(DB.code); }
+function onclick_new() { show_code_editor(); }
 async function onclick_file(){
 	let res = await route_path_yaml_dict('http://localhost:3000/file?name=test');
 	console.log('res',res,typeof(res));//,JSON.parse(res),typeof JSON.parse(res))
-}
-function onclick_code_home() { onclick_code_list(); }
-function onclick_code_list() {
-	//so jetzt brauch ich ein fetch zum server!
 }
 async function onclick_save(){
 	DB = await route_path_yaml_dict('http://localhost:3000/save');
 	console.log('DB',DB);
 }
+async function onclick_test(){
+	let res = await route_path_text('http://localhost:3000/test');
+	console.log('res',res)
+}
+function perform_search(){
+	let words = toWords(mBy('iKeywords').value);
+	console.log('keywords are',words);
 
+	let res = [], i=0;
+	for(const c of DB.code){
+		for(const w of words){
+			let w1 = w.toLowerCase();
+			let kw = c.kw.toLowerCase();
+			let code = c.c.toLowerCase();
+			if (kw.includes(w1) || code.includes(w1)) {
+				res.push(c);
+				c.index = i;
+				break;
+			}
+		}
+		i++;
+	}
+
+	console.log('filtered:',res);
+	show_code_list(res);
+
+}
 
 
 

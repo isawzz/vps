@@ -684,7 +684,7 @@ function show_home_logo() {
 	let dParent = mBy('dAdminLeft');
 	clearElement(dParent);
 	let d = miPic('castle', dParent, { cursor: 'pointer', fz: 24, padding: 6, h: 36, box: true, margin: 2 }); //, bg: bg, rounding: '50%' });
-	d.onclick = onclick_home;
+	d.onclick = db_load;
 	let version = 'v0.0.1';
 	let html = `version ${version}`
 	mText(html, dParent, { fz: 12 });

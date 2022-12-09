@@ -1,1 +1,17 @@
-{}
+code:
+  - kw: post route
+    c: post_json('http://localhost:3000/post/json',o,r=>console.log('resp',r));
+  - kw: get yaml route
+    c: await route_path_yaml_dict('http://localhost:3000/route')
+  - kw: get json route
+    c: await route_path_json('http://localhost:3000/route')
+  - kw: css region
+    c: |-
+      /* #region */
+      /* #endregion */
+  - kw: onclick fetch yaml
+    c: >
+      async function onclick_file(){
+      	let res = await route_path_yaml_dict('http://localhost:3000/file?name=test');
+      	console.log('res',res,typeof(res));//,JSON.parse(res),typeof JSON.parse(res))
+      }

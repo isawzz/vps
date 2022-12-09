@@ -10,8 +10,9 @@ app.use(cors()); //live-server: brauch ich cors!
 
 //#region fs
 const yaml = require('js-yaml');
+const yaml2 = require('yaml');
 const fs = require('fs');
-function toYamlFile(data, filePath) { fs.writeFileSync(filePath, JSON.stringify(data), 'utf8'); }
+function toYamlFile(data, filePath) { fs.writeFileSync(filePath, yaml2.stringify(data), 'utf8'); }
 function fromYamlFile(filePath) { const data = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' }); return yaml.load(data); }
 //#endregion
 
@@ -28,6 +29,12 @@ function update_player_move(player, move) {
 const DB = fromYamlFile('../y/db.yaml') ?? {}; //global DB
 console.log('db loaded', DB);
 function db_save() { toYamlFile(DB, '../y/db.yaml'); }
+function db_set(key, o) { DB[key] = o; db_save(); }
+function db_add(key, o) { DB[key].push(o); db_save(); }
+
+app.post('/db/init/code', function (req, res) { db_set('code', req.body); res.send(DB); });
+app.post('/db/add/code', function (req, res) { db_add('code', req.body); res.send(DB); });
+
 //#endregion
 
 //#region POST
