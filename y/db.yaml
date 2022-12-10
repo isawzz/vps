@@ -15,3 +15,34 @@ code:
       	let res = await route_path_yaml_dict('http://localhost:3000/file?name=test');
       	console.log('res',res,typeof(res));//,JSON.parse(res),typeof JSON.parse(res))
       }
+  - kw: plan
+    c: >+
+      wie kann ich mein leben einfacher machen?
+
+      p1:
+
+      1. schreibe ohne zu deken die ersten 3 choices auf was du machen koenntest
+
+      2. randomly select one of them
+
+      3. do it, then repeat the process
+
+
+      noch simpler: p0:
+
+      1. mach einen default tag
+
+      2. program selected time appropriate choices
+
+      3. randomly selects one of them
+
+
+      enter start and stop time
+
+      give .3 points per minute
+
+      when 100K is reached?!? something good should be happening, but this will be a surprise
+
+
+      bad things are good
+
