@@ -1,8 +1,10 @@
+function ev_to_gname(ev) { evNoBubble(ev); return evToTargetAttribute(ev, 'gamename'); }
+
 function onclick_game_menu_item(ev) {
 	let gamename = ev_to_gname(ev);
 	stopgame();
-	show('dMenu'); mClear('dMenu');
-	let dMenu = mBy('dMenu');
+	
+	let dMenu = mBy('dMenu');show(dMenu); mClear(dMenu);
 
 	let dForm = mDiv(dMenu, { align: 'center' }, 'fMenuInput');
 	let dInputs = mDiv(dForm, {}, 'dMenuInput');
@@ -49,16 +51,16 @@ function onclick_game_menu_item(ev) {
 function show_games(ms = 500) {
 
 	let dParent = mBy('dGames');
-	mClear(dParent); 
+	mClear(dParent);
 	mText(`<h2>start new game</h2>`, dParent, { maleft: 12 });
 
-	let d = mDiv(dParent, { fg: 'white', animation: 'appear 1s ease both' }, 'game_menu'); 
+	let d = mDiv(dParent, { fg: 'white', animation: 'appear 1s ease both' }, 'game_menu');
 	mCenterFlex(d); //mFlexWrap(d);
 	let gamelist = 'aristo bluff spotit ferro fritz'; if (DA.TEST0) gamelist += ' a_game';
 	for (const g of dict2list(Config.games)) {
 		if (gamelist.includes(g.id)) {
 			let [sym, bg, color, id] = [Syms[g.logo], g.color, null, getUID()];
-			let d1 = mDiv(d, { cursor: 'pointer', rounding: 10, margin: 10, vpadding: 15, wmin: 140, bg: bg, position: 'relative' }, g.id,null,'hop1');
+			let d1 = mDiv(d, { cursor: 'pointer', rounding: 10, margin: 10, vpadding: 15, wmin: 140, bg: bg, position: 'relative' }, g.id, null, 'hop1');
 			d1.setAttribute('gamename', g.id);
 			d1.onclick = onclick_game_menu_item;
 			mCenterFlex(d1);
