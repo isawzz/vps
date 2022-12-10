@@ -1,0 +1,32 @@
+
+body{
+	font-family: 'Gotham Rounded';
+	font-size: 20px;
+	color: white;
+}
+
+.airport {
+	background-image: url('../base/assets/img/airport/airport2.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-attachment: fixed;
+}
+.hop1{
+	opacity: .7;
+}
+.hop1:hover{
+	opacity: 1;
+}
+.section {
+	border-radius: 10px;
+	border: 2px silver solid;
+	background: #f0f0f080;
+	margin: 10px;
+	padding: 10px;
+	box-sizing: border-box;
+}
+.section:empty {
+	padding: 0;
+	margin: 0;
+	border: none;
+}

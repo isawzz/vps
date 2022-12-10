@@ -11,14 +11,10 @@ async function start() {
 
 	}
 
-	//rotating monkey
 	await load_syms();
-	let x = miPic('monkey', document.body, { position: 'fixed', fz: 40, left: 100, top: 20 });
-	anime({ targets: x, translateX: 250, rotate: '1turn', duration: 3000 });
+  Config = await route_path_yaml_dict('../y/config.yaml'); console.log('Config', Config);
+	show_games();
 
-	await db_load();	
-	dTable = mBy('dTable'); mCenterFlex(dTable);
-	show_code_list(DB.code);
 }
 
 function onclick_list() { show_code_list(DB.code); }

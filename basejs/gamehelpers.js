@@ -548,15 +548,16 @@ function show_fleeting_message(s, dParent, styles, id, ms = 2000) {
 function show_games(ms = 500) {
 
 	let dParent = mBy('dGames');
-	mClear(dParent);
+	mClear(dParent); 
 	mText(`<h2>start new game</h2>`, dParent, { maleft: 12 });
 
-	let d = mDiv(dParent, { fg: 'white', animation: 'appear 1s ease both' }, 'game_menu'); mFlexWrap(d);
+	let d = mDiv(dParent, { fg: 'white', animation: 'appear 1s ease both' }, 'game_menu'); 
+	mCenterFlex(d); //mFlexWrap(d);
 	let gamelist = 'aristo bluff spotit ferro fritz'; if (DA.TEST0) gamelist += ' a_game';
 	for (const g of dict2list(Config.games)) {
 		if (gamelist.includes(g.id)) {
 			let [sym, bg, color, id] = [Syms[g.logo], g.color, null, getUID()];
-			let d1 = mDiv(d, { cursor: 'pointer', rounding: 10, margin: 10, padding: 0, patop: 15, wmin: 140, height: 90, bg: bg, position: 'relative' }, g.id);
+			let d1 = mDiv(d, { cursor: 'pointer', rounding: 10, margin: 10, vpadding: 15, wmin: 140, bg: bg, position: 'relative' }, g.id);
 			d1.setAttribute('gamename', g.id);
 			d1.onclick = onclick_game_menu_item;
 			mCenterFlex(d1);
