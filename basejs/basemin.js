@@ -740,6 +740,13 @@ function mAutocomplete(dParent) {
 	}
 	autocomplete('myInput', get_values(Geo.cities).map(x => x.name));
 }
+function maButton(caption,handler,dParent, styles){
+	let a = mLink("javascript:void(0)", dParent, {}, null, caption, 'a');
+	a.onclick = handler;
+	if (isdef(styles)) mStyle(a, styles);
+	return a;
+
+}
 function mButton(caption, handler, dParent, styles, classes, id) {
 	let x = mCreate('button');
 	x.innerHTML = caption;

@@ -1,15 +1,58 @@
+:root {
+	--color-base-hue: 210;
 
-body{
+	--cdark: hsl(var(--color-base-hue), 100%, 8%);
+	--cmedium: hsl(var(--color-base-hue), 100%, 16%);
+	--clighter: hsl(var(--color-base-hue), 100%, 32%);
+	--clight: hsl(var(--color-base-hue), 100%, 87%);
+
+	--fsmall: 14px;
+	--fmedium: 18px;
+	--flarge: 24px;
+
+	--color-danger-hue-offset: 180;
+	--color-danger-hue: calc(var(--color-base-hue) - var(--color-danger-hue-offset));
+	--color-background-dark: hsl(var(--color-base-hue), 100%, 8%);
+	--color-background-light: hsl(var(--color-base-hue), 100%, 16%);
+	--color-text-light: hsl(var(--color-base-hue), 100%, 87%);
+	--nav-title-font-size: 3rem;
+	--nav-title-font-weight: bold;
+	--nav-link-font-weight: 300;
+	--color-btn-primary-background: hsl(var(--color-base-hue), 100%, 83%);
+	--color-btn-primary-background-dark: hsl(var(--color-base-hue), 100%, 73%);
+	--color-btn-primary-text: hsl(var(--color-base-hue), 100%, 20%);
+	--color-btn-primary-text-dark: hsl(var(--color-base-hue), 100%, 10%);
+	--color-btn-border: black;
+	--color-btn-danger-background: hsl(var(--color-danger-hue), 100%, 83%);
+	--color-btn-danger-background-dark: hsl(var(--color-danger-hue), 100%, 73%);
+	--color-btn-danger-text: black;
+	--color-btn-danger-text-dark: black;
+	--form-label-font-size: 1.2rem;
+	--form-input-background-color: hsl(var(--color-base-hue), 100%, 31%);
+	--form-input-border-color: hsl(var(--color-base-hue), 100%, 50%);
+	--form-input-border-color-light: hsl(var(--color-base-hue), 100%, 80%);
 	font-family: 'Gotham Rounded';
-	font-size: 20px;
-	color: white;
+	font-size: var(--fmedium);
+
+	color: var(--clighter);
 }
 
+.a {
+	text-decoration: none;
+	font-weight: var(--nav-link-font-weight);
+	font-size: var(--flarge);
+	padding: 1rem;
+	color: inherit;
+}
+.a:hover {
+	color: white;
+}
 .airport {
 	background-image: url('../base/assets/img/airport/airport2.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-attachment: fixed;
+	
 }
 .hop1{
 	opacity: .7;
@@ -24,9 +67,147 @@ body{
 	margin: 10px;
 	padding: 10px;
 	box-sizing: border-box;
+	
 }
 .section:empty {
 	padding: 0;
 	margin: 0;
 	border: none;
 }
+
+/* #region keyframes */
+@-webkit-keyframes spin {
+	0% {
+			-webkit-transform: rotateZ(0deg);
+			transform: rotateZ(0deg);
+	}
+
+	100% {
+			-webkit-transform: rotateZ(360deg);
+			transform: rotateZ(360deg);
+	}
+}
+@keyframes spin {
+	0% {
+			-webkit-transform: rotateZ(0deg);
+			transform: rotateZ(0deg);
+	}
+
+	100% {
+			-webkit-transform: rotateZ(360deg);
+			transform: rotateZ(360deg);
+	}
+}
+@-webkit-keyframes shake {
+	10%,
+	90% {
+			-webkit-transform: translateX(-0.0625em);
+			transform: translateX(-0.0625em);
+	}
+
+	20%,
+	80% {
+			-webkit-transform: translateX(0.125em);
+			transform: translateX(0.125em);
+	}
+
+	30%,
+	50%,
+	70% {
+			-webkit-transform: translateX(-0.25em);
+			transform: translateX(-0.25em);
+	}
+
+	40%,
+	60% {
+			-webkit-transform: translateX(0.25em);
+			transform: translateX(0.25em);
+	}
+}
+@keyframes shake {
+	10%,
+	90% {
+			-webkit-transform: translateX(-0.0625em);
+			transform: translateX(-0.0625em);
+	}
+
+	20%,
+	80% {
+			-webkit-transform: translateX(0.125em);
+			transform: translateX(0.125em);
+	}
+
+	30%,
+	50%,
+	70% {
+			-webkit-transform: translateX(-0.25em);
+			transform: translateX(-0.25em);
+	}
+
+	40%,
+	60% {
+			-webkit-transform: translateX(0.25em);
+			transform: translateX(0.25em);
+	}
+}
+@-webkit-keyframes fall {
+	0% {
+			opacity: 0;
+			-webkit-transform: scale(0.5);
+			transform: scale(0.5);
+			-webkit-animation-timing-function: ease-out;
+			animation-timing-function: ease-out;
+	}
+
+	70% {
+			opacity: 1;
+			-webkit-transform: scale(1.1);
+			transform: scale(1.1);
+			-webkit-animation-timing-function: ease-in-out;
+			animation-timing-function: ease-in-out;
+	}
+
+	100% {
+			-webkit-transform: scale(1);
+			transform: scale(1);
+			-webkit-animation-timing-function: ease-out;
+			animation-timing-function: ease-out;
+	}
+}
+@keyframes fall {
+	0% {
+			opacity: 0;
+			-webkit-transform: scale(0.5);
+			transform: scale(0.5);
+			-webkit-animation-timing-function: ease-out;
+			animation-timing-function: ease-out;
+	}
+
+	70% {
+			opacity: 1;
+			-webkit-transform: scale(1.1);
+			transform: scale(1.1);
+			-webkit-animation-timing-function: ease-in-out;
+			animation-timing-function: ease-in-out;
+	}
+
+	100% {
+			-webkit-transform: scale(1);
+			transform: scale(1);
+			-webkit-animation-timing-function: ease-out;
+			animation-timing-function: ease-out;
+	}
+}
+
+@keyframes appear {
+	0% {
+		opacity: 0;
+		/* transform: translateY(50px); */
+	}
+	100% {
+		opacity: 1;
+		/* transform: translateY(0px); */
+	}
+}
+
+/* #endregion */

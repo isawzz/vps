@@ -7,7 +7,7 @@ function test_start_ferro(mode = 'multi') {
 	let i = 0; let players = playernames.map(x => ({ name: x, strategy: strategies[i], playmode: playmodes[i++] }));
 	// let i = 0; let players = playernames.map(x => ({ name: x, playmode: playmodes[i++] }));
 	let options = { mode: mode, thinking_time: 20 };
-	startgame(game, players, options);
+	start_game(game, players, options);
 }
 function test_start_aristo(n = 3, mode = 'multi') {
 	let game = 'aristo';
@@ -18,7 +18,7 @@ function test_start_aristo(n = 3, mode = 'multi') {
 	let i = 0; let players = playernames.map(x => ({ name: x, strategy: strategies[i], playmode: playmodes[i++] }));
 	// let i = 0; let players = playernames.map(x => ({ name: x, playmode: playmodes[i++] }));
 	let options = { mode: mode, commission: 'no' };
-	startgame(game, players, options);
+	start_game(game, players, options);
 }
 
 function onclick_ack() {
@@ -74,7 +74,7 @@ function onclick_by_suit() {
 function onclick_cancelmenu() { hide('dMenu'); }
 function onclick_game_menu_item(ev) {
 	let gamename = ev_to_gname(ev);
-	stopgame();
+	stop_game();
 	show('dMenu'); mClear('dMenu');
 	let dMenu = mBy('dMenu');
 
@@ -88,7 +88,7 @@ function onclick_game_menu_item(ev) {
 		let options = collect_game_specific_options(game);
 		for (const pl of players) { if (isEmpty(pl.strategy)) pl.strategy = valf(options.strategy, 'random'); }
 		//console.log('options nach collect',options)
-		startgame(game, players, options); hide('dMenu');
+		start_game(game, players, options); hide('dMenu');
 	}, dButtons, {}, 'button');
 	let bcancel = mButton('cancel', () => { hide('dMenu'); }, dButtons, {}, 'button');
 
@@ -120,11 +120,11 @@ function onclick_game_menu_item(ev) {
 
 	mFall('dMenu');
 }
-function onclick_home() { stopgame(); start_with_assets(); }
+function onclick_home() { stop_game(); start_with_assets(); }
 function onclick_logout() {
 	mFadeClearShow('dAdminRight', 300);
 	mClear('dAdminMiddle');
-	stopgame();
+	stop_game();
 	clear_screen();
 	U = null;
 	show_users();
@@ -190,7 +190,7 @@ function onclick_restart() {
 	take_turn_fen_clear();
 }
 function onclick_restart_move() { clear_transaction(); onclick_reload(); }
-function onclick_reset_all() { stopgame(); phpPost({ app: 'simple' }, 'delete_tables'); }
+function onclick_reset_all() { stop_game(); phpPost({ app: 'simple' }, 'delete_tables'); }
 function onclick_skip() {
 	//removeInPlace(Z.turn,Z.uplayer);
 	let [game, fen, uplayer, turn, stage] = [Z.game, Z.fen, Z.uplayer, Z.turn, Z.stage];

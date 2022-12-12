@@ -6,11 +6,14 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" href="./base/assets/icons/belinda.png" style="height: 40px" />
 		<title>CITA</title>
+		<link rel="stylesheet" href="../base/alibs/fa.min.css" />
+		<link rel="stylesheet" href="../base/alibs/transition.css" />
 		<link rel="stylesheet" href="../base/assets/fonts/fonts.css" />
 		<link rel="stylesheet" href="../game/basecss.css" />
 	</head>
 	<body class="airport">
-		<div id="dGames" class="section"></div>
+		<div id="dGames" class="section" transition-style="in:wipe:bottom-right"></div>
+		<div id="dMenu" class="section" style="display:none" transition-style="in:wipe:bottom-right"></div>
 
 		<script src="../base/alibs/anime.min.js"></script>
 		<script src="../base/alibs/jsyaml.js"></script>
@@ -18,6 +21,7 @@
 		<script src="../base/alibs/socket.io.js"></script>
 
 		<script src="../game/basegame.js"></script>
+		<script src="../game/onclick.js"></script>
 		<script src="../game/test.js"></script>
 		<script src="../game/bau1.js"></script>
 		<script src="../game/bau2.js"></script>

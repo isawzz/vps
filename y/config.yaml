@@ -99,6 +99,22 @@ games:
       # allow_sequences: 'yes,no'
       # allow_exchange: 'yes,no'
       # jokers_per_group: '3,2,1'
+  goalnumber:
+    friendly: Goal Number
+    logo: abacus
+    color: GREEN
+    options:
+      nplayers: 1,2,3,4,2
+      nops: add,mult,div,power,all
+      range: 10,100,1000,5
+      # mode: 'solo,hotseat,multi'
+  reversi:
+    friendly: Reversi
+    logo: first quarter moon
+    color: '#ff93c4'
+    options:
+      nplayers: 2,3,4
+      # mode: 'solo,hotseat,multi'
   sheriff:
     friendly: Sheriff
     logo: police officer

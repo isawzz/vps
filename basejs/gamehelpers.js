@@ -254,7 +254,7 @@ function compute_hidden(plname) {
 	return hidden;
 
 }
-function delete_table(friendly) { stopgame(); phpPost({ friendly: friendly }, 'delete_table'); }
+function delete_table(friendly) { stop_game(); phpPost({ friendly: friendly }, 'delete_table'); }
 function ev_to_gname(ev) { evNoBubble(ev); return evToTargetAttribute(ev, 'gamename'); }
 function find_card(index, ui_item) { return ui_item.items[index]; }
 function generate_table_name(n) {
