@@ -5096,11 +5096,45 @@ function rLetters(n, except = []) {
 	console.log('all', all, except)
 	return rChoose(toLetters(all), n);
 }
+function getLettersExcept(w, except = []) {
+	w = w.toLowerCase();
+	let res = [];
+	for (let i = 0; i < w.length; i++) {
+		if (!except.includes(w[i])) res.push({ i: i, letter: w[i] });
+	}
+	return res;
+}
+function getVowels(w, except = []) {
+	w = w.toLowerCase();
+	//console.log('w', w);
+	let vowels = 'aeiouy';
+	let res = [];
+	for (let i = 0; i < w.length; i++) {
+		if (vowels.includes(w[i]) && !except.includes(w[i])) res.push({ i: i, letter: w[i] });
+	}
+	//console.log('res', res)
+	return res;
+}
+function getConsonants(w, except = []) {
+	w = w.toLowerCase();
+	//console.log('w',w);
+	let vowels = 'aeiouy' + except.join('');
+	let res = [];
+	for (let i = 0; i < w.length; i++) {
+		if (!vowels.includes(w[i])) res.push({ i: i, letter: w[i] });
+	}
+	//console.log('res',res)
+	return res;
+}
+function rVowel(w, except = []) { let vowels = w?getVowels(w, except):toLetters('aeiouy'); return chooseRandom(vowels); }
+function rConsonant(w, except = []) { let vowels = w?getConsonants(w, except):toLetters('aeiouy'); return chooseRandom(vowels); }
+function getRandomLetter(w, except = []) { let cons = getLettersExcept(w, except); return chooseRandom(cons); }
+
 function rFloat(min = -1, max = 1) { return Math.random() * (max - min) + min; }
 function rNumber(min = 0, max = 100) {
 	return Math.floor(Math.random() * (max - min + 1)) + min; //min and max inclusive!
 }
-function rPassword(n) { return rChoose(toLetters('0123456789abcdefghijklmnopqABCDEFGHIJKLMNOPQRSTUVWXYZ!.?*&%$#@:;_'), n).join(''); }
+function rPassword(n) { return rChoose(toLetters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!.?*&%$#@:;_'), n).join(''); }
 function rPrimaryColor() { let c = '#' + rChoose(['ff', '00']) + rChoose(['ff', '00']); c += c == '#0000' ? 'ff' : c == '#ffff' ? '00' : rChoose(['ff', '00']); return c; }
 
 //#endregion

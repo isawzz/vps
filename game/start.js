@@ -1,4 +1,4 @@
-onload = start; TESTING = 'live'; // live | vps | [false] | true (live for live-server, vps for vps) 
+onload = start; TESTING = 'nosockets'; // live | vps | [false] | true (live for live-server, vps for vps) 
 
 async function start() {
 

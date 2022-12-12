@@ -1,3 +1,5 @@
+const { representName } = require("js-yaml/lib/type/str");
+
 function collect_game_specific_options(game) {
 	let poss = Config.games[game].options;
 	if (nundef(poss)) return;
@@ -9,6 +11,17 @@ function collect_game_specific_options(game) {
 		di[p] = isNumber(val) ? Number(val) : val;
 	}
 	return di;
+}
+function rName(){
+	
+}
+function create_random_players(n=1){
+	//first player is solo player Ludwig van Beethoven
+	let res = [{name:'mimi',playmode:'human',color:'pink'}];
+	for(let i=1;i<n;i++){
+		let pl = {name:representName(),playmode:'bot',color:rColor()};
+
+	}
 }
 function ev_to_gname(ev) { evNoBubble(ev); return evToTargetAttribute(ev, 'gamename'); }
 
@@ -45,6 +58,7 @@ function show_game_options_menu(gamename) {
 	let dButtons = mDiv(d, { display: 'flex', justify: 'center', w: '100%' }, 'dMenuButtons');
 
 	//soll es players geben? NEIN
+	DA.playerlist = null;
 
 	//game options
 	show_game_options(dOptions, gamename); 
@@ -72,14 +86,16 @@ function show_game_options(dParent, gamename) {
 
 function stop_game() { console.log('stopgame'); }
 function start_game() {
-	//let players = DA.playerlist.map(x => ({ name: x.uname, playmode: x.playmode }));
-	//console.log('players are', players);
 	let gamename = DA.gamename;
 	let options = collect_game_specific_options(gamename);
-	//for (const pl of players) { if (isEmpty(pl.strategy)) pl.strategy = valf(options.strategy, 'random'); }
 	console.log('options nach collect',options)
-	//_start_game(gamename, players, options); hide('dMenu');
+	let players = DA.playerlist? DA.playerlist.map(x => ({ name: x.uname, playmode: x.playmode, strategy: valf(x.strategy, options.strategy, 'random')})):create_random_players(options.nplayers);
+	console.log('players are', players);
+	_start_game(gamename, players, options); hide('dMenu');
 	//console.log('startgame'); 
+}
+function _start_game(gamename,players,options){
+
 }
 function cancel_game() { console.log('cancelgame'); }
 
