@@ -11,10 +11,15 @@ async function start() {
 
 	}
 
+	let timit = new TimeIt();
+
 	await load_syms();
-  Config = await route_path_yaml_dict('../y/config.yaml'); 
-	Config.apps.fitbit.data = await route_path_yaml_dict('../y/fitbit.yaml'); console.log('Config', Config);
-	show_games();
+	//await load_config();
+	await load_config_fast(['fitbit']); //wenn ich eh schon weiss welche filenames apps,tables
+
+	timit.show();
+
+	//show_games();
 	show_apps();
 
 }

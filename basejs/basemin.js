@@ -5112,16 +5112,16 @@ function rNumber(min = 0, max = 100) {
 function rPassword(n) { return rChoose(toLetters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!.?*&%$#@:;_'), n).join(''); }
 function rPrimaryColor() { let c = '#' + rChoose(['ff', '00']) + rChoose(['ff', '00']); c += c == '#0000' ? 'ff' : c == '#ffff' ? '00' : rChoose(['ff', '00']); return c; }
 function rWheel(n = 1, hue = null, sat = 100, bri = 50) {
-	let d=360/n;
-	let h=valf(hue,rHue());
-  let arr = [];
-  for (let i = 0; i < n; i++) {
-		console.log('h',h)
-    let r = colorFromHSL(h, sat, bri);
-		h=(h+d)%360;
-    arr.push(r);
-  }
-  return arr;
+	let d = 360 / n;
+	let h = valf(hue, rHue());
+	let arr = [];
+	for (let i = 0; i < n; i++) {
+		console.log('h', h)
+		let r = colorFromHSL(h, sat, bri);
+		h = (h + d) % 360;
+		arr.push(r);
+	}
+	return arr;
 }
 //#endregion
 
@@ -5281,6 +5281,60 @@ function fromUmlaut(w) {
 //#endregion
 
 //#region simepl TIMER
+class TimeIt {
+	constructor(msg='*', showOutput = true) {
+		this.showOutput = showOutput;
+		this.init(msg);
+	}
+	getTotalTimeElapsed() {
+		let tNew = new Date();
+		let tDiffStart = tNew.getTime() - this.namedTimestamps.start.getTime();
+		return tDiffStart;
+	}
+	tacit() { this.showOutput = false; }
+	timeStamp(name) {
+		let tNew = new Date(); //new Date().getTime() - this.t;
+		let tDiff = tNew.getTime() - this.namedTimestamps.start.getTime();// this.t.getTime();
+		if (this.showOutput) console.log('___', tDiff, 'msecs * to', name);
+		this.t = tNew;
+		this.namedTimestamps[name] = tNew;
+	}
+	reset() { this.init('timing start') }
+	init(msg) {
+		this.t = new Date();
+		if (this.showOutput) console.log('___', msg);
+		this.namedTimestamps = { start: this.t };
+	}
+	showSince(name, msg = 'now') {
+		let tNew = new Date(); //new Date().getTime() - this.t;
+		let tNamed = this.namedTimestamps[name];
+		if (this.showOutput) if (!tNamed) { console.log(name, 'is not a timestamp!'); return; } //new Date().getTime() - this.t;
+		let tDiff = tNew.getTime() - tNamed.getTime();
+		if (this.showOutput) console.log('___', tDiff, 'msecs', name, 'to', msg);
+		this.t = tNew;
+	}
+	format(t) { return '___' + t.getSeconds() + ':' + t.getMilliseconds(); }
+	show(msg) { this.showTime(msg); }
+	showTime(msg='*') {
+		//shows ticks diff to last call of show
+		let tNew = new Date(); //new Date().getTime() - this.t;
+		let tDiff = tNew.getTime() - this.t.getTime();
+		let tDiffStart = tNew.getTime() - this.namedTimestamps.start.getTime();
+		//if (this.showOutput) console.log(this.format(tNew), ':', tDiff, 'msecs to', msg, '(' + tDiffStart, 'total)');
+		if (this.showOutput) console.log('___ ', tDiff, 'msecs to', msg, '(' + tDiffStart, 'total)');
+		this.t = tNew;
+	}
+	start_of_cycle(msg) {
+		this.init(msg);
+	}
+	end_of_cycle(msg) {
+		//shows ticks diff to last call of show
+		let tNew = new Date(); //new Date().getTime() - this.t;
+		let tDiff = tNew.getTime() - this.t.getTime();
+		let tDiffStart = tNew.getTime() - this.namedTimestamps.start.getTime();
+		if (this.showOutput) console.log('___ ' + tDiff + ' msecs', msg, 'to EOC (total: ' + tDiffStart + ')');
+	}
+}
 class SimpleTimer {
 	constructor(elem, msTick, onTick, msTotal, onElapsed) {
 		this.elem = elem;
@@ -5753,6 +5807,40 @@ async function load_assets_fetch(basepath, baseminpath) {
 	KeySets = getKeySets();
 	console.assert(isdef(Config), 'NO Config!!!!!!!!!!!!!!!!!!!!!!!!');
 	return { users: dict2list(DB.users, 'name'), games: dict2list(Config.games, 'name'), tables: [] };
+}
+async function load_config(port = 3000, apps = true, tables = false) {
+	Config = await route_path_yaml_dict('../y/config.yaml');
+	let server = 'http://localhost:' + port;
+	if (apps) {
+		let files = await route_path_json(server + '/files?dir=appdata');
+		console.log('apps', files)
+		for (const f of files) {
+			let appname = stringBefore(f, '.');
+			Config.apps[appname].data = await route_path_yaml_dict(`../y/appdata/${appname}.yaml`);
+		}
+	}
+	if (tables) {
+		let files = await route_path_json(server + '/files?dir=tables');
+		console.log('tables', files)
+		Tables = {};
+		for (const f of files) {
+			let id = stringBefore(f, '.');
+			Tables[id] = await route_path_yaml_dict(`../y/tables/${id}.yaml`);
+		}
+	}
+
+}
+async function load_config_fast(applist = [], tablelist = []) {
+	Config = await route_path_yaml_dict('../y/config.yaml');
+	for (const appname of applist) {
+		Config.apps[appname].data = await route_path_yaml_dict(`../y/appdata/${appname}.yaml`);
+		Config.apps[appname].name = appname;
+	}
+	Tables = {};
+	for (const tableid of tablelist) {
+		Tables[tableid] = await route_path_yaml_dict(`../y/tables/${tableid}.yaml`);	
+		Tables[tableid].name = tableid;	
+	}
 }
 async function load_syms(path) {
 	//sollten in base/assets/allSyms.yaml sein!

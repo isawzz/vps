@@ -27,7 +27,7 @@ function update_player_move(player, move) {
 
 //#region DB: stored in db.yaml 
 const DB = fromYamlFile('../y/db.yaml') ?? {}; //global DB
-console.log('db loaded', DB);
+//console.log('db loaded', DB);
 function db_save() { toYamlFile(DB, '../y/db.yaml'); }
 function db_set(key, o) { DB[key] = o; db_save(); }
 function db_add(key, o) { DB[key].push(o); db_save(); }
@@ -53,6 +53,11 @@ app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
 app.get('/file', (req, res) => { let filename = `../y/${req.query.name}.yaml`; res.send(fromYamlFile(filename)); });
 app.get('/save', (req, res) => { db_save(); res.send(DB); });
 app.get('/test', (req, res) => { res.send('<h1>Hello world</h1>'); });
+app.get('/files', (req, res) => { 
+	var files = fs.readdirSync(`../y/${req.query.dir}`); //'../y/appdata'); //`/y/${req.query.dir}/`);
+	console.log('files',files);
+	res.send(files); 
+});
 
 //#region socket.io
 const http = require('http');

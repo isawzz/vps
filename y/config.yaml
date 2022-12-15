@@ -192,6 +192,16 @@ apps:
     options:
       nplayers: 2,3,4
       # mode: 'solo,hotseat,multi'
+  meditate:
+    friendly: Meditate
+    logo: lotus position
+    color: 'indigo'
+    options:
+      nplayers: 2,3,4
+      # mode: 'solo,hotseat,multi'
   action:
     friendly: Action
-    logo: 
+    logo: ballet shoes
+    color: '#cc96c3'
+    options:
+      nplayers: 2,3,4
