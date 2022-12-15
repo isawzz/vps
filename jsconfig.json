@@ -1,10 +1,10 @@
 {
 	"compilerOptions": {
+		"target": "ESNext",
 		"baseUrl": "..",
 		"paths": {
 			"@/base/*": ["../base/js/*"],
 			"@/js/*": ["../js/*"],
-			// "@/alibs/*": ["./base/alibs/*"],
 			"@/*": ["../basejs/*"]
 		}
 	},

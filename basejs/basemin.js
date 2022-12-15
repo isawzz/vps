@@ -262,7 +262,6 @@ const EMO = {
 		liebe: { min: 5, max: 7 },
 	}
 };
-
 const INNO = {
 	color: { blue: '#89aad7', red: '#da7887', green: '#72b964', yellow: '#e2e57a', purple: '#9b58ba' },
 	sym: {
@@ -561,7 +560,6 @@ const Geo = {
 		'South America': ['Argentina', 'Aruba', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Curacao', 'Ecuador', 'French Guiana', 'Guam', 'Guyana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela']
 	}
 };
-
 const SHERIFF = {
 	color: {
 		legal: GREEN, //'lime',
@@ -597,6 +595,15 @@ const SHERIFF = {
 		1: 'exchange',
 	}
 }
+const GirlNames = ['afia', 'ally', 'amanda', 'angela', 'anna', 'annabel', 'birgit', 'bona', 'carmen', 'cassandra',
+	'charlene', 'erin', 'hanna', 'holly', 'jan', 'karen', 'kelly', 'lauren', 'malta', 'maria', 'maurita', 'minnow', 'meredith',
+	'milda', 'mimi', 'minna', 'minnow', 'mitra', 'nasi', 'nil', 'nimble', 'nonna', 'pam', 'phyllis', 'poppa', 'rhi', 'sarah',
+	'sheeba', 'valerie', 'viola', 'wala'];
+const BoyNames = ['aaron', 'andy', 'bill', 'blade', 'bob', 'buddy', 'creed', 'dan', 'darryl', 'dagobert', 'david', 'donald', 'dwight', 'felix',
+	'gilbert', 'gul', 'jim', 'john', 'kevin', 'leo', 'luis', 'mac', 'max', 'michael', 'mike', 'oscar', 'peter', 'robert', 'ryan',
+	'sebastian', 'stanley', 'stitch', 'toby', 'tom', 'vladimir', 'wolf', 'wolfgang'];
+const MyNames = ['amanda', 'angela', 'erin', 'holly', 'jan', 'karen', 'kelly', 'pam', 'phyllis', 'andy', 'creed', 'darryl',
+	'david', 'dwight', 'felix', 'gul', 'jim', 'kevin', 'luis', 'michael', 'nil', 'oscar', 'ryan', 'stanley', 'toby', 'wolfgang']
 //#endregion cards
 
 //#region m prefix (DOM)
@@ -740,7 +747,7 @@ function mAutocomplete(dParent) {
 	}
 	autocomplete('myInput', get_values(Geo.cities).map(x => x.name));
 }
-function maButton(caption,handler,dParent, styles){
+function maButton(caption, handler, dParent, styles) {
 	let a = mLink("javascript:void(0)", dParent, {}, null, caption, 'a');
 	a.onclick = handler;
 	if (isdef(styles)) mStyle(a, styles);
@@ -5096,47 +5103,26 @@ function rLetters(n, except = []) {
 	console.log('all', all, except)
 	return rChoose(toLetters(all), n);
 }
-function getLettersExcept(w, except = []) {
-	w = w.toLowerCase();
-	let res = [];
-	for (let i = 0; i < w.length; i++) {
-		if (!except.includes(w[i])) res.push({ i: i, letter: w[i] });
-	}
-	return res;
-}
-function getVowels(w, except = []) {
-	w = w.toLowerCase();
-	//console.log('w', w);
-	let vowels = 'aeiouy';
-	let res = [];
-	for (let i = 0; i < w.length; i++) {
-		if (vowels.includes(w[i]) && !except.includes(w[i])) res.push({ i: i, letter: w[i] });
-	}
-	//console.log('res', res)
-	return res;
-}
-function getConsonants(w, except = []) {
-	w = w.toLowerCase();
-	//console.log('w',w);
-	let vowels = 'aeiouy' + except.join('');
-	let res = [];
-	for (let i = 0; i < w.length; i++) {
-		if (!vowels.includes(w[i])) res.push({ i: i, letter: w[i] });
-	}
-	//console.log('res',res)
-	return res;
-}
-function rVowel(w, except = []) { let vowels = w?getVowels(w, except):toLetters('aeiouy'); return chooseRandom(vowels); }
-function rConsonant(w, except = []) { let vowels = w?getConsonants(w, except):toLetters('aeiouy'); return chooseRandom(vowels); }
-function getRandomLetter(w, except = []) { let cons = getLettersExcept(w, except); return chooseRandom(cons); }
-
+function rVowel(w, except = []) { let vowels = w ? getVowels(w, except) : toLetters('aeiouy'); return chooseRandom(vowels); }
+function rConsonant(w, except = []) { let vowels = w ? getConsonants(w, except) : toLetters('aeiouy'); return chooseRandom(vowels); }
 function rFloat(min = -1, max = 1) { return Math.random() * (max - min) + min; }
 function rNumber(min = 0, max = 100) {
 	return Math.floor(Math.random() * (max - min + 1)) + min; //min and max inclusive!
 }
 function rPassword(n) { return rChoose(toLetters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!.?*&%$#@:;_'), n).join(''); }
 function rPrimaryColor() { let c = '#' + rChoose(['ff', '00']) + rChoose(['ff', '00']); c += c == '#0000' ? 'ff' : c == '#ffff' ? '00' : rChoose(['ff', '00']); return c; }
-
+function rWheel(n = 1, hue = null, sat = 100, bri = 50) {
+	let d=360/n;
+	let h=valf(hue,rHue());
+  let arr = [];
+  for (let i = 0; i < n; i++) {
+		console.log('h',h)
+    let r = colorFromHSL(h, sat, bri);
+		h=(h+d)%360;
+    arr.push(r);
+  }
+  return arr;
+}
 //#endregion
 
 //#region string functions
@@ -5571,6 +5557,37 @@ function get_checked_radios(rg) {
 	//console.log('list',list)
 	return list;
 }
+function getRandomLetter(w, except = []) { let cons = getLettersExcept(w, except); return chooseRandom(cons); }
+function getLettersExcept(w, except = []) {
+	w = w.toLowerCase();
+	let res = [];
+	for (let i = 0; i < w.length; i++) {
+		if (!except.includes(w[i])) res.push({ i: i, letter: w[i] });
+	}
+	return res;
+}
+function getVowels(w, except = []) {
+	w = w.toLowerCase();
+	//console.log('w', w);
+	let vowels = 'aeiouy';
+	let res = [];
+	for (let i = 0; i < w.length; i++) {
+		if (vowels.includes(w[i]) && !except.includes(w[i])) res.push({ i: i, letter: w[i] });
+	}
+	//console.log('res', res)
+	return res;
+}
+function getConsonants(w, except = []) {
+	w = w.toLowerCase();
+	//console.log('w',w);
+	let vowels = 'aeiouy' + except.join('');
+	let res = [];
+	for (let i = 0; i < w.length; i++) {
+		if (!vowels.includes(w[i])) res.push({ i: i, letter: w[i] });
+	}
+	//console.log('res',res)
+	return res;
+}
 function get_mouse_pos(ev) {
 	let x = ev.pageX - document.body.scrollLeft; // - ev.target.offsetY;
 	let y = ev.pageY - document.body.scrollTop; // - ev.target.offsetY;
@@ -5745,7 +5762,7 @@ async function load_syms(path) {
 	ByGroupSubgroup = await route_path_yaml_dict(path + 'symGSG.yaml');
 	KeySets = getKeySets();
 	Info = await route_path_yaml_dict(path + 'lists/info.yaml');
-	assertion(Syms,'Syms undefined!');//console.log('Syms',Syms)
+	assertion(Syms, 'Syms undefined!');//console.log('Syms',Syms)
 	//console.log('done!')
 
 }

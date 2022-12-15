@@ -1,5 +1,3 @@
-const { representName } = require("js-yaml/lib/type/str");
-
 function collect_game_specific_options(game) {
 	let poss = Config.games[game].options;
 	if (nundef(poss)) return;
@@ -12,28 +10,42 @@ function collect_game_specific_options(game) {
 	}
 	return di;
 }
-function rName(){
-	
-}
-function create_random_players(n=1){
+function create_random_players(n = 1) {
 	//first player is solo player Ludwig van Beethoven
-	let res = [{name:'mimi',playmode:'human',color:'pink'}];
-	for(let i=1;i<n;i++){
-		let pl = {name:representName(),playmode:'bot',color:rColor()};
+	let colors = rWheel(n);
+	let res = [{ name: 'mimi', playmode: 'human', color: colors[0] }];
+	let names = rChoose(MyNames, n - 1); // rName(n-1); 
+	if (!isList(names)) names = [names];
 
+	for (let i = 1; i < n; i++) {
+		let pl = { name: names[i - 1], playmode: 'bot', color: colors[i], strategy: 'random' };
+		res.push(pl);
 	}
+	return res;
 }
 function ev_to_gname(ev) { evNoBubble(ev); return evToTargetAttribute(ev, 'gamename'); }
-
+function rName(n = 1) { let arr = GirlNames.concat(BoyNames); return rChoose(arr, n); }
 function show_standard_title(dParent, title) { mText(title, dParent, { margin: 20, fz: 24 }); }
-function show_games(ms = 500) {
+function show_app(appname) {
+	let app = Config.apps[appname];
 
+}
+function show_apps(ms = 500) {
+	let dParent = mBy('dApps');
+	mClear(dParent);
+	show_standard_title(dParent, 'Apps');
+	let d = mDiv(dParent, { fg: 'white' }, 'apps_menu');
+	mCenterFlex(d);
+	let gamelist = 'fitbit therapy';
+	for (const app of dict2list(Config.apps)) {
+		if (gamelist.includes(app.id)) { let f = get_app_presenter(app.id); f(d, app); }
+	}
+}
+function show_games(ms = 500) {
 	let dParent = mBy('dGames');
 	mClear(dParent);
 	show_standard_title(dParent, 'Games');
-
 	let d = mDiv(dParent, { fg: 'white' }, 'game_menu');
-	//let d = mDiv(dParent, { fg: 'white', animation: 'appear 1s ease both' }, 'game_menu');
 	mCenterFlex(d); //mFlexWrap(d);
 	let gamelist = 'goalnumber reversi'; //'aristo bluff spotit ferro fritz'; if (DA.TEST0) gamelist += ' a_game';
 	for (const g of dict2list(Config.games)) {
@@ -50,7 +62,8 @@ function show_games(ms = 500) {
 	}
 }
 function show_game_options_menu(gamename) {
-	let dMenu = mBy('dMenu'); show(dMenu); mClear(dMenu);
+	let dMenu = mBy('dMenu'); mClear(dMenu);
+	//dMenu.innerHTML = 'HALLO';return;
 	show_standard_title(dMenu, 'Game Options');
 
 	let d = mDiv(dMenu, { align: 'center' }, 'fMenuInput');
@@ -61,7 +74,7 @@ function show_game_options_menu(gamename) {
 	DA.playerlist = null;
 
 	//game options
-	show_game_options(dOptions, gamename); 
+	show_game_options(dOptions, gamename);
 
 	//button start and cancel
 	let astart = maButton('Start', start_game, dButtons); // mLink("javascript:void(0)", dButtons, {}, null, 'Start', 'a');
@@ -78,7 +91,7 @@ function show_game_options(dParent, gamename) {
 		if (isString(val)) {
 			let list = val.split(','); // make a list 
 			let fs = mRadioGroup(dParent, { maright: 12 }, `d_${key}`, key);
-			for (const v of list) { mRadio(v, isNumber(v) ? Number(v) : v, key, fs, { vmargin:4, align: 'left', cursor: 'pointer' }, null, key, true); }
+			for (const v of list) { mRadio(v, isNumber(v) ? Number(v) : v, key, fs, { vmargin: 4, align: 'left', cursor: 'pointer' }, null, key, true); }
 			measure_fieldset(fs);
 		}
 	}
@@ -88,16 +101,18 @@ function stop_game() { console.log('stopgame'); }
 function start_game() {
 	let gamename = DA.gamename;
 	let options = collect_game_specific_options(gamename);
-	console.log('options nach collect',options)
-	let players = DA.playerlist? DA.playerlist.map(x => ({ name: x.uname, playmode: x.playmode, strategy: valf(x.strategy, options.strategy, 'random')})):create_random_players(options.nplayers);
-	console.log('players are', players);
+	//console.log('options nach collect',options)
+	let players = DA.playerlist ? DA.playerlist.map(x => ({ name: x.uname, playmode: x.playmode, strategy: valf(x.strategy, options.strategy, 'random') })) : create_random_players(options.nplayers);
+	//console.log('players are', players);
 	_start_game(gamename, players, options); hide('dMenu');
 	//console.log('startgame'); 
 }
-function _start_game(gamename,players,options){
-
+function _start_game(gamename, players, options) {
+	//user is players[0] alle anderen sind robots
+	//get setup
+	//start game
 }
-function cancel_game() { console.log('cancelgame'); }
+function cancel_game() { mClear('dMenu'); } //console.log('cancelgame'); }
 
 
 

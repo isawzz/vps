@@ -3,7 +3,7 @@ default:
   players: felix,mimi
   color: GREEN
 ui:
-  card: 
+  card:
     h: 100
   container:
     padding: 0
@@ -175,3 +175,23 @@ games:
         cols: 3
         rows: 6
     winnerslist: []
+apps:
+  fitbit:
+    friendly: Fitbit
+    logo: cartwheeling
+    color: skyblue
+    options:
+      nplayers: 1,2,3,4,2
+      nops: add,mult,div,power,all
+      range: 10,100,1000,5
+      # mode: 'solo,hotseat,multi'
+  therapy:
+    friendly: Therapy
+    logo: accordion
+    color: 'orange'
+    options:
+      nplayers: 2,3,4
+      # mode: 'solo,hotseat,multi'
+  action:
+    friendly: Action
+    logo: 

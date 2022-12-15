@@ -12,8 +12,10 @@ async function start() {
 	}
 
 	await load_syms();
-  Config = await route_path_yaml_dict('../y/config.yaml'); console.log('Config', Config);
+  Config = await route_path_yaml_dict('../y/config.yaml'); 
+	Config.apps.fitbit.data = await route_path_yaml_dict('../y/fitbit.yaml'); console.log('Config', Config);
 	show_games();
+	show_apps();
 
 }
 
