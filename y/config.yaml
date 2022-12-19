@@ -205,3 +205,15 @@ apps:
     color: '#cc96c3'
     options:
       nplayers: 2,3,4
+  howto:
+    friendly: How to...
+    logo: key
+    color: deepskyblue #'#003F36'
+    options:
+      nplayers: 2,3,4
+  magic:
+    friendly: Magic
+    logo: fairy
+    color: '#F93093'
+    options:
+      nplayers: 2,3,4

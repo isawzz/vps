@@ -1,2 +1,9 @@
 hallo: HALLI HALLO
 geh: das ist auch gut
+fitbit:
+  13.12.22: {steps: 31}
+  14.12.22: {steps: 22}
+  15.12.22: {steps: 24}
+  16.12.22: {steps: 11}
+  17.12.22: {steps: 14}
+  18.12.22: {steps: 14}

@@ -24,21 +24,11 @@ function create_random_players(n = 1) {
 	return res;
 }
 function ev_to_gname(ev) { evNoBubble(ev); return evToTargetAttribute(ev, 'gamename'); }
-function generic_present(d,g){
+function generic_present(d, g) {
 
-	let ui = ui_type_ga(g,d); return;
-
-	let [sym, bg, color, id] = [Syms[g.logo], g.color, null, getUID()];
-	let d1 = mDiv(d, { cursor: 'pointer', rounding: 10, margin: 10, vpadding: 15, wmin: 140, bg: bg, position: 'relative' }, `d_${g.id}`, null, 'hop1');
-	d1.setAttribute('gamename', g.id);
-	//d1.onclick = onclick_apps_menu_item;
-	mCenterFlex(d1);
-	mDiv(d1, { fz: 50, family: sym.family, 'line-height': 55 }, null, sym.text);
-	mLinebreak(d1, 4);
-	mDiv(d1, { fz: 18, align: 'center' }, null, g.friendly);
-	return d1;
+	let ui = ui_type_ga(g, d); return;
 }
-function get_app_presenter(id){
+function get_app_presenter(id) {
 	let di = {};
 	return di[id] || generic_present;
 }
@@ -47,14 +37,14 @@ function show_standard_title(dParent, title) { mText(title, dParent, { margin: 2
 function show_apps(ms = 500) {
 	let dParent = mBy('dApps');
 	mClear(dParent); 	//transition
-	mStyle(dParent,{animation:`wipe-in-bottom-right ${ms}ms`});
+	mStyle(dParent, { animation: `wipe-in-bottom-right ${ms}ms` });
 
 	show_standard_title(dParent, 'Apps');
 	let d = mDiv(dParent, { fg: 'white' }, 'apps_menu');
 	mCenterFlex(d);
-	let gamelist = 'action fitbit meditate therapy';
-	for (const id of toWords(gamelist)){ //dict2list(Config.apps)) {
-		let app = Config.apps[id];app.id=id;let f = get_app_presenter(app.id); f(d, app);
+	let gamelist = 'action fitbit howto magic meditate therapy';
+	for (const id of toWords(gamelist)) { //dict2list(Config.apps)) {
+		let app = Config.apps[id]; app.name = id; let f = get_app_presenter(app.id); f(d, app);
 		//if (gamelist.includes(app.id)) { let f = get_app_presenter(app.id); f(d, app); }
 	}
 }
@@ -63,7 +53,7 @@ function show_games(ms = 500) {
 	mClear(dParent);
 
 	//transition
-	mStyle(dParent,{animation:`wipe-in-bottom-right ${ms}ms`})
+	mStyle(dParent, { animation: `wipe-in-bottom-right ${ms}ms` })
 
 	show_standard_title(dParent, 'Games');
 	let d = mDiv(dParent, { fg: 'white' }, 'game_menu');

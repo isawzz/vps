@@ -2753,6 +2753,21 @@ function arrMinMax(arr, func) {
 
 	return { min: min, imin: imin, max: max, imax: imax, elmin: arr[imin], elmax: arr[imax] };
 }
+function arrNoDuplicates(arr) {
+	//only keeps unique literals in result! non-literals are removed!
+	let di = {};
+	let arrNew = [];
+	for (const el of arr) {
+		// console.log('el',el,'isLiteral',isLiteral(el),!isLiteral(el));
+		if (!isLiteral(el)) continue;
+		// console.log('isdef(di[el])',isdef(di[el]));
+		if (isdef(di[el])) continue;
+		di[el] = true;
+		arrNew.push(el);
+	}
+	// console.log(arrNew)
+	return arrNew;
+}
 function arrTakeWhile(arr, func) {
 	let res = [];
 	for (const a of arr) {
@@ -4513,13 +4528,22 @@ function fireKey(k, { control, alt, shift } = {}) {
 		node.onclick();
 	}
 }
-const is_key_down = (() => {
-	const state = {};
-	window.addEventListener('keyup', (e) => state[e.key] = false);
-	// window.addEventListener('keydown', (e) => {console.log('e.key',e.key);state[e.key] = true;});
-	window.addEventListener('keydown', (e) => { state[e.key] = true; });
-	return (key) => state.hasOwnProperty(key) && state[key] || false;
-})();
+function is_key_down(key) {
+	if (nundef(DA.keystate)) {
+		DA.keystate = {};
+		window.addEventListener('keyup', (e) => state[e.key] = false);
+		window.addEventListener('keydown', (e) => { state[e.key] = true; });
+	}
+	let state = DA.keystate;
+	state.hasOwnProperty(key) && state[key] || false;
+}
+// const is_key_down = (() => {
+// 	const state = {};
+// 	window.addEventListener('keyup', (e) => state[e.key] = false);
+// 	// window.addEventListener('keydown', (e) => {console.log('e.key',e.key);state[e.key] = true;});
+// 	window.addEventListener('keydown', (e) => { state[e.key] = true; });
+// 	return (key) => state.hasOwnProperty(key) && state[key] || false;
+// })();
 
 function downloadAsYaml(o, filename) {
 	let y = jsyaml.dump(o);
@@ -5282,7 +5306,7 @@ function fromUmlaut(w) {
 
 //#region simepl TIMER
 class TimeIt {
-	constructor(msg='*', showOutput = true) {
+	constructor(msg = '*', showOutput = true) {
 		this.showOutput = showOutput;
 		this.init(msg);
 	}
@@ -5315,7 +5339,7 @@ class TimeIt {
 	}
 	format(t) { return '___' + t.getSeconds() + ':' + t.getMilliseconds(); }
 	show(msg) { this.showTime(msg); }
-	showTime(msg='*') {
+	showTime(msg = '*') {
 		//shows ticks diff to last call of show
 		let tNew = new Date(); //new Date().getTime() - this.t;
 		let tDiff = tNew.getTime() - this.t.getTime();
@@ -5838,9 +5862,19 @@ async function load_config_fast(applist = [], tablelist = []) {
 	}
 	Tables = {};
 	for (const tableid of tablelist) {
-		Tables[tableid] = await route_path_yaml_dict(`../y/tables/${tableid}.yaml`);	
-		Tables[tableid].name = tableid;	
+		Tables[tableid] = await route_path_yaml_dict(`../y/tables/${tableid}.yaml`);
+		Tables[tableid].name = tableid;
 	}
+}
+async function load_config_new() {
+	Config = await route_path_yaml_dict('../y/config.yaml');
+	let data = await route_path_yaml_dict('../y/appdata.yaml');
+	for (const k in data) {
+		Config.apps[k].data = data[k];
+	}
+}
+async function load_db() {
+	DB = await route_path_yaml_dict('../y/db.yaml');
 }
 async function load_syms(path) {
 	//sollten in base/assets/allSyms.yaml sein!
@@ -6229,6 +6263,14 @@ function exchange_by_index(arr1, i1, arr2, i2) {
 	arr1[i1] = arr2[i2];
 	arr2[i2] = temp;
 }
+function formatDate(d) {
+	const date = isdef(d) ? d : new Date();
+	const month = ('0' + date.getMonth()).slice(0, 2);
+	const day = date.getDate();
+	const year = date.getFullYear();
+	const dateString = `${month}/${day}/${year}`;
+	return dateString;
+}
 function if_plural(n) { return n == 1 ? '' : 's'; }
 function if_stringified_or_list(obj) { return nundef(obj) ? [] : is_stringified(obj) ? JSON.parse(obj) : obj; }
 function if_stringified_or_dict(obj) { return nundef(obj) ? {} : is_stringified(obj) ? JSON.parse(obj) : obj; }
@@ -6329,3 +6371,46 @@ function run_for_seconds(secs, f, interval = 50) {
 	DA.start = get_now(); doit(secs, f, interval);
 }
 
+//#region db trial 0
+function db_init(db) { DB = db; }
+function db_create(table, rec, db) {
+	if (!db) { db = DB; }
+
+	//if (isdef(key)) lookupSet(db, [table, key], rec); else
+	lookupAddToList(db, ['appdata', table], rec);
+
+}
+function db_readall(db) {
+	if (!db) { db = DB; }
+	return db;
+}
+function db_update(table, i, rec, db) {
+	if (!db) { db = DB; }
+	let list = lookup(db, [table]);
+	list[i] = rec;
+}
+function db_delete(table, i, db) {
+	if (!db) { db = DB; }
+	if (nundef(i)) delete db[table]; else	arrRemovip(lookup(db, [table])[i]);
+	return lookup(db, [table]);
+}
+function db_save_client(IP = 'localhost', port = 3000) {
+	post_json(`http://${IP}:${port}/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
+}
+
+//#endregion
+
+//#region functions to be used in node.js:
+// if (this && typeof module == "object" && module.exports && this === module.exports) {
+// 	module.exports = {
+// 		allNumbers, arrTake, arrNoDuplicates, arrMin, arrMax, arrMinus,
+// 		capitalize, choose, chooseRandom, copyKeys,
+// 		db_init, db_create, db_readall, db_update, db_delete, dict2list,
+// 		firstCond, firstCondDict, firstCondDictKey, formatDate,
+// 		intersection, isdef, isEmpty, jsCopy, isLiteral, isList, isString,
+// 		nundef,
+// 		range, rNumber, removeInPlace,
+// 		stringBefore, stringAfter, stringAfterLast,
+// 		valf,
+// 	};
+// }
