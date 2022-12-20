@@ -1,6 +1,7 @@
 //#region globals: Session data
 var Pollmode = 'auto';
-var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 0 }, Socket = null;
+var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 0 };
+var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
 var uiActivated = false, Selected, Turn, Prevturn;
 var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
 var dTable, dPage, dMap, dHeader, dFooter, dMessage, dPuppet, dMenu, dLeft, dCenter, dRight, dTop, dBottom; //, dTitle; //, dUsers, dGames, dTables, dLogo, dLoggedIn, dPlayerNames, dInstruction, dError, dMessage, dStatus, dTableName, dGameControls, dUserControls, dMoveControls, dSubmitMove, dPlayerStats;
@@ -5944,6 +5945,14 @@ function measure_fieldset(fs) {
 
 
 }
+function onpagedeactivated(handler) {
+	//document.addEventListener('mouseleave', handler) //console.log('page mouse left!!!'); save_all()
+	document.addEventListener('visibilitychange',
+		() => {
+			console.log('visibilityState', document.visibilityState);
+			if (document.visibilityState !== 'visible') handler();
+		}); // e => { if (document.visibilityState === 'visible') { console.log('page activated!'); } else { console.log('page deactivated!!!'); save_all(); } });
+}
 function oscillate_between(x, min, max, step) {
 
 	x += step;
@@ -6017,6 +6026,44 @@ async function route_path_json(url) {
 	let data = await fetch(url);
 	let o = await data.json();
 	return o;
+}
+function set_run_state(singleclient = true, sockets = false, port = 3000, localhost = true, testing = true, liveserver = true, nodejs = true) {
+	//var SERVERURL, Socket = null, SERVER = 'localhost', PORT=3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
+
+	//testing ohne sockets mit liveserver und singleclient (default): set_run_state();
+	//vps und multiclients mit sockets sein? set_run_state(false,true,3000,false,false,false,true);
+
+	SERVER = localhost ? '127.0.0.1' : '216.250.112.218';
+	PORT = port;
+	SERVERURL = `http://${SERVER}:${PORT}`;
+	NODEJS = nodejs;
+	LIVE_SERVER = liveserver;
+	TESTING = testing;
+	SINGLECLIENT = singleclient;
+
+	if (sockets) { 
+		Socket = liveserver ? io(SERVERURL) : io(); 
+		Socket.on('message', x => console.log('got message', x));
+		Socket.on('disconnect', x => console.log('got disconnect', x));
+		Socket.on('update', x => console.log('got update', x));
+	}
+
+	console.log('SERVER:'+SERVERURL,'LIVE:'+LIVE_SERVER,'Socket:'+Socket,TESTING?'TESTING':'',SINGLECLIENT?'SINGLE':'');
+
+	return;
+
+	//#region old code
+	TESTING = 'nosockets'; // live | vps | [false] | true (live for live-server, vps for vps) 
+	if (TESTING != 'nosockets') {
+		//Socket.on!!!
+		Socket = TESTING == 'live' ? io('http://127.0.0.1:3000') : TESTING == 'vps' ? io('http://216.250.112.218:3000') : io();
+		Socket.on('message', x => console.log('got message', x));
+		Socket.on('disconnect', x => console.log('got disconnect', x));
+		Socket.on('update', x => console.log('got update', x));
+	}
+	//#endregion
+
+
 }
 function show(elem, isInline = false) {
 	if (isString(elem)) elem = document.getElementById(elem);
@@ -6372,12 +6419,13 @@ function run_for_seconds(secs, f, interval = 50) {
 }
 
 //#region db trial 0
-function db_init(db) { DB = db; }
+function db_init(db) { DB = db; return db; }
 function db_create(table, rec, db) {
 	if (!db) { db = DB; }
 
 	//if (isdef(key)) lookupSet(db, [table, key], rec); else
 	lookupAddToList(db, ['appdata', table], rec);
+	return db;
 
 }
 function db_readall(db) {
@@ -6388,11 +6436,12 @@ function db_update(table, i, rec, db) {
 	if (!db) { db = DB; }
 	let list = lookup(db, [table]);
 	list[i] = rec;
+	return db;
 }
 function db_delete(table, i, db) {
 	if (!db) { db = DB; }
-	if (nundef(i)) delete db[table]; else	arrRemovip(lookup(db, [table])[i]);
-	return lookup(db, [table]);
+	if (nundef(i)) delete db.appdata[table]; else arrRemovip(lookup(db, ['appdata', table])[i]);
+	return db;
 }
 function db_save_client(IP = 'localhost', port = 3000) {
 	post_json(`http://${IP}:${port}/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));

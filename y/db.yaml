@@ -259,20 +259,4 @@ appdata:
 
 
         bad things are good
-  action:
-    - t: 09:18
-      d: 65
-      p: 20
-    - t: 09:18
-      d: 65
-      p: 20
-    - t: 09:18
-      d: 65
-      p: 20
-    - t: 09:18
-      d: 65
-      p: 20
-    - t: 09:18
-      d: 65
-      p: 20
 tables: null
