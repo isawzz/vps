@@ -17,8 +17,9 @@ function fromYamlFile(filePath) { const data = fs.readFileSync(filePath, { encod
 //#endregion
 
 //#region data access
-const db = require('../y/basemin.js');
-console.log('test',db.nundef(undefined));
+const db = require('../basejs/baseminserver.js'); console.log('test',db.nundef(undefined));
+const DB = fromYamlFile('../y/db.yaml');
+
 //#endregion
 
 //#region POST
@@ -26,6 +27,11 @@ app.post('/post/json', function (req, res) {
 	let o = req.body; // console.log(req.body);
 	if (o.filename && o.data) { toYamlFile(o.data, '../y/' + o.filename + '.yaml'); }
 	res.send({result:'DONE'}); //need to send json object!
+});
+app.post('/update', function (req, res) {
+	let o = req.body; console.log(req.body);
+	if (db.isdef(DB)) { let list = db.lookup(DB, ['appdata',o.table]); list[o.i] = o.rec; if (o.save===true) toYamlFile(DB,'../y/db.yaml'); }
+	res.send({cmd:'update',rec:o.rec}); //need to send json object!
 });
 
 //#endregion

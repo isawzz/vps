@@ -6432,10 +6432,10 @@ function db_readall(db) {
 	if (!db) { db = DB; }
 	return db;
 }
-function db_update(table, i, rec, save=false) {
+function db_update(table, i, rec) {
 	//if (!db) { db = DB; }
 	if (isdef(DB)) { let list = lookup(DB, ['appdata',table]); list[i] = rec; }
-	if (NODEJS) post_json(SERVERURL + `/update`, { table: table, i: i, rec: rec, save:save }, () => console.log('updated db'));
+	if (NODEJS) post_json(SERVERURL + `/update`, { table: table, i: i, rec: rec }, () => console.log('updated db'));
 	//return db;
 }
 function db_delete(table, i, db) {
@@ -6450,16 +6450,17 @@ function db_save_client(IP = 'localhost', port = 3000) {
 //#endregion
 
 //#region functions to be used in node.js:
-// if (this && typeof module == "object" && module.exports && this === module.exports) {
-// 	module.exports = {
-// 		allNumbers, arrTake, arrNoDuplicates, arrMin, arrMax, arrMinus,
-// 		capitalize, choose, chooseRandom, copyKeys,
-// 		db_init, db_create, db_readall, db_update, db_delete, dict2list,
-// 		firstCond, firstCondDict, firstCondDictKey, formatDate,
-// 		intersection, isdef, isEmpty, jsCopy, isLiteral, isList, isString,
-// 		nundef,
-// 		range, rNumber, removeInPlace,
-// 		stringBefore, stringAfter, stringAfterLast,
-// 		valf,
-// 	};
-// }
+//if (this && typeof module == "object" && module.exports && this === module.exports) {
+	module.exports = {
+		allNumbers, arrTake, arrNoDuplicates, arrMin, arrMax, arrMinus,
+		capitalize, choose, chooseRandom, copyKeys,
+		db_init, db_create, db_readall, db_update, db_delete, dict2list,
+		firstCond, firstCondDict, firstCondDictKey, formatDate,
+		intersection, isdef, isEmpty, jsCopy, isLiteral, isList, isString,
+		lookup, lookupSet, lookupSetOverride, lookupAddToList, lookupAddIfToList,
+		nundef,
+		range, rNumber, removeInPlace,
+		stringBefore, stringAfter, stringAfterLast,
+		valf,
+	};
+//}

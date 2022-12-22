@@ -74,6 +74,24 @@
 	margin: 0;
 	border: none;
 }
+.form {
+	display: flex;
+	align-items: center;	
+}
+.form * {
+	margin: 0;
+	border-radius: 0.5rem;
+	padding: 0.3rem 0.5rem;
+	font-size: inherit;
+	font-weight: normal;
+	font-family: inherit;
+	outline: none;
+	border: none;
+}
+.form button {
+	cursor: pointer;
+	margin-left: .5rem;
+} 
 
 /* #region keyframes */
 @-webkit-keyframes spin {

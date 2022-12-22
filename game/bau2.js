@@ -1,5 +1,5 @@
 function collect_game_specific_options(game) {
-	let poss = Config.games[game].options;
+	let poss = DB.games[game].options;
 	if (nundef(poss)) return;
 	let di = {};
 	for (const p in poss) {
@@ -32,7 +32,6 @@ function get_app_presenter(id) {
 	let di = {};
 	return di[id] || generic_present;
 }
-function rName(n = 1) { let arr = MyNames; return rChoose(arr, n); }
 function show_standard_title(dParent, title) { mText(title, dParent, { margin: 20, fz: 24 }); }
 function show_apps(ms = 500) {
 	let dParent = mBy('dApps');
@@ -42,9 +41,9 @@ function show_apps(ms = 500) {
 	show_standard_title(dParent, 'Apps');
 	let d = mDiv(dParent, { fg: 'white' }, 'apps_menu');
 	mCenterFlex(d);
-	let gamelist = 'action fitbit howto magic meditate therapy';
-	for (const id of toWords(gamelist)) { //dict2list(Config.apps)) {
-		let app = Config.apps[id]; app.name = id; let f = get_app_presenter(app.id); f(d, app);
+	let applist = 'action fitbit howto magic meditate therapy';
+	for (const id of toWords(applist)) { //dict2list(DB.apps)) {
+		let app = DB.apps[id]; app.name = id; let f = get_app_presenter(app.id); f(d, app);
 		//if (gamelist.includes(app.id)) { let f = get_app_presenter(app.id); f(d, app); }
 	}
 }
@@ -59,7 +58,7 @@ function show_games(ms = 500) {
 	let d = mDiv(dParent, { fg: 'white' }, 'game_menu');
 	mCenterFlex(d); //mFlexWrap(d);
 	let gamelist = 'goalnumber reversi'; //'aristo bluff spotit ferro fritz'; if (DA.TEST0) gamelist += ' a_game';
-	for (const g of dict2list(Config.games)) {
+	for (const g of dict2list(DB.games)) {
 		if (gamelist.includes(g.id)) {
 			let [sym, bg, color, id] = [Syms[g.logo], g.color, null, getUID()];
 			let d1 = mDiv(d, { cursor: 'pointer', rounding: 10, margin: 10, vpadding: 15, wmin: 140, bg: bg, position: 'relative' }, g.id, null, 'hop1');
@@ -94,7 +93,7 @@ function show_game_options_menu(gamename) {
 function show_game_options(dParent, gamename) {
 	DA.gamename = gamename;
 	mRemoveChildrenFromIndex(dParent, 2);
-	let poss = Config.games[gamename].options;
+	let poss = DB.games[gamename].options;
 	if (nundef(poss)) return;
 	for (const p in poss) {
 		let key = p;
@@ -127,6 +126,12 @@ function cancel_game() { mClear('dMenu'); } //console.log('cancelgame'); }
 
 
 
+function arrAverage(arr,prop){
+	let n=arr.length; if (!n) return 0;
+	let sum=arrSum(arr,prop);
+	return sum/n;
+}
+function rName(n = 1) { let arr = MyNames; return rChoose(arr, n); }
 
 
 

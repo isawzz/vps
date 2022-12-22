@@ -1,10 +1,17 @@
 
 function mSearch(handler, dParent, styles, classes) {
+	let html0 = `
+		<form id="fSearch" action="javascript:void(0);" style='display:flex;align-items:center'>
+			<label class='label'>Keywords:</label>
+			<input id="iKeywords" type="text" name="keywords" style="flex-grow:1" class='input' />
+			<button type="submit" class='btn'>Search</button>
+		</form>
+	`;
 	let html = `
-		<form id="fSearch" action="javascript:void(0);">
-			<label>Keywords</label>
-			<input id="iKeywords" type="text" name="keywords" style="flex-grow: 1" />
-			<button type="submit">Search</button>
+		<form id="fSearch" action="javascript:void(0);" class='form'>
+			<label>Keywords:</label>
+			<input id="iKeywords" type="text" name="keywords" style="flex-grow:1" />
+			<button type="submit" class='hop1' >Search</button>
 		</form>
 	`;
 	let elem = mCreateFrom(html);
