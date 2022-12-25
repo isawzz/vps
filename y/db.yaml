@@ -167,36 +167,42 @@ apps:
     options:
       min: 10
       avg: 15
+    name: fitbit
   therapy:
     friendly: Therapy
     logo: accordion
     color: orange
     options:
       nplayers: 2,3,4
+    name: therapy
   meditate:
     friendly: Meditate
     logo: lotus position
     color: indigo
     options:
       nplayers: 2,3,4
+    name: meditate
   action:
     friendly: Action
     logo: ballet shoes
     color: "#cc96c3"
     options:
       nplayers: 2,3,4
+    name: action
   howto:
     friendly: How to...
     logo: key
     color: deepskyblue
     options:
       nplayers: 2,3,4
+    name: howto
   magic:
     friendly: Magic
     logo: fairy
     color: "#F93093"
     options:
       nplayers: 2,3,4
+    name: magic
 appdata:
   fitbit:
     - d: 13.12.22
@@ -217,17 +223,23 @@ appdata:
       steps: 22
     - d: 21.12.22
       steps: 23
+    - d: 22.12.22
+      steps: 12
+    - d: 23.12.22
+      steps: 12
+    - d: 24.12.22
+      steps: 13
   howto:
-    - kw: k16
-      c: hallo16
+    - kw: k92
+      c: hallo92
+    - kw: k78
+      c: hallo79
+    - kw: k59
+      c: hallo61
     - kw: k67
-      c: hallo68
-    - kw: k55
-      c: hallo57
-    - kw: k90
-      c: hallo93
-    - kw: k17
-      c: hallo21
-    - kw: k8
-      c: hallo13
+      c: hallo70
+    - kw: k82
+      c: hallo86
+    - kw: k84
+      c: hallo89
 tables: null

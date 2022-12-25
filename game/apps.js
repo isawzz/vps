@@ -58,7 +58,7 @@ function fitbit_open(item) {
 function howto_open(item){
 	dSearch = mBy('dSearch');
 	mStyle(dSearch,{bg:item.color});
-	mSearch(()=>perform_search(Config.apps.howto.data),dSearch,{},'input');
+	mSearch(()=>perform_search(DB.appdata.howto),dSearch,{},'input');
 }
 function howto_close(item){
 	mClear('dSearch');
@@ -67,7 +67,7 @@ function howto_close(item){
 
 function perform_search(records){
 	let words = toWords(mBy('iKeywords').value);
-	console.log('keywords are',words);
+	console.log('keywords are',words,'records',records);
 
 	let res = [], i=0;
 	for(const c of records){

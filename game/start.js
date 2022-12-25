@@ -24,6 +24,14 @@ async function start() {
 	//db_delete('action');
 	//db_delete('action'); //db_create('action',{t:'HALLO',d:65,p:20});
 	//db_save_client();
+
+	function test_random_update() {
+		let n = rNumber();
+		let i = rNumber(0, DB.appdata.howto.length - 1);
+		let rec = { kw: 'k' + n, c: 'hallo' + (n + i) };
+		db_update('howto', i, rec);
+	}
+	
 	//onclick = test_random_update;
 
 	//old code
@@ -36,17 +44,14 @@ async function start() {
 	//let data = await route_path_yaml_dict(`../y/appdata/calendar.yaml`); console.log('data', data)
 	//#endregion
 
-	show_games();
-	show_apps();
+	//show_games();
+	//show_apps();
+
+	test1_p5_init(); //test0_random();
+
 
 }
 
-function test_random_update() {
-	let n = rNumber();
-	let i = rNumber(0, DB.appdata.howto.length - 1);
-	let rec = { kw: 'k' + n, c: 'hallo' + (n + i) };
-	db_update('howto', i, rec);
-}
 
 
 
