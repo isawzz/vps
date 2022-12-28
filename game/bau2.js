@@ -1,3 +1,4 @@
+function clear_all() { for (const id of ['dApps', 'dGames', 'dSearch', 'dTable']) mClear(id); }
 function collect_game_specific_options(game) {
 	let poss = DB.games[game].options;
 	if (nundef(poss)) return;
@@ -36,12 +37,12 @@ function show_standard_title(dParent, title) { mText(title, dParent, { margin: 2
 function show_apps(ms = 500) {
 	let dParent = mBy('dApps');
 	mClear(dParent); 	//transition
-	mStyle(dParent, { animation: `wipe-in-bottom-right ${ms}ms` });
+	//mStyle(dParent, { animation: `wipe-in-bottom-right ${ms}ms` });
 
 	show_standard_title(dParent, 'Apps');
 	let d = mDiv(dParent, { fg: 'white' }, 'apps_menu');
 	mCenterFlex(d);
-	let applist = 'action fitbit howto magic meditate therapy';
+	let applist = 'action book fitbit howto magic meditate therapy';
 	for (const id of toWords(applist)) { //dict2list(DB.apps)) {
 		let app = DB.apps[id]; app.name = id; let f = get_app_presenter(app.id); f(d, app);
 		//if (gamelist.includes(app.id)) { let f = get_app_presenter(app.id); f(d, app); }
@@ -52,7 +53,7 @@ function show_games(ms = 500) {
 	mClear(dParent);
 
 	//transition
-	mStyle(dParent, { animation: `wipe-in-bottom-right ${ms}ms` })
+	//mStyle(dParent, { animation: `wipe-in-bottom-right ${ms}ms` })
 
 	show_standard_title(dParent, 'Games');
 	let d = mDiv(dParent, { fg: 'white' }, 'game_menu');
@@ -106,6 +107,11 @@ function show_game_options(dParent, gamename) {
 		}
 	}
 }
+function toggle_apps(){		if (isEmpty(mBy('dApps').innerHTML)) show_apps(); else mClear('dApps');}
+function toggle_games(){	if (isEmpty(mBy('dGames').innerHTML)) show_games(); else mClear('dGames');}
+
+
+
 function stop_game() { console.log('stopgame'); }
 function start_game() {
 	let gamename = DA.gamename;
@@ -121,6 +127,7 @@ function _start_game(gamename, players, options) {
 	//get setup
 	//start game
 }
+
 function cancel_game() { mClear('dMenu'); } //console.log('cancelgame'); }
 
 

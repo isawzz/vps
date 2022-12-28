@@ -3,12 +3,12 @@ function action_open(item) {
 	let o = { tStart: get_now(), app: 'action' };
 	toLocalStorage(o, 'app');
 	let d = iDiv(item);
-	let d1 = mDiv(d, { fz:15,position:'absolute',top:2,right:4 }, null, new Date(o.tStart).toTimeString().substring(0, 5));
+	let d1 = mDiv(d, { fz: 15, position: 'absolute', top: 2, right: 4 }, null, new Date(o.tStart).toTimeString().substring(0, 5));
 	//let d2=mDiv(d); mCenterFlex(d2); let i=0;
 	let d2 = mGrid(3, 3, d, { gap: 3, matop: 12 });
 
 	for (const n of [.5, 1, 2, 3, 5, 8, 12, 20, 50]) {
-		let b = mButton(n, () => item.val = n, d2, {cursor:'pointer'});
+		let b = mButton(n, () => item.val = n, d2, { cursor: 'pointer' });
 		//i++; if (i % 3 == 0) mLinebreak(d2);
 	}
 	//mLinebreak(d);
@@ -32,6 +32,17 @@ function action_close(item) {
 	//navigator.clipboard.writeText(s); 
 	setTimeout(() => navigator.clipboard.writeText(s), 100)
 }
+function book_open(item) {
+	console.log('BOOK OPEN!!!!!!!!!!!!!!!');
+	let d = iDiv(item);
+	let dg = mGrid(2, 1, d, { gap: 3, matop: 22 });
+	//let titles = ['Intro to CS', 'Animals'];
+	let books = DB.appdata.book;
+	for (const book of books) {
+		let d1 = mDiv(dg, { fg: rColor(23) }, null, book.title, 'hop1');
+		d1.onclick = () => book_open_title(book.id);
+	}
+}
 
 function fitbit_open(item) {
 	console.log('FITBIT OPEN!!!!!!!!!!!!!!!')
@@ -43,35 +54,35 @@ function fitbit_open(item) {
 	//how to compute avg
 	let arr = DB.appdata.fitbit;
 	let days = arr.length;
-	let sum = arrSum(arr,'steps');
-	let opt=DB.apps.fitbit.options;
+	let sum = arrSum(arr, 'steps');
+	let opt = DB.apps.fitbit.options;
 	let min_per_day = opt.min;
 	let avg_per_day = opt.avg;
-	let req_sum = avg_per_day*(days+1);
-	let req_today = Math.max(req_sum - sum,opt.min);
-	let avg=sum / days;
-	let davg=mDiv(d2,{},null,`avg: ${avg.toFixed(1)}K`);
-	let dtoday=mDiv(d2,{},null,`req: ${Math.ceil(req_today)}K`);
+	let req_sum = avg_per_day * (days + 1);
+	let req_today = Math.max(req_sum - sum, opt.min);
+	let avg = sum / days;
+	let davg = mDiv(d2, {}, null, `avg: ${avg.toFixed(1)}K`);
+	let dtoday = mDiv(d2, {}, null, `req: ${Math.ceil(req_today)}K`);
 }
 //function fitbit_close(item) {	console.log('fitbit CLOSE!!!!!!!!!!!!!!!');}
 
-function howto_open(item){
+function howto_open(item) {
 	dSearch = mBy('dSearch');
-	mStyle(dSearch,{bg:item.color});
-	mSearch(()=>perform_search(DB.appdata.howto),dSearch,{},'input');
+	mStyle(dSearch, { bg: item.color });
+	mSearch(() => perform_search(DB.appdata.howto), dSearch, {}, 'input');
 }
-function howto_close(item){
+function howto_close(item) {
 	mClear('dSearch');
 	mClear('dSearchResult');
 }
 
-function perform_search(records){
+function perform_search(records) {
 	let words = toWords(mBy('iKeywords').value);
-	console.log('keywords are',words,'records',records);
+	console.log('keywords are', words, 'records', records);
 
-	let res = [], i=0;
-	for(const c of records){
-		for(const w of words){
+	let res = [], i = 0;
+	for (const c of records) {
+		for (const w of words) {
 			let w1 = w.toLowerCase();
 			let kw = c.kw.toLowerCase();
 			let code = c.c.toLowerCase();
@@ -84,13 +95,13 @@ function perform_search(records){
 		i++;
 	}
 
-	console.log('filtered:',res);
-	show_code_list(mBy('dSearchResult'),res);
+	console.log('filtered:', res);
+	show_code_list(mBy('dSearchResult'), res);
 
 }
-function show_code_list(dParent,list) {
+function show_code_list(dParent, list) {
 	mClear(dParent);
-	
+
 	for (const code of list) {
 		let d = mDiv(dParent, { w: '100%' });
 		let dkw = mDiv(d, {}, null, code.kw);

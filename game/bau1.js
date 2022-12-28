@@ -1,24 +1,89 @@
 
-function mSearch(handler, dParent, styles, classes) {
-	let html0 = `
-		<form id="fSearch" action="javascript:void(0);" style='display:flex;align-items:center'>
-			<label class='label'>Keywords:</label>
-			<input id="iKeywords" type="text" name="keywords" style="flex-grow:1" class='input' />
-			<button type="submit" class='btn'>Search</button>
-		</form>
-	`;
-	let html = `
-		<form id="fSearch" action="javascript:void(0);" class='form'>
-			<label>Keywords:</label>
-			<input id="iKeywords" type="text" name="keywords" style="flex-grow:1" />
-			<button type="submit" class='hop1' >Search</button>
-		</form>
-	`;
-	let elem = mCreateFrom(html);
-	mAppend(dParent, elem);
-	elem.onsubmit = handler;
-	return elem;
+function mSidebar(){
+	let d=document.body;
+	mDiv(d,{float:'left',h:'100vh'},'dSidebar','HALLO','section');
 }
+
+
+
+
+
+
+
+function book_get(id){return DB.appdata.book.find(x=>x.id == id);}
+function book_open_title(id) {
+	clear_all();
+
+	dTable = mSection({ bg: DB.apps.book.color }, 'dTable', null, null, 'bookgrid');
+
+	let book = book_get(id);
+	let dTitle = mDiv(dTable, {}, null, book.title)
+	dContent = mDiv(dTable, {}, 'dContent'); mCenterFlex(dContent);
+	dContent.setAttribute('book',id);
+	let footer = mDiv(dTable, { align: 'center' });
+	for (const p of range(1, book.pages)) {
+		maButton(p, ()=>book_open_page(p), footer);
+	}
+}
+
+function parse_functions(code){
+	let res = {};
+	let cfunctions = 'function ' + stringAfter(code,'function '); //jump to first function def
+	let fbodies = cfunctions.split('function').map(x=>x.trim());
+	//console.log('fbodies',fbodies);
+	for(const f of fbodies){
+		let name = stringBefore(f,'(');
+		if (isEmpty(name)) continue;
+		let params = stringBefore(stringAfter(f,'('),')');
+		let firstline = stringBefore(stringAfter(f,'{'),'\n');
+		let body = stringBefore(stringAfter(f,'{'),'}');
+		res[name.trim()] = {name:name,params:params,firstline:firstline,body:body};
+	}
+
+	console.log('functions',res); //get_keys(res));
+	return res;
+
+}
+
+function eval_code(){
+	let code = G.textarea.value;
+
+	// let statements = code.split(';').map(x=>x.trim());
+	// for(const st of statements) eval(st)
+	eval(code);
+}
+function book_open_page(page){
+	pauseloop();Items={};
+	let book=G=book_get(dContent.getAttribute('book'))
+	console.log('current book is',book)
+	let func = window[`book_${book.id}_${page}`];
+	G.canvas = func();
+	console.log('func',func,typeof func)
+	let t=mTextArea(15,100,dContent);
+	//t.value=func;
+	//t.value = func.toString().replace(/^[^{]*{\s*/,'\t').replace(/\s*}[^}]*$/,'');
+	t.onfocus=()=>G.canvas.pause();
+	G.textarea = t;
+	
+	maButton('RUN',eval_code,dContent)
+}
+function book_cs_1(){
+	mClear(dContent);
+	let o = mCanvas(dContent, { w: 600, h: 300 }, {}, startloop, pauseloop, 'cc');
+	iAdd(o, {}, { draw: () => draw_random_walk(o) });
+	return o;
+}
+function book_cs_2(){
+	mClear(dContent);
+	let o = mCanvas(dContent, { w: 600, h: 300 }, {}, startloop, pauseloop, 'cc');
+	iAdd(o, {}, { draw: () => draw_perlin_x(o) });
+	o.play();
+	return o;
+	
+}
+function book_cs_3(){ return book_cs_1();}
+function book_cs_4(){ return book_cs_2();}
+
 
 function half_goal() {
 	//if 

@@ -1606,7 +1606,7 @@ class UIGraph extends AGraph {
 			gapInequalities: undefined, // list of inequality constraints for the gap between the nodes, e.g. [{"axis":"y", "left":node1, "right":node2, "gap":25}]
 
 			// different methods of specifying edge length
-			// each can be a constant numerical value or a function like `function( edge ){ return 2; }`
+			// each can be a constant numerical value or a func like `func( edge ){ return 2; }`
 			edgeLength: undefined, // sets edge length directly in simulation
 			edgeSymDiffLength: undefined, // symmetric diff edge length in simulation
 			edgeJaccardLength: undefined, // jaccard edge length in simulation
@@ -1695,9 +1695,9 @@ class UIGraph extends AGraph {
 			numIter: 2500,
 			// For enabling tiling
 			tile: true,
-			// Represents the amount of the vertical space to put between the zero degree members during the tiling operation(can also be a function)
+			// Represents the amount of the vertical space to put between the zero degree members during the tiling operation(can also be a f
 			tilingPaddingVertical: 10,
-			// Represents the amount of the horizontal space to put between the zero degree members during the tiling operation(can also be a function)
+			// Represents the amount of the horizontal space to put between the zero degree members during the tiling operation(can also be a f)
 			tilingPaddingHorizontal: 10,
 			// Gravity force (constant)
 			gravity: 0.25,
@@ -1738,7 +1738,7 @@ class UIGraph extends AGraph {
 		} else {
 			let options = {
 				name: 'preset',
-				positions: undefined, //function (n){return this.getNode(n.id()).data().center;}, //this.posDict, //undefined, // undefined, // map of (node id) => (position obj); or function(node){ return somPos; }
+				positions: undefined, //func (n){return this.getNode(n.id()).data().center;}, //this.posDict, //undefined, // undefined, // map of (node id) => (position obj); or func(node){ return somPos; }
 				zoom: undefined, // the zoom level to set (prob want fit = false if set)
 				pan: undefined, // the pan level to set (prob want fit = false if set)
 				fit: true, // whether to fit to viewport
@@ -1746,7 +1746,7 @@ class UIGraph extends AGraph {
 				animate: true, // whether to transition the node positions
 				animationDuration: 500, // duration of animation in ms if enabled
 				animationEasing: undefined, // easing of animation if enabled
-				animateFilter: function (node, i) { return true; }, // a function that determines whether the node should be animated.  All nodes animated by default on animate enabled.  Non-animated nodes are positioned immediately when the layout starts
+				animateFilter: function (node, i) { return true; }, // a func that determines whether the node should be animated.  All nodes animated by default on animate enabled.  Non-animated nodes are positioned immediately when the layout starts
 				ready: undefined, // callback on layoutready
 				stop: undefined, // callback on layoutstop
 				transform: function (node, position) { return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
@@ -1815,7 +1815,7 @@ class UIGraph extends AGraph {
 			animateFilter: function (node, i) { return true; }, // Whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
 			animationDuration: 500, // Duration of animation in ms if enabled
 			animationEasing: undefined, // Easing of animation if enabled
-			transform: function (node, pos) { return pos; }, // A function that applies a transform to the final node position
+			transform: function (node, pos) { return pos; }, // A func that applies a transform to the final node position
 			ready: this.reset.bind(this), // Callback on layoutready
 			stop: undefined, // Callback on layoutstop
 			klay: {
@@ -1926,7 +1926,7 @@ class UIGraph extends AGraph {
 		dContainer.cytoscapeEdgehandles('resize');
 	}
 
-	//#region ui functions
+	//#region ui funcs
 	enableDD() { this.enableDragging(); }
 	disableDD() { this.disableDragging(); }
 	enableDragging() { this.cy.nodes().grabify(); }

@@ -4,7 +4,7 @@ var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 
 var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
 var uiActivated = false, Selected, Turn, Prevturn;
 var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
-var dTable, dPage, dMap, dHeader, dFooter, dMessage, dPuppet, dMenu, dLeft, dCenter, dRight, dTop, dBottom; //, dTitle; //, dUsers, dGames, dTables, dLogo, dLoggedIn, dPlayerNames, dInstruction, dError, dMessage, dStatus, dTableName, dGameControls, dUserControls, dMoveControls, dSubmitMove, dPlayerStats;
+var dBottom, dCenter, dContent, dFooter, dHeader, dLeft, dMap, dMenu, dMessage, dPage, dPuppet, dRight, dSidebar, dTable, dTop; //, dTitle; //, dUsers, dGames, dTables, dLogo, dLoggedIn, dPlayerNames, dInstruction, dError, dMessage, dStatus, dTableName, dGameControls, dUserControls, dMoveControls, dSubmitMove, dPlayerStats;
 var Config, Syms, SymKeys, ByGroupSubgroup, KeySets, C52, Cinno, C52Cards;
 var FORCE_REDRAW = false, TESTING = false;
 var ColorThiefObject, SelectedItem, SelectedColor;
@@ -561,6 +561,21 @@ const Geo = {
 		'South America': ['Argentina', 'Aruba', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Curacao', 'Ecuador', 'French Guiana', 'Guam', 'Guyana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela']
 	}
 };
+const Perlin = {
+	PERLIN_YWRAPB: 4,
+	PERLIN_YWRAP: 1 << 4, //PERLIN_YWRAPB,
+	PERLIN_ZWRAPB: 8,
+	PERLIN_ZWRAP: 1 << 8, //PERLIN_ZWRAPB,
+	PERLIN_SIZE: 4095,
+
+	perlin_octaves: 4, // default to medium smooth
+	perlin_amp_falloff: 0.5, // 50% reduction/octave
+
+	scaled_cosine: i => 0.5 * (1.0 - Math.cos(i * Math.PI)),
+
+	perlin: null, // will be initialized lazily by noise() or noiseSeed()
+
+}
 const SHERIFF = {
 	color: {
 		legal: GREEN, //'lime',
@@ -789,21 +804,24 @@ function mButtonX(dParent, handler, pos = 'tr', sz = 25, color = 'white') {
 	return d2;
 }
 function mBy(id) { return document.getElementById(id); }
-function mCanvas(dParent, styles = {}, bstyles = {}, play = null, pause = null) {
+function mCanvas(dParent, styles = {}, bstyles = {}, play = null, pause = null, origin = 'tl') {
 	let cv = mCreate('canvas');
 	mAppend(toElem(dParent), cv);
 	addKeys({ w: 500, h: 500, bg: '#222', rounding: 10 }, styles);
 	mStyle(cv, styles);
-	if (isdef(styles.w)) cv.width = styles.w;
-	if (isdef(styles.h)) cv.height = styles.h;
+	let [w, h] = [cv.width, cv.height] = [styles.w, styles.h];
 	let cx = cv.getContext('2d');
-	if (!play) return { cv: cv, cx: cx };
+
+	let [x, y] = posToPoint(origin, w, h);
+	cx.translate(x, y);
+
+	if (!play) return { cv: cv, cx: cx, origin: { x: x, y: y }, x: 0, y: 0, w: w, h: h };
 
 	//add the play pause button!
-	addKeys({ fz: 28, fg: 'lightgreen', display: 'flex', ajcenter: true, w: styles.w }, bstyles)
+	addKeys({ fz: 28, fg: 'skyblue', display: 'flex', ajcenter: true, w: styles.w }, bstyles)
 	let controls = mPlayPause(dParent, bstyles, play, pause);
 
-	return { cv: cv, cx: cx, div: controls.button, play: controls.play, pause: controls.pause };
+	return { cv: cv, cx: cx, origin: { x: x, y: y }, x: 0, y: 0, w: w, h: h, div: controls.button, play: controls.play, pause: controls.pause };
 
 }
 function mCardButton(caption, handler, dParent, styles, classtr = '', id = null) {
@@ -1326,7 +1344,7 @@ function mPlayPause(dParent, styles = {}, handle_play = null, handle_pause = nul
 	//console.log('fname', fname);
 	let html = `
 		<section id="dButtons">
-			<a id="bPlay" href="#" }">
+			<a id="bPlay" href="#">
 				<i class="fa fa-play fa-2x"></i>
 			</a>
 			<a id="bPause" href="#" style="display: none">
@@ -1343,6 +1361,10 @@ function mPlayPause(dParent, styles = {}, handle_play = null, handle_pause = nul
 
 	mBy('bPlay').onclick = () => { hide0('bPlay'); show0('bPause'); handle_play(); }
 	mBy('bPause').onclick = () => { hide0('bPause'); show0('bPlay'); handle_pause(); }
+
+	let [fg, fz] = [styles.fg, styles.fz];
+	mStyle(mBy('bPlay'), { fg: fg, fz: fz })
+	mStyle(mBy('bPause'), { fg: fg, fz: fz })
 
 	return { ui: pp, play: () => fireClick(mBy('bPlay')), pause: () => fireClick(mBy('bPause')) };
 
@@ -1452,6 +1474,19 @@ function mRemove(elem) {
 	elem.remove(); //elem.parentNode.removeChild(elem);
 }
 function mRemoveChildrenFromIndex(dParent, i) { while (dParent.children[i]) { mRemove(dParent.children[i]); } }
+function mSearch(handler, dParent, styles, classes) {
+	let html = `
+		<form id="fSearch" action="javascript:void(0);" class='form'>
+			<label>Keywords:</label>
+			<input id="iKeywords" type="text" name="keywords" style="flex-grow:1" />
+			<button type="submit" class='hop1' >Search</button>
+		</form>
+	`;
+	let elem = mCreateFrom(html);
+	mAppend(dParent, elem);
+	elem.onsubmit = handler;
+	return elem;
+}
 function mSection(styles = {}, id, inner, tag, classes) { //sets global dHeader
 	//dParent, styles, id, inner, classes, sizing
 	let d = mBy(id);
@@ -1596,6 +1631,8 @@ const STYLE_PARAMS = {
 	mabottom: 'margin-bottom',
 	maright: 'margin-right',
 	origin: 'transform-origin',
+	overx: 'overflow-x',
+	overy: 'overflow-y',
 	patop: 'padding-top',
 	paleft: 'padding-left',
 	pabottom: 'padding-bottom',
@@ -2357,15 +2394,15 @@ function cStyle_dep(cvx, fill, stroke, wline, cap) {
 //#endregion
 
 //#region i prefix
-function iAdd(item, props) {
+function iAdd(item, liveprops, addprops) {
 	let id, l;
 	if (isString(item)) { id = item; item = Items[id]; }
 	else if (nundef(item.id)) { id = item.id = iRegister(item); }
 	else { id = item.id; if (nundef(Items[id])) Items[id] = item; }
 	if (nundef(item.live)) item.live = {};
 	l = item.live;
-	for (const k in props) {
-		let val = props[k];
+	for (const k in liveprops) {
+		let val = liveprops[k];
 		if (nundef(val)) {
 			//console.log('k', k, 'item', item, 'props', props);
 			continue;
@@ -2377,6 +2414,7 @@ function iAdd(item, props) {
 			lookupAddIfToList(val, ['memberOf'], id);
 		}
 	}
+	if (isdef(addprops)) copyKeys(addprops, item);
 	return item;
 }
 function iDiv(i) { return isdef(i.live) ? i.live.div : isdef(i.div) ? i.div : i; }
@@ -4849,6 +4887,19 @@ function toDegree(rad) { return Math.floor(180 * rad / Math.PI); }
 
 //#endregion
 
+//#region math (lerp, clamp,...)
+function convert_to_range(x, min1, max1, min2, max2) {
+	//returns x E [min1,max1] abgebildet auf [min2,max2]
+	return (x - min1) * ((max2 - min2) / (max1 - min1)) + min2;
+}
+function map_range(x, min1, max1, min2, max2) { return convert_to_range(x, min1, max1, min2, max2); }
+function clamp(x, min, max) { return Math.min(Math.max(x, min), max); }
+function cycle(x, min, max) { let d = max - min; return (x - min) % d + min; }
+function lerp(a, b, t) { return a + (b - a) * t; } //a + yb - ta = a(1-t) + bt stimmt!
+//function lerp(v0, v1, t) {	return v0*(1-t)+v1*t; } //same
+
+//#endregion
+
 //#region keys.js
 //prep key sets at start of prog
 function getKeySets() {
@@ -5135,6 +5186,65 @@ function rNumber(min = 0, max = 100) {
 	return Math.floor(Math.random() * (max - min + 1)) + min; //min and max inclusive!
 }
 function rPassword(n) { return rChoose(toLetters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!.?*&%$#@:;_'), n).join(''); }
+function rPerlin(x, y = 0, z = 0) {
+	if (Perlin.perlin == null) {
+		Perlin.perlin = new Array(Perlin.PERLIN_SIZE + 1);
+		for (let i = 0; i < Perlin.PERLIN_SIZE + 1; i++) {
+			Perlin.perlin[i] = Math.random();
+		}
+	}
+
+	if (x < 0) { x = -x; }
+	if (y < 0) { y = -y; }
+	if (z < 0) { z = -z; }
+
+	let xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+	let xf = x - xi;
+	let yf = y - yi;
+	let zf = z - zi;
+	let rxf, ryf;
+
+	let r = 0;
+	let ampl = 0.5;
+
+	let n1, n2, n3;
+
+	for (let o = 0; o < Perlin.perlin_octaves; o++) {
+		let of = xi + (yi << Perlin.PERLIN_YWRAPB) + (zi << Perlin.PERLIN_ZWRAPB);
+
+		rxf = Perlin.scaled_cosine(xf);
+		ryf = Perlin.scaled_cosine(yf);
+
+		n1 = Perlin.perlin[of & Perlin.PERLIN_SIZE];
+		n1 += rxf * (Perlin.perlin[(of + 1) & Perlin.PERLIN_SIZE] - n1);
+		n2 = Perlin.perlin[(of + Perlin.PERLIN_YWRAP) & Perlin.PERLIN_SIZE];
+		n2 += rxf * (Perlin.perlin[(of + Perlin.PERLIN_YWRAP + 1) & Perlin.PERLIN_SIZE] - n2);
+		n1 += ryf * (n2 - n1);
+
+		of += Perlin.PERLIN_ZWRAP;
+		n2 = Perlin.perlin[of & Perlin.PERLIN_SIZE];
+		n2 += rxf * (Perlin.perlin[(of + 1) & Perlin.PERLIN_SIZE] - n2);
+		n3 = Perlin.perlin[(of + Perlin.PERLIN_YWRAP) & Perlin.PERLIN_SIZE];
+		n3 += rxf * (Perlin.perlin[(of + Perlin.PERLIN_YWRAP + 1) & Perlin.PERLIN_SIZE] - n3);
+		n2 += ryf * (n3 - n2);
+
+		n1 += Perlin.scaled_cosine(zf) * (n2 - n1);
+
+		r += n1 * ampl;
+		ampl *= Perlin.perlin_amp_falloff;
+		xi <<= 1;
+		xf *= 2;
+		yi <<= 1;
+		yf *= 2;
+		zi <<= 1;
+		zf *= 2;
+
+		if (xf >= 1.0) { xi++; xf--; }
+		if (yf >= 1.0) { yi++; yf--; }
+		if (zf >= 1.0) { zi++; zf--; }
+	}
+	return r;
+};
 function rPrimaryColor() { let c = '#' + rChoose(['ff', '00']) + rChoose(['ff', '00']); c += c == '#0000' ? 'ff' : c == '#ffff' ? '00' : rChoose(['ff', '00']); return c; }
 function rWheel(n = 1, hue = null, sat = 100, bri = 50) {
 	let d = 360 / n;
@@ -5874,8 +5984,12 @@ async function load_config_new() {
 		Config.apps[k].data = data[k];
 	}
 }
-async function load_db() {
-	DB = await route_path_yaml_dict('../y/db.yaml');
+async function load_db() { DB = await route_path_yaml_dict('../y/db.yaml'); }
+async function load_codebase() { 
+	let base = await route_path_text('../basejs/basemin.js'); 
+	//jetzt brauch ich alle functions in dem code und alle globals
+	let functions = DA.functions = parse_functions(base);
+
 }
 async function load_syms(path) {
 	//sollten in base/assets/allSyms.yaml sein!
@@ -5959,6 +6073,14 @@ function oscillate_between(x, min, max, step) {
 	if (x <= min || x >= max) step = -step;
 
 	return [x, step];
+}
+function posToPoint(pos = 'cc', w, h, offx = 0, offy = 0) {
+	let di = { t: 0, b: h, l: 0, r: w };
+	//console.log('pos',pos)
+	let py = pos[0] == 'c' ? h / 2 : di[pos[0]];
+	let px = pos[1] == 'c' ? w / 2 : di[pos[1]];
+	//console.log('px',px)
+	return [px + offx, py + offy];
 }
 function post_json(url, o, callback) {
 	//usage: post_json('http://localhost:3000/post/json',o,r=>console.log('resp',r);
@@ -6341,8 +6463,6 @@ function intersection(arr1, arr2) {
 	}
 	return res;
 }
-function lerp(a, b, t) { return a + (b - a) * t; } //a + yb - ta = a(1-t) + bt stimmt!
-//function lerp(v0, v1, t) {	return v0*(1-t)+v1*t; } //same
 function mFlip(card, ms, callback) {
 	let a = mAnimate(iDiv(card), 'transform', [`scale(1,1)`, `scale(0,1)`],
 		() => {
@@ -6410,11 +6530,11 @@ function simpleCompare(o1, o2) {
 }
 function get_now() { return Date.now(); }
 function get_timestamp() { return Date.now(); }
+function doit(secs, f, interval) {
+	if (get_now() - DA.start < secs * 1000) setTimeout(() => { f(); doit(secs, f, interval); }, interval);
+	else console.log('DONE!!!');
+}
 function run_for_seconds(secs, f, interval = 50) {
-	function doit(secs, f, interval) {
-		if (get_now() - DA.start < secs * 1000) setTimeout(() => { f(); doit(secs, f, interval); }, interval);
-		else console.log('DONE!!!');
-	}
 	DA.start = get_now(); doit(secs, f, interval);
 }
 
@@ -6432,10 +6552,10 @@ function db_readall(db) {
 	if (!db) { db = DB; }
 	return db;
 }
-function db_update(table, i, rec, save=false) {
+function db_update(table, i, rec, save = false) {
 	//if (!db) { db = DB; }
-	if (isdef(DB)) { let list = lookup(DB, ['appdata',table]); list[i] = rec; }
-	if (NODEJS) post_json(SERVERURL + `/update`, { table: table, i: i, rec: rec, save:save }, () => console.log('updated db'));
+	if (isdef(DB)) { let list = lookup(DB, ['appdata', table]); list[i] = rec; }
+	if (NODEJS) post_json(SERVERURL + `/update`, { table: table, i: i, rec: rec, save: save }, () => console.log('updated db'));
 	//return db;
 }
 function db_delete(table, i, db) {

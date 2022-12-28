@@ -160,6 +160,13 @@ games:
         rows: 6
     winnerslist: []
 apps:
+  book:
+    friendly: Book
+    logo: green book
+    color: tomato
+    options:
+      nplayers: 2,3,4
+    name: book
   fitbit:
     friendly: Fitbit
     logo: cartwheeling
@@ -204,6 +211,13 @@ apps:
       nplayers: 2,3,4
     name: magic
 appdata:
+  book:
+  - id: cs
+    title: Intro to CS
+    pages: 4
+  - id: animals
+    title: animals
+    pages: 1
   fitbit:
     - d: 13.12.22
       steps: 31
@@ -229,6 +243,12 @@ appdata:
       steps: 12
     - d: 24.12.22
       steps: 13
+    - d: 25.12.22
+      steps: 14
+    - d: 26.12.22
+      steps: 13
+    - d: 27.12.22
+      steps: 24
   howto:
     - kw: k92
       c: hallo92

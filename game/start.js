@@ -13,7 +13,12 @@ async function start() {
 
 	await load_syms(); // jetzt gibt es Syms SymKeys ByGroupSubgroup Info KeySets
 	await load_db(); console.log("DB", DB); //jetzt gibt es DB
+	await load_codebase(); //return;  //console.log('codebase',DA.codebase); return
 	timit.show();
+
+	test4_intelli();
+
+
 
 	//#region db tests
 	//was ist wenn ich jetzt DB modifyen will am server
@@ -46,8 +51,10 @@ async function start() {
 
 	//show_games();
 	//show_apps();
+	// book_open_title('cs');
+	// book_open_page(2)
 
-	test1_p5_init(); //test0_random();
+	//test3_p5_perlin_2d(); //test2_p5_perlin(); //test1_p5_init(); //test0_random();
 
 
 }
