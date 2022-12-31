@@ -4,11 +4,11 @@ var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 
 var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
 var uiActivated = false, Selected, Turn, Prevturn;
 var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
-var dBottom, dCenter, dContent, dFooter, dHeader, dLeft, dMap, dMenu, dMessage, dPage, dPuppet, dRight, dSidebar, dTable, dTop; //, dTitle; //, dUsers, dGames, dTables, dLogo, dLoggedIn, dPlayerNames, dInstruction, dError, dMessage, dStatus, dTableName, dGameControls, dUserControls, dMoveControls, dSubmitMove, dPlayerStats;
+var dBottom, dButtons, dCenter, dCode, dContent, dFooter, dHeader, dLeft, dMap, dMenu, dMessage, dPage, dPuppet, dRight, dSidebar, dTable, dTop; //, dTitle; //, dUsers, dGames, dTables, dLogo, dLoggedIn, dPlayerNames, dInstruction, dError, dMessage, dStatus, dTableName, dGameControls, dUserControls, dMoveControls, dSubmitMove, dPlayerStats;
 var Config, Syms, SymKeys, ByGroupSubgroup, KeySets, C52, Cinno, C52Cards;
 var FORCE_REDRAW = false, TESTING = false;
 var ColorThiefObject, SelectedItem, SelectedColor;
-var FR = 50, CX, CV;
+var FR = 50, CX, CV, AU = {};
 
 //#endregion
 //#region color const
@@ -821,7 +821,7 @@ function mCanvas(dParent, styles = {}, bstyles = {}, play = null, pause = null, 
 	addKeys({ fz: 28, fg: 'skyblue', display: 'flex', ajcenter: true, w: styles.w }, bstyles)
 	let controls = mPlayPause(dParent, bstyles, play, pause);
 
-	return { cv: cv, cx: cx, origin: { x: x, y: y }, x: 0, y: 0, w: w, h: h, div: controls.button, play: controls.play, pause: controls.pause };
+	return { cv: cv, cx: cx, origin: { x: x, y: y }, x: 0, y: 0, w: w, h: h, div: controls.ui, play: controls.play, pause: controls.pause, stop: controls.play, stop: controls.pause };
 
 }
 function mCardButton(caption, handler, dParent, styles, classtr = '', id = null) {
@@ -1343,14 +1343,14 @@ function mPlayPause(dParent, styles = {}, handle_play = null, handle_pause = nul
 	//let fname = isdef(handler) ? handler.name : 'audio_onclick_pp';
 	//console.log('fname', fname);
 	let html = `
-		<section id="dButtons">
+		<div id="dButtons">
 			<a id="bPlay" href="#">
 				<i class="fa fa-play fa-2x"></i>
 			</a>
 			<a id="bPause" href="#" style="display: none">
 				<i class="fa fa-pause fa-2x"></i>
 			</a>
-		</section>
+		</div>
 	`;
 	let pp = mCreateFrom(html);
 	mAppend(dParent, pp);
@@ -4688,7 +4688,7 @@ function fleetingMessage(msg, d, styles, ms, fade) {
 }
 //#endregion fleetingMessage
 
-//#region functions
+//#region funcs
 function getFunctionCallerName() {
 	// gets the text between whitespace for second part of stacktrace
 	return new Error().stack.match(/at (\S+)/g)[1].slice(3);
@@ -4887,19 +4887,6 @@ function toDegree(rad) { return Math.floor(180 * rad / Math.PI); }
 
 //#endregion
 
-//#region math (lerp, clamp,...)
-function convert_to_range(x, min1, max1, min2, max2) {
-	//returns x E [min1,max1] abgebildet auf [min2,max2]
-	return (x - min1) * ((max2 - min2) / (max1 - min1)) + min2;
-}
-function map_range(x, min1, max1, min2, max2) { return convert_to_range(x, min1, max1, min2, max2); }
-function clamp(x, min, max) { return Math.min(Math.max(x, min), max); }
-function cycle(x, min, max) { let d = max - min; return (x - min) % d + min; }
-function lerp(a, b, t) { return a + (b - a) * t; } //a + yb - ta = a(1-t) + bt stimmt!
-//function lerp(v0, v1, t) {	return v0*(1-t)+v1*t; } //same
-
-//#endregion
-
 //#region keys.js
 //prep key sets at start of prog
 function getKeySets() {
@@ -5090,6 +5077,19 @@ function setKeys({ allowDuplicates, nMin = 25, lang, key, keySets, filterFunc, p
 
 //#endregion
 
+//#region math (lerp, clamp,...)
+function convert_to_range(x, min1, max1, min2, max2) {
+	//returns x E [min1,max1] abgebildet auf [min2,max2]
+	return (x - min1) * ((max2 - min2) / (max1 - min1)) + min2;
+}
+function map_range(x, min1, max1, min2, max2) { return convert_to_range(x, min1, max1, min2, max2); }
+function clamp(x, min, max) { return Math.min(Math.max(x, min), max); }
+function cycle(x, min, max) { let d = max - min; return (x - min) % d + min; }
+function lerp(a, b, t) { return a + (b - a) * t; } //a + yb - ta = a(1-t) + bt stimmt!
+//function lerp(v0, v1, t) {	return v0*(1-t)+v1*t; } //same
+
+//#endregion
+
 //#region random
 function choose(arr, n, excepti) { return rChoose(arr, n, null, excepti); }
 function chooseRandom(arr) { return rChoose(arr); }
@@ -5260,7 +5260,7 @@ function rWheel(n = 1, hue = null, sat = 100, bri = 50) {
 }
 //#endregion
 
-//#region string functions
+//#region string funcs
 function allNumbers(s) {
 	//returns array of all numbers within string s
 	let m = s.match(/\-.\d+|\-\d+|\.\d+|\d+\.\d+|\d+\b|\d+(?=\w)/g);
@@ -5270,6 +5270,12 @@ function allNumbers(s) {
 function capitalize(s) {
 	if (typeof s !== 'string') return '';
 	return s.charAt(0).toUpperCase() + s.slice(1);
+}
+function cap_each_word(s) {
+	let arr = s.split(' ');
+	let res = '';
+	for (const a of arr) { res += capitalize(a) + ' '; }
+	return res.slice(0, -1);
 }
 function contains(s, sSub) { return s.toLowerCase().includes(sSub.toLowerCase()); }
 function endsWith(s, sSub) { let i = s.indexOf(sSub); return i >= 0 && i == s.length - sSub.length; }
@@ -5985,10 +5991,56 @@ async function load_config_new() {
 	}
 }
 async function load_db() { DB = await route_path_yaml_dict('../y/db.yaml'); }
-async function load_codebase() { 
-	let base = await route_path_text('../basejs/basemin.js'); 
-	//jetzt brauch ich alle functions in dem code und alle globals
-	let functions = DA.functions = parse_functions(base);
+async function load_codebase() {
+	function parse_funcs(code) {
+		let res = {};
+		let cfunctions = 'function ' + stringAfter(code, 'function '); //jump to first function def
+		let fbodies = cfunctions.split('function').map(x => x.trim());
+		//console.log('fbodies',fbodies);
+		for (const f of fbodies) {
+			let name = stringBefore(f, '(');
+			if (isEmpty(name)) continue;
+			let params = stringBefore(stringAfter(f, '('), ')');
+			let firstline = stringBefore(stringAfter(f, '{'), '\n');
+			let body = stringBefore(stringAfter(f, '{'), '}');
+			res[name.trim()] = { name: name, params: params, firstline: firstline, body: body };
+		}
+	
+		//console.log('functions', res); //get_keys(res));
+		return res;
+	
+	}
+	function parse_consts(code) {
+		let res = {};
+		//split code into lines
+		let lines = code.split('\n');
+		//console.log('lines',lines);
+		for(const line of lines){
+			if (startsWith(line,'const')){
+				//console.log('line',line);
+				let c=stringBefore(stringAfter(line,'const'),'=').trim();
+				res[c]=c;
+			}
+		}
+		return res;
+	}
+	
+	let dif={},dic={};
+	let paths = ['basemin','board','cards','gamehelpers', 'select'].map(f=>`../basejs/${f}.js`);
+	paths.push(`../game/done.js`);
+	for(const f of paths){ //} ['basemin','board','cards','gamehelpers', 'select']){
+		let base = await route_path_text(f); //`../basejs/${f}.js`);
+		let dinew = parse_funcs(base);
+		addKeys(dinew,dif);
+		let dicnew = parse_consts(base);
+		addKeys(dicnew,dic);
+	}
+	DA.funcs = dif;
+	DA.consts = dic;
+
+	//old code
+	//let base = await route_path_text('../basejs/basemin.js');
+	//DA.funcs = parse_funcs(base);
 
 }
 async function load_syms(path) {
@@ -6569,7 +6621,7 @@ function db_save_client(IP = 'localhost', port = 3000) {
 
 //#endregion
 
-//#region functions to be used in node.js:
+//#region funcs to be used in node.js:
 // if (this && typeof module == "object" && module.exports && this === module.exports) {
 // 	module.exports = {
 // 		allNumbers, arrTake, arrNoDuplicates, arrMin, arrMax, arrMinus,

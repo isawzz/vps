@@ -71,13 +71,11 @@
 
 		// Default textarea styles
 		style.whiteSpace = 'pre-wrap';
-		if (!isInput)
-			style.wordWrap = 'break-word';  // only for textarea-s
+		if (!isInput) style.wordWrap = 'break-word';  // only for textarea-s
 
 		// Position off-screen
 		style.position = 'absolute';  // required to return coordinates properly
-		if (!debug)
-			style.visibility = 'hidden';  // not 'display: none' because we want rendering
+		if (!debug) style.visibility = 'hidden';  // not 'display: none' because we want rendering
 
 		// Transfer the element's properties to the div
 		properties.forEach(function (prop) {

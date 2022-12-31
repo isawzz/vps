@@ -88,8 +88,8 @@ function show_game_options_menu(gamename) {
 	show_game_options(dOptions, gamename);
 
 	//button start and cancel
-	let astart = maButton('Start', start_game, dButtons); // mLink("javascript:void(0)", dButtons, {}, null, 'Start', 'a');
-	let acancel = maButton('Cancel', cancel_game, dButtons); // mLink("javascript:void(0)", dButtons, {}, null, 'Cancel', 'a');',startgame,dButtons);
+	let astart = maButton('Start', start_game, dButtons); 
+	let acancel = maButton('Cancel', cancel_game, dButtons); 
 }
 function show_game_options(dParent, gamename) {
 	DA.gamename = gamename;

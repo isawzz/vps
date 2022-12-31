@@ -1,6 +1,6 @@
-onload = start;
+onload = _start;
 
-async function start() {
+async function _start() {
 	let timit = new TimeIt('* using timit *');
 	set_run_state(); //vps und multiclients mit sockets sein? set_run_state(false,true,3000,false,false,false,true);
 
@@ -9,14 +9,13 @@ async function start() {
 	// 2. db_update koennte fuer admin updates true, sonst false haben, oder irgendwie so (anfang von move: true, sonst: false)
 	// 3. bei SINGLECLIENT kann auch nur wenn window deactivated wird saven
 	// 4. or, uebernaechste line: when any client closes browser, save db at server
-	onpagedeactivated(db_save_client);
+	onpagedeactivated(()=>{db_save_client();if (isdef(AU.ta)) localStorage.setItem('code',AU.ta.value);});
 
 	await load_syms(); // jetzt gibt es Syms SymKeys ByGroupSubgroup Info KeySets
-	await load_db(); console.log("DB", DB); //jetzt gibt es DB
+	await load_db(); //console.log("DB", DB); //jetzt gibt es DB
 	await load_codebase(); //return;  //console.log('codebase',DA.codebase); return
-	timit.show();
+	//timit.show();
 
-	test4_intelli();
 
 
 
@@ -51,8 +50,12 @@ async function start() {
 
 	//show_games();
 	//show_apps();
-	// book_open_title('cs');
-	// book_open_page(2)
+	book_open_title('cs');
+	book_open_page(2);
+	setTimeout(show_ids,100);
+
+	//test4_intelli();
+
 
 	//test3_p5_perlin_2d(); //test2_p5_perlin(); //test1_p5_init(); //test0_random();
 
