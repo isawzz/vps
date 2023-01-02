@@ -821,7 +821,7 @@ function mCanvas(dParent, styles = {}, bstyles = {}, play = null, pause = null, 
 	addKeys({ fz: 28, fg: 'skyblue', display: 'flex', ajcenter: true, w: styles.w }, bstyles)
 	let controls = mPlayPause(dParent, bstyles, play, pause);
 
-	return { cv: cv, cx: cx, origin: { x: x, y: y }, x: 0, y: 0, w: w, h: h, div: controls.ui, play: controls.play, pause: controls.pause, stop: controls.play, stop: controls.pause };
+	return { cv: cv, cx: cx, origin: { x: x, y: y }, x: 0, y: 0, w: w, h: h, controls: controls.ui, play: controls.play, pause: controls.pause, stop: controls.play, stop: controls.pause };
 
 }
 function mCardButton(caption, handler, dParent, styles, classtr = '', id = null) {
@@ -1675,10 +1675,8 @@ function mGetStyle(elem, prop) {
 	if (val.endsWith('px')) return firstNumber(val); else return val;
 }
 function mStyle(elem, styles, unit = 'px') {
-	//if (styles.bg == '#00000000') console.log('mStyle',getFunctionsNameThatCalledThisFunction(), styles.bg,styles.fg)
 	elem = toElem(elem);
 
-	//console.log(':::::::::styles',styles)
 	let bg, fg;
 	if (isdef(styles.bg) || isdef(styles.fg)) {
 		[bg, fg] = colorsFromBFA(styles.bg, styles.fg, styles.alpha);
@@ -1693,24 +1691,17 @@ function mStyle(elem, styles, unit = 'px') {
 		styles.margin = valf(styles.vmargin, 0) + unit + ' ' + valf(styles.hmargin, 0) + unit;
 		//console.log('::::::::::::::', styles.vpadding, styles.hpadding)
 	}
-	if (isdef(styles.upperRounding)) {
+	if (isdef(styles.upperRounding) || isdef(styles.lowerRounding)) {
 		let rtop = '' + valf(styles.upperRounding, 0) + unit;
-		let rbot = '0' + unit;
-		styles['border-radius'] = rtop + ' ' + rtop + ' ' + rbot + ' ' + rbot;
-	} else if (isdef(styles.lowerRounding)) {
 		let rbot = '' + valf(styles.lowerRounding, 0) + unit;
-		let rtop = '0' + unit;
 		styles['border-radius'] = rtop + ' ' + rtop + ' ' + rbot + ' ' + rbot;
 	}
-
 	if (isdef(styles.box)) styles['box-sizing'] = 'border-box';
-	//console.log(styles.bg,styles.fg);
+	if (isdef(styles.round)) styles['border-radius'] = '50%';
 
 	for (const k in styles) {
-		//if (k=='textShadowColor' || k=='contrast') continue; //meaningless styles => TBD
 		let val = styles[k];
 		let key = k;
-		//console.log('key',key)
 		if (isdef(STYLE_PARAMS[k])) key = STYLE_PARAMS[k];
 		else if (k == 'font' && !isString(val)) {
 			//font would be specified as an object w/ size,family,variant,bold,italic
@@ -1783,9 +1774,6 @@ function mStyle(elem, styles, unit = 'px') {
 			elem.style.setProperty('place-content', 'center');
 		}
 
-		//console.log(key,val,isNaN(val));if (isNaN(val) && key!='font-size') continue;
-		//if (k == 'bg') console.log('style', k, key, val, bg)
-
 		if (key == 'font-weight') { elem.style.setProperty(key, val); continue; }
 		else if (key == 'background-color') elem.style.background = bg;
 		else if (key == 'color') elem.style.color = fg;
@@ -1817,134 +1805,6 @@ function mStyleRemove(elem, prop) {
 	elem.style.removeProperty(prop);
 }
 
-function mStyle(elem, styles, unit = 'px') {
-
-	elem = toElem(elem);
-	let bg, fg;
-	if (isdef(styles.bg) || isdef(styles.fg)) {
-		[bg, fg] = colorsFromBFA(styles.bg, styles.fg, styles.alpha);
-	}
-	if (isdef(styles.upperRounding) || isdef(styles.lowerRounding)) {
-		let rtop = '' + valf(styles.upperRounding, 0) + unit;
-		let rbot = '' + valf(styles.lowerRounding, 0) + unit;
-		styles['border-radius'] = rtop + ' ' + rtop + ' ' + rbot + ' ' + rbot;
-	}
-	if (isdef(styles.box)) styles['box-sizing'] = 'border-box';
-	if (isdef(styles.round)) styles['border-radius'] = '50%';
-
-	for (const k in styles) {
-		let val = styles[k];
-		if (k == 'vmargin') styles.mabottom = styles.matop = val;
-		else if (k == 'hmargin') styles.maleft = styles.maright = val;
-		else if (k == 'vpadding') styles.pabottom = styles.patop = val;
-		else if (k == 'hpadding') styles.paleft = styles.paright = val;
-	}
-
-	for (const k in styles) {
-		let val = styles[k];
-		let key = k;
-		//console.log('key',key)
-		if (isdef(STYLE_PARAMS[k])) key = STYLE_PARAMS[k];
-		else if (k == 'font' && !isString(val)) {
-			//font would be specified as an object w/ size,family,variant,bold,italic
-			// NOTE: size and family MUST be present!!!!!!! in order to use font param!!!!
-			let fz = f.size; if (isNumber(fz)) fz = '' + fz + 'px';
-			let ff = f.family;
-			let fv = f.variant;
-			let fw = isdef(f.bold) ? 'bold' : isdef(f.light) ? 'light' : f.weight;
-			let fs = isdef(f.italic) ? 'italic' : f.style;
-			if (nundef(fz) || nundef(ff)) return null;
-			let s = fz + ' ' + ff;
-			if (isdef(fw)) s = fw + ' ' + s;
-			if (isdef(fv)) s = fv + ' ' + s;
-			if (isdef(fs)) s = fs + ' ' + s;
-			elem.style.setProperty(k, s);
-			continue;
-		} else if (k.toLowerCase() == 'classname') {
-			mClass(elem, styles[k]);
-		} else if (k == 'border') {
-			//console.log('________________________YES!')
-			if (isNumber(val)) val = `solid ${val}px ${isdef(styles.fg) ? styles.fg : '#ffffff80'}`;
-			if (val.indexOf(' ') < 0) val = 'solid 1px ' + val;
-		} else if (k == 'ajcenter') {
-			elem.style.setProperty('justify-content', 'center');
-			elem.style.setProperty('align-items', 'center');
-		} else if (k == 'layout') {
-			if (val[0] == 'f') {
-				//console.log('sssssssssssssssssssssssssssssssssssssssssssss')
-				val = val.slice(1);
-				elem.style.setProperty('display', 'flex');
-				elem.style.setProperty('flex-wrap', 'wrap');
-				let hor, vert;
-				if (val.length == 1) hor = vert = 'center';
-				else {
-					let di = { c: 'center', s: 'start', e: 'end' };
-					hor = di[val[1]];
-					vert = di[val[2]];
-
-				}
-				let justStyle = val[0] == 'v' ? vert : hor;
-				let alignStyle = val[0] == 'v' ? hor : vert;
-				elem.style.setProperty('justify-content', justStyle);
-				elem.style.setProperty('align-items', alignStyle);
-				switch (val[0]) {
-					case 'v': elem.style.setProperty('flex-direction', 'column'); break;
-					case 'h': elem.style.setProperty('flex-direction', 'row'); break;
-				}
-			} else if (val[0] == 'g') {
-				//layout:'g_15_240' 15 columns, each col 240 pixels wide
-				//console.log('sssssssssssssssssssssssssssssssssssssssssssss')
-				val = val.slice(1);
-				elem.style.setProperty('display', 'grid');
-				let n = allNumbers(val);
-				let cols = n[0];
-				let w = n.length > 1 ? '' + n[1] + 'px' : 'auto';
-				elem.style.setProperty('grid-template-columns', `repeat(${cols}, ${w})`);
-				elem.style.setProperty('place-content', 'center');
-			}
-		} else if (k == 'layflex') {
-			elem.style.setProperty('display', 'flex');
-			elem.style.setProperty('flex', '0 1 auto');
-			elem.style.setProperty('flex-wrap', 'wrap');
-			if (val == 'v') { elem.style.setProperty('writing-mode', 'vertical-lr'); }
-		} else if (k == 'laygrid') {
-			elem.style.setProperty('display', 'grid');
-			let n = allNumbers(val);
-			let cols = n[0];
-			let w = n.length > 1 ? '' + n[1] + 'px' : 'auto';
-			elem.style.setProperty('grid-template-columns', `repeat(${cols}, ${w})`);
-			elem.style.setProperty('place-content', 'center');
-		}
-
-		//console.log(key,val,isNaN(val));if (isNaN(val) && key!='font-size') continue;
-		//if (k == 'bg') console.log('style', k, key, val, bg)
-
-		if (key == 'font-weight') { elem.style.setProperty(key, val); continue; }
-		else if (key == 'background-color') elem.style.background = bg;
-		else if (key == 'color') elem.style.color = fg;
-		else if (key == 'opacity') elem.style.opacity = val;
-		else if (key == 'wrap') elem.style.flexWrap = 'wrap';
-		else if (startsWith(k, 'dir')) {
-			//console.log('.................................................!!!!!!!!!!!!!!!!!!!!!!!')
-			//console.log('val',val);
-			isCol = val[0] == 'c';
-			elem.style.setProperty('flex-direction', 'column'); //flexDirection = isCol ? 'column' : 'row';
-			//in order for this to work, HAVE TO set wmax or hmax!!!!!!!!!!!!!
-			// if (isCol && nundef(styles.hmax)) { //?????????????? WTF??????????????????
-			// 	let rect = getRect(elem.parentNode); //console.log('rect', rect);
-			// 	elem.style.maxHeight = rect.h * .9;
-			// 	elem.style.alignContent = 'start';
-			// } else if (nundef(styles.wmax)) elem.style.maxWidth = '90%';
-		} else if (key == 'flex') {
-			if (isNumber(val)) val = '' + val + ' 1 0%';
-			elem.style.setProperty(key, makeUnitString(val, unit));
-		} else {
-			//console.log('set property',key,makeUnitString(val,unit),val,isNaN(val));
-			//if ()
-			elem.style.setProperty(key, makeUnitString(val, unit));
-		}
-	}
-}
 function mStyleUndo(ui, styles = {}) {
 	for (const k in styles) {
 		let key = valf(STYLE_PARAMS[k], k);
@@ -2393,26 +2253,33 @@ function cStyle_dep(cvx, fill, stroke, wline, cap) {
 
 //#endregion
 
-//#region i prefix
+//#region i prefix DEPRECATED: iAdd, iDiv, iMeasure, iRegister
 function iAdd(item, liveprops, addprops) {
 	let id, l;
-	if (isString(item)) { id = item; item = Items[id]; }
-	else if (nundef(item.id)) { id = item.id = iRegister(item); }
-	else { id = item.id; if (nundef(Items[id])) Items[id] = item; }
+
+	if (isString(item)) { id = item; item = valf(Items[id], {}); }
+
+	//if this is an improperly formatted item, convert!
+	//if (isdef(item.div)) {addKeys({div:item.div},liveprops);delete item.div;}
+
+	let el = valf(liveprops.div, liveprops.ui, iDiv(item), null); //koennte undefined sein!
+	//console.log('el',el,'el.id',el.id)
+
+	//find id or create a new one
+	id = valnwhite(item.id, (el ? el.id : getUID()), getUID());
+	//console.log('id',id)
+
+	item.id = id; if (nundef(Items[id])) Items[id] = item; if (el) el.id = id;
+
 	if (nundef(item.live)) item.live = {};
 	l = item.live;
 	for (const k in liveprops) {
 		let val = liveprops[k];
-		if (nundef(val)) {
-			//console.log('k', k, 'item', item, 'props', props);
-			continue;
-		}
-		l[k] = val;
-		if (k == 'div') val.id = id;
-		if (isdef(val.id) && val.id != id) {
-			//console.log('adding', val.id, 'as member of', id)
-			lookupAddIfToList(val, ['memberOf'], id);
-		}
+		if (nundef(val)) { continue; }
+		l[k] = val; //val is a DOM elem
+
+		//named DOM elems that are NOT the main item elem are tagged as member of that item
+		if (isdef(val.id) && val.id != id) { lookupAddIfToList(val, ['memberOf'], id); }
 	}
 	if (isdef(addprops)) copyKeys(addprops, item);
 	return item;
@@ -2423,6 +2290,65 @@ function iMeasure(item, sizingOptions) {
 	setRect(iDiv(item), valf(sizingOptions, { hgrow: true, wgrow: true }));
 }
 function iRegister(item, id) { let uid = isdef(id) ? id : getUID(); Items[uid] = item; return uid; }
+
+//#endregion
+
+//#region i prefix
+function iReg(item) {
+	
+	iRepair(item);
+	//console.log('item',item);return;
+	//main ui of this item is either iDiv or first elem in live
+	let umain = iDiv(item); if (nundef(umain) && isdef(item.live)) { umain = get_values(item.live)[0]; }
+	//main ui will be labeled with item.id or item.id will be set to main ui.id
+	let id = item.id;
+	if (nundef(id) && umain) {id = valnwhite(umain.id,getUID()); item.id=id;}
+	else if (nundef(id)) {id=getUID(); item.id=id;}
+	else if (umain) umain.id=id;
+
+	if (nundef(Items[id])) Items[id] = item;
+	return item;
+}
+function iRepair(item) {
+	//wenn ich irgendein malformatted item daherbringe, convert all DOM and funcs to id and funcnames
+	let todelete = [];
+	delete item.funcs;
+	for (const k in item) {
+		let val = item[k];
+		if (isDOM(val) || k == 'cx') {
+			//console.log('DOM key',k)
+			//if (isEmptyOrWhiteSpace(val.id)) val.id = getUID();
+			lookupSetOverride(item, ['live', k], val); //kann immer noch  mit iDiv auf main div greifen!
+			todelete.push(k);
+		} else if (typeof val == 'function'){ //} && !lookup(item, ['funcs', k])) {
+			lookupSet(item, ['funcs', k], true);
+		}
+	}
+	//console.log('todelete',todelete)
+	for (const k of todelete) delete item[k];
+	//id the item and add it to Items
+
+	return item;
+}
+function iTrim(item, serialize = true) {
+	//wenn ich irgendein malformatted item daherbringe, convert all DOM and funcs to id and funcnames
+	let todelete = [];
+	for (const k in item) {
+		let val = item[k];
+		if (isDOM(val)) {
+			if (!serialize) { if (isEmptyOrWhiteSpace(val.id)) val.id = getUID(); lookupSetOverride(item, ['live', val.id], val); }
+			todelete.push(k);
+		} else if (typeof val == 'function') {
+			console.log('funcname', val.name);
+			if (serialize) item[k] = val.name;
+			else { lookupSetOverride(item, ['funcs', val.name], val); todelete.push(k); }
+		}
+	}
+	if (serialize) { delete item.live; delete item.funcs };
+	for (const k of todelete) delete item[k];
+	return item;
+}
+
 
 //#endregion
 
@@ -5141,12 +5067,18 @@ function rChoose(arr, n = 1, func = null, exceptIndices = null) {
 
 }
 function randomColor() { return rColor(); }
-function rColor(brightness) {
+function rColor(cbrightness, c2, alpha = null) {
+
+	if (isdef(c2)) {
+		let c = colorMix(cbrightness, c2, rNumber(0, 100));
+		return colorTrans(c, alpha ?? Math.random());
+	}
+
 	//percent (0=black), or dark,bright,medium, or a percentage, where 0 is black and 100 is white
-	if (isdef(brightness)) {
+	if (isdef(cbrightness)) {
 		let hue = rHue();
 		let sat = 100;
-		let b = isNumber(brightness) ? brightness : brightness == 'dark' ? 25 : brightness == 'light' ? 75 : 50;
+		let b = isNumber(cbrightness) ? cbrightness : cbrightness == 'dark' ? 25 : cbrightness == 'light' ? 75 : 50;
 		return colorFromHSL(hue, sat, b);
 	}
 
@@ -5291,6 +5223,25 @@ function firstNumber(s) {
 	return null;
 }
 function germanize(s) { return toUmlaut(s); }
+function indexOfAny(s, list, pos) {
+	let min = 1000000;
+	let match = null;
+	for (const w of list) {
+		let i = s.indexOf(w, pos);
+		if (i >= 0 && i < min) { min = i; match = w; }
+	}
+	return match ? [min, match] : [-1, null];
+}
+function lastIndexOfAny(s, list, pos) {
+	// eg lastIndexOfAny('das ist gut',[' '],4);
+	let min = -1;
+	let match = null;
+	for (const w of list) {
+		let i = s.lastIndexOf(w, pos);
+		if (i >= 0 && i > min) { min = i; match = w; }
+	}
+	return match ? [min, match] : [-1, null];
+}
 function normalize_string(s, sep = '_') {
 	s = s.toLowerCase().trim();
 	let res = '';
@@ -6005,35 +5956,35 @@ async function load_codebase() {
 			let body = stringBefore(stringAfter(f, '{'), '}');
 			res[name.trim()] = { name: name, params: params, firstline: firstline, body: body };
 		}
-	
+
 		//console.log('functions', res); //get_keys(res));
 		return res;
-	
+
 	}
 	function parse_consts(code) {
 		let res = {};
 		//split code into lines
 		let lines = code.split('\n');
 		//console.log('lines',lines);
-		for(const line of lines){
-			if (startsWith(line,'const')){
+		for (const line of lines) {
+			if (startsWith(line, 'const')) {
 				//console.log('line',line);
-				let c=stringBefore(stringAfter(line,'const'),'=').trim();
-				res[c]=c;
+				let c = stringBefore(stringAfter(line, 'const'), '=').trim();
+				res[c] = c;
 			}
 		}
 		return res;
 	}
-	
-	let dif={},dic={};
-	let paths = ['basemin','board','cards','gamehelpers', 'select'].map(f=>`../basejs/${f}.js`);
+
+	let dif = {}, dic = {};
+	let paths = ['basemin', 'board', 'cards', 'gamehelpers', 'select'].map(f => `../basejs/${f}.js`);
 	paths.push(`../game/done.js`);
-	for(const f of paths){ //} ['basemin','board','cards','gamehelpers', 'select']){
+	for (const f of paths) { //} ['basemin','board','cards','gamehelpers', 'select']){
 		let base = await route_path_text(f); //`../basejs/${f}.js`);
 		let dinew = parse_funcs(base);
-		addKeys(dinew,dif);
+		addKeys(dinew, dif);
 		let dicnew = parse_consts(base);
-		addKeys(dicnew,dic);
+		addKeys(dicnew, dic);
 	}
 	DA.funcs = dif;
 	DA.consts = dic;
@@ -6274,6 +6225,7 @@ function show_special_message(msg, stay = false, ms = 3000, delay = 0, styles = 
 	else mFadeRemove(dParent, ms, callback);
 }
 function selectText(el) {
+	if (el instanceof HTMLTextAreaElement) { el.select(); return; }
 	var sel, range;
 	if (window.getSelection && document.createRange) { //Browser compatibility
 		sel = window.getSelection();
@@ -6427,6 +6379,10 @@ function unfocusOnEnter(ev) {
 function _valf(val, def) { return isdef(val) ? val : def; }
 function valf() {
 	for (const arg of arguments) if (isdef(arg)) return arg;
+	return null;
+}
+function valnwhite() {
+	for (const arg of arguments) if (isdef(arg) && !isEmptyOrWhiteSpace(arg)) return arg;
 	return null;
 }
 

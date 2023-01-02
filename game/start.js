@@ -52,7 +52,14 @@ async function _start() {
 	//show_apps();
 	book_open_title('cs');
 	book_open_page(2);
-	setTimeout(show_ids,100);
+
+	//G.canvas.play();
+	//iCollect();
+	//iTag(['div','textarea','canvas','a']);
+	//show_div_ids();
+	console.log('Items',Items)
+
+	//setTimeout(show_div_ids,100);
 
 	//test4_intelli();
 
