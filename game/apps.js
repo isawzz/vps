@@ -72,8 +72,8 @@ function howto_open(item) {
 	mSearch(() => perform_search(DB.appdata.howto), dSearch, {}, 'input');
 }
 function howto_close(item) {
-	mClear('dSearch');
-	mClear('dSearchResult');
+	iClear('dSearch');
+	iClear('dSearchResult');
 }
 
 function perform_search(records) {
@@ -100,7 +100,7 @@ function perform_search(records) {
 
 }
 function show_code_list(dParent, list) {
-	mClear(dParent);
+	iClear(dParent);
 
 	for (const code of list) {
 		let d = mDiv(dParent, { w: '100%' });

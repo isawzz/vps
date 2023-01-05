@@ -59,8 +59,8 @@ function show_div_ids() {
 		//console.log('d.id="' + d.id + '"')
 	}
 }
-function create_fiddle(dParent) {
-	let [ta, buttons, tacon] = create_fiddle_ui(dParent);
+function create_fiddle(dParent,code) {
+	let [ta, buttons, tacon] = create_fiddle_ui(dParent,code);
 	ta.onkeydown = ev => {
 		let k = ev.key;
 		if (k == 'Enter' && AU.selected) ev.preventDefault();
@@ -119,32 +119,35 @@ function create_fiddle(dParent) {
 			//console.log('ELSE!!!!!!!!!')
 		}
 	}
-
-
 }
-function create_fiddle_ui(dParent) {
+function create_fiddle_ui(dParent,code) {
 	mStyle(dParent, { position: 'relative' }); //, align:'center' });
-	let ta = mTextArea(10, 90, dParent, { padding: 20, position: 'relative' }, 'taCode');
+	
+	let chars_per_line = 150;
+	let ta = mTextArea(10, chars_per_line, dParent, { padding: 20, position: 'relative' }, 'taCode');
 	setTimeout(() => ta.autofocus = true, 10);
 	let buttons = mDiv(dParent, { w: getRect(ta).w, align: 'right', maright: 4 }); //align:'right','align-self':'end','justify-self':'end'})
 	let st = { fz: 14 };
 	maButton('RUN (ctl+Enter)', au_run, buttons, st);
 	maButton('LINE (ctl+shft+Enter)', au_run_line, buttons, st);
-	let tacon = mTextArea(3, 90, dParent, { matop: 4, padding: 20, position: 'relative' }, 'taConsole');
+	let tacon = mTextArea(1, chars_per_line, dParent, { matop: 4, hpadding:20, vpadding: 10, position: 'relative' }, 'taConsole');
 	ta.focus();
 	AU.popup = mDiv(dParent, { position: 'absolute', wmin: 100, hmin: 100, hmax: 600, overy: 'auto', bg: 'blue', fg: 'white' });
 	AU.fnames = get_keys(DA.funcs); AU.fnames.sort();
 	AU.ta = ta; AU.tacon = tacon;
 	au_reset();
-	let code = localStorage.getItem('code'); if (nundef(code)) code = `pause();`; AU.ta.value = code;
-
+	if (nundef(code)) {code = localStorage.getItem('code'); if (nundef(code)) code = `pause();`; }
+	else {
+		var tab = RegExp("\\t", "g");
+		code = code.toString().replace(tab,' ');
+	}
+	AU.ta.value = code;
 	return [ta, buttons, tacon];
 }
 function runcode(code) {
 	let x = eval(code);
 	AU.tacon.value = x;
 }
-
 async function sidebar_load(url) {
 	let code = await route_path_text(url);
 	//jetzt brauch ich alle functions in dem code und alle globals
@@ -157,6 +160,7 @@ async function sidebar_load(url) {
 		mDiv(dSidebar, { w: 100 }, null, functions[k].name)
 	}
 }
+
 function test4_intelli() {
 	dTable = dTable = mSection({ position: 'relative' }, 'dTable'); mCenterFlex(dTable);
 	let ta = mTextArea(10, 90, dTable, { padding: 20, position: 'relative' });
@@ -270,53 +274,17 @@ function test4_intelli() {
 	}
 
 }
-
-function startloop() { FR = 30; DA.interval = setInterval(draw_canvases, 1000 / FR) }
-function pauseloop() { clearInterval(DA.interval); }
-function rPosition(o) { return [rNumber(0, o.w), rNumber(0, o.h)]; }
-function rInc(o, prop, min, max) { o[prop] += rNumber(min, max); return o[prop]; }
-function draw_canvases() {
-	//console.log('HAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-	for (const id in Items) {
-		let canvas = Items[id];
-		//console.log('canvas',canvas,canvas.draw)
-		if (isdef(canvas.draw)) canvas.draw(canvas); //else console.log('id', id, 'no draw')
-	}
-}
-function draw_perlin_xy(item) {
-	let [cv,cx]=[item.live.cv,item.live.cx];
-	cClear(cv,cx);
-	item.randx = valf(item.randx, 0) + .01;
-	item.randy = valf(item.randy, 10000) + .02;
-	item.x = map_range(rPerlin(item.randx), 0, 1, -item.w / 2, item.w / 2);
-	item.y = map_range(rPerlin(item.randy), 0, 1, -item.h / 2, item.h / 2);
-	cEllipse(item.x, item.y, 25, 25, { bg: 'white' }, 0, cx);
-}
 function test3_p5_perlin_2d() {
 	dTable = mBy('dTable'); mCenterFlex(dTable);
 	let o = mCanvas(dTable, { w: 600, h: 400 }, {}, startloop, pauseloop, 'cc');
 	iAdd(o, {}, { draw: draw_perlin_xy }); // () => draw_perlin_xy(o) });
 	o.play();
 }
-function draw_perlin_x(item) {
-	let [cv,cx]=[item.live.cv,item.live.cx];
-	cClear(cv,cx);
-	let r = rPerlin(item.x);
-	item.r = map_range(r, 0, 1, -item.w / 2, item.w / 2);
-	cEllipse(item.r, 0, 25, 25, { bg: 'white' }, 0, cx);
-	item.x += .02;
-}
 function test2_p5_perlin() {
 	dTable = mBy('dTable'); mCenterFlex(dTable);
 	let o = mCanvas(dTable, { w: 600, h: 400 }, {}, startloop, pauseloop, 'cc');
 	iAdd(o, {}, { draw: draw_perlin_x }); // () => draw_perlin_x(o) });
 	o.play();
-}
-function draw_random_walk(item) {
-	//console.log('id',item.id,item.x,item.y)
-	let [cv,cx]=[item.live.cv,item.live.cx];
-	cClear(cv,cx);
-	cEllipse(rInc(item, 'x', -2, 2), rInc(item, 'y', -2, 2), 30, 20, { bg: 'blue', fg: 'green' }, 0, cx);
 }
 function test4() { test2(); }
 function test3() { test1(); }

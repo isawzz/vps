@@ -9,7 +9,7 @@ async function _start() {
 	// 2. db_update koennte fuer admin updates true, sonst false haben, oder irgendwie so (anfang von move: true, sonst: false)
 	// 3. bei SINGLECLIENT kann auch nur wenn window deactivated wird saven
 	// 4. or, uebernaechste line: when any client closes browser, save db at server
-	onpagedeactivated(()=>{db_save_client();if (isdef(AU.ta)) localStorage.setItem('code',AU.ta.value);});
+	onpagedeactivated(() => { db_save_client(); if (isdef(AU.ta)) localStorage.setItem('code', AU.ta.value); });
 
 	await load_syms(); // jetzt gibt es Syms SymKeys ByGroupSubgroup Info KeySets
 	await load_db(); //console.log("DB", DB); //jetzt gibt es DB
@@ -35,7 +35,7 @@ async function _start() {
 		let rec = { kw: 'k' + n, c: 'hallo' + (n + i) };
 		db_update('howto', i, rec);
 	}
-	
+
 	//onclick = test_random_update;
 
 	//old code
@@ -49,15 +49,15 @@ async function _start() {
 	//#endregion
 
 	//show_games();
-	//show_apps();
-	book_open_title('cs');
-	book_open_page(2);
+	show_apps();
+	book_open_title('cs', 2);
+	show_fiddle();
 
 	//G.canvas.play();
 	//iCollect();
 	//iTag(['div','textarea','canvas','a']);
 	//show_div_ids();
-	console.log('Items',Items)
+	//console.log('Items', Items)
 
 	//setTimeout(show_div_ids,100);
 

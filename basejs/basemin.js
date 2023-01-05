@@ -4,11 +4,12 @@ var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 
 var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
 var uiActivated = false, Selected, Turn, Prevturn;
 var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
-var dBottom, dButtons, dCenter, dCode, dContent, dFooter, dHeader, dLeft, dMap, dMenu, dMessage, dPage, dPuppet, dRight, dSidebar, dTable, dTop; //, dTitle; //, dUsers, dGames, dTables, dLogo, dLoggedIn, dPlayerNames, dInstruction, dError, dMessage, dStatus, dTableName, dGameControls, dUserControls, dMoveControls, dSubmitMove, dPlayerStats;
+var dBottom, dButtons, dCenter, dCode, dContent, dFiddle, dFooter, dHeader, dLeft, dMap, dMenu, dMessage, dPage, dPuppet;
+var dRight, dSidebar, dTable, dTitle, dTop; //, dTitle; //, dUsers, dGames, dTables, dLogo, dLoggedIn, dPlayerNames, dInstruction, dError, dMessage, dStatus, dTableName, dGameControls, dUserControls, dMoveControls, dSubmitMove, dPlayerStats;
 var Config, Syms, SymKeys, ByGroupSubgroup, KeySets, C52, Cinno, C52Cards;
 var FORCE_REDRAW = false, TESTING = false;
 var ColorThiefObject, SelectedItem, SelectedColor;
-var FR = 50, CX, CV, AU = {};
+var FR = 50, CX, CV, AU = {}, CONTEXT=null;
 
 //#endregion
 //#region color const
@@ -574,6 +575,9 @@ const Perlin = {
 	scaled_cosine: i => 0.5 * (1.0 - Math.cos(i * Math.PI)),
 
 	perlin: null, // will be initialized lazily by noise() or noiseSeed()
+	lastx: 0,
+	speed: 0.02,
+	channels: {},
 
 }
 const SHERIFF = {
@@ -818,6 +822,7 @@ function mCanvas(dParent, styles = {}, bstyles = {}, play = null, pause = null, 
 	if (!play) return { cv: cv, cx: cx, origin: { x: x, y: y }, x: 0, y: 0, w: w, h: h };
 
 	//add the play pause button!
+	mLinebreak(dParent)
 	addKeys({ fz: 28, fg: 'skyblue', display: 'flex', ajcenter: true, w: styles.w }, bstyles)
 	let controls = mPlayPause(dParent, bstyles, play, pause);
 
@@ -2294,9 +2299,31 @@ function iRegister(item, id) { let uid = isdef(id) ? id : getUID(); Items[uid] =
 //#endregion
 
 //#region i prefix
-function iReg(item) {
+function iClear(item){
+	if (isString(item)) {let id=item; if (isdef(Items[id])) item=Items[id]; else item=toElem(id);}
+	let d=iDiv(item);
+	if (isdef(d)) {
+		//console.log('d',d)
+		let desc= Array.from(d.querySelectorAll('[id]:not([id=""])')); //'[id]:not([id]="")');
+		//console.log('elems with id',desc.map(x=>x.id))
+		desc=desc.filter(x=>isdef(Items[x.id]))
+		//console.log('Items with ids',desc.map(x=>x.id));
+		for(const item1 of desc) iDelete(item1.id);
+		mClear(d);
+	}
+}
+function iDelete(id){
+	//TODO: proper Items cleanup!
+	//console.log('deleting Item',id)
+	delete Items[id];
+}
+function iReg(item,liveprops,addprops) {
 	
 	iRepair(item);
+
+	if (isdef(liveprops)) for(const k in liveprops){lookupSetOverride(item,['live',k],liveprops[k])}
+	if (isdef(addprops)) copyKeys(addprops,item);
+
 	//console.log('item',item);return;
 	//main ui of this item is either iDiv or first elem in live
 	let umain = iDiv(item); if (nundef(umain) && isdef(item.live)) { umain = get_values(item.live)[0]; }
@@ -2304,13 +2331,13 @@ function iReg(item) {
 	let id = item.id;
 	if (nundef(id) && umain) {id = valnwhite(umain.id,getUID()); item.id=id;}
 	else if (nundef(id)) {id=getUID(); item.id=id;}
-	else if (umain) umain.id=id;
+	if (umain) {umain.id=id;} //console.log('add id',id,'to',umain.tagName);}
 
 	if (nundef(Items[id])) Items[id] = item;
 	return item;
 }
 function iRepair(item) {
-	//wenn ich irgendein malformatted item daherbringe, convert all DOM and funcs to id and funcnames
+	//for malformatted item: move all DOM props to live and funcs to funcs
 	let todelete = [];
 	delete item.funcs;
 	for (const k in item) {
@@ -5119,6 +5146,7 @@ function rNumber(min = 0, max = 100) {
 }
 function rPassword(n) { return rChoose(toLetters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!.?*&%$#@:;_'), n).join(''); }
 function rPerlin(x, y = 0, z = 0) {
+	Perlin.lastx=x;
 	if (Perlin.perlin == null) {
 		Perlin.perlin = new Array(Perlin.PERLIN_SIZE + 1);
 		for (let i = 0; i < Perlin.PERLIN_SIZE + 1; i++) {

@@ -1,3 +1,15 @@
+function rNoise(min,max,lastx,speed) {
+
+	if (nundef(lastx)) lastx=Perlin.lastx;
+	if (nundef(speed)) speed=Perlin.speed;
+	lastx+=speed;
+
+	//console.log('lastx',lastx)
+	let r01=rPerlin(lastx);
+	//console.log('r01',r01)
+	let n = map_range(r01, 0, 1, min, max);
+	return n;
+}
 function mStyle(elem, styles, unit = 'px') {
 
 	elem = toElem(elem);
@@ -220,7 +232,7 @@ function create_fiddle1(dParent) {
 	let st = { fz: 14 };
 	maButton('RUN (ctl+Enter)', au_run, buttons, st);
 	maButton('LINE (ctl+shft+Enter)', au_run_line, buttons, st);
-	let tacon = mTextArea(3, 90, dParent, { matop: 4, padding: 20, position: 'relative' });
+	let tacon = mTextArea(1, 90, dParent, { matop: 4, padding: 20, position: 'relative' });
 	ta.focus();
 	AU.popup = mDiv(dParent, { position: 'absolute', wmin: 100, hmin: 100, hmax: 600, overy: 'auto', bg: 'blue', fg: 'white' });
 	hide(AU.popup)

@@ -1,4 +1,4 @@
-function clear_all() { for (const id of ['dApps', 'dGames', 'dSearch', 'dTable']) mClear(id); }
+function clear_all() { for (const id of ['dFiddle', 'dMenu', 'dSearch', 'dSearchResult', 'dTable']) iClear(id); console.log('ids',get_keys(Items)) }
 function collect_game_specific_options(game) {
 	let poss = DB.games[game].options;
 	if (nundef(poss)) return;
@@ -27,7 +27,7 @@ function create_random_players(n = 1) {
 function ev_to_gname(ev) { evNoBubble(ev); return evToTargetAttribute(ev, 'gamename'); }
 function generic_present(d, g) {
 
-	let ui = ui_type_ga(g, d); return;
+	let ui = ui_type_tile(g, d); return;
 }
 function get_app_presenter(id) {
 	let di = {};
@@ -36,7 +36,9 @@ function get_app_presenter(id) {
 function show_standard_title(dParent, title) { mText(title, dParent, { margin: 20, fz: 24 }); }
 function show_apps(ms = 500) {
 	let dParent = mBy('dApps');
-	mClear(dParent); 	//transition
+	if (!isEmpty(arrChildren(dParent))) {show(dParent); return;}
+
+	//iClear(dParent); 	//transition
 	//mStyle(dParent, { animation: `wipe-in-bottom-right ${ms}ms` });
 
 	show_standard_title(dParent, 'Apps');
@@ -48,9 +50,13 @@ function show_apps(ms = 500) {
 		//if (gamelist.includes(app.id)) { let f = get_app_presenter(app.id); f(d, app); }
 	}
 }
+function show_fiddle(){
+	let dFiddle = mBy('dFiddle');	iClear(dFiddle); mCenterFlex(dFiddle);	//transition
+	create_fiddle(dFiddle);
+}
 function show_games(ms = 500) {
 	let dParent = mBy('dGames');
-	mClear(dParent);
+	iClear(dParent);
 
 	//transition
 	//mStyle(dParent, { animation: `wipe-in-bottom-right ${ms}ms` })
@@ -73,7 +79,7 @@ function show_games(ms = 500) {
 	}
 }
 function show_game_options_menu(gamename) {
-	let dMenu = mBy('dMenu'); mClear(dMenu);
+	let dMenu = mBy('dMenu'); iClear(dMenu);
 	//dMenu.innerHTML = 'HALLO';return;
 	show_standard_title(dMenu, 'Game Options');
 
@@ -107,8 +113,9 @@ function show_game_options(dParent, gamename) {
 		}
 	}
 }
-function toggle_apps(){		if (isEmpty(mBy('dApps').innerHTML)) show_apps(); else mClear('dApps');}
-function toggle_games(){	if (isEmpty(mBy('dGames').innerHTML)) show_games(); else mClear('dGames');}
+function toggle_apps(){		if (isEmpty(mBy('dApps').innerHTML)) show_apps(); else iClear('dApps');}
+function toggle_fiddle(){		if (isEmpty(mBy('dFiddle').innerHTML)) show_fiddle(); else iClear('dFiddle');}
+function toggle_games(){	if (isEmpty(mBy('dGames').innerHTML)) show_games(); else iClear('dGames');}
 
 
 
@@ -128,7 +135,7 @@ function _start_game(gamename, players, options) {
 	//start game
 }
 
-function cancel_game() { mClear('dMenu'); } //console.log('cancelgame'); }
+function cancel_game() { iClear('dMenu'); } //console.log('cancelgame'); }
 
 
 
