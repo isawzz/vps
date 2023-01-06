@@ -1,6 +1,7 @@
 onload = _start;
-
 async function _start() {
+	//#region prelim timit set_run_state onpagedeactivated load:syms db codebase
+
 	let timit = new TimeIt('* using timit *');
 	set_run_state(); //vps und multiclients mit sockets sein? set_run_state(false,true,3000,false,false,false,true);
 
@@ -14,10 +15,10 @@ async function _start() {
 	await load_syms(); // jetzt gibt es Syms SymKeys ByGroupSubgroup Info KeySets
 	await load_db(); //console.log("DB", DB); //jetzt gibt es DB
 	await load_codebase(); //return;  //console.log('codebase',DA.codebase); return
-	//timit.show();
+	timit.show();
+	//#endregion
 
-
-
+	test6_sidebar(); //test5_prelim();
 
 	//#region db tests
 	//was ist wenn ich jetzt DB modifyen will am server
@@ -47,11 +48,12 @@ async function _start() {
 
 	//let data = await route_path_yaml_dict(`../y/appdata/calendar.yaml`); console.log('data', data)
 	//#endregion
+	//#region other tests
 
 	//show_games();
-	show_apps();
-	book_open_title('cs', 2);
-	show_fiddle();
+	// show_apps();
+	// book_open_title('cs', 2);
+	// show_fiddle();
 
 	//G.canvas.play();
 	//iCollect();
@@ -65,7 +67,7 @@ async function _start() {
 
 
 	//test3_p5_perlin_2d(); //test2_p5_perlin(); //test1_p5_init(); //test0_random();
-
+	//#endregion
 
 }
 

@@ -1,3 +1,4 @@
+//#region action
 function action_open(item) {
 	console.log('HALLO OPEN!!!!!!!!!!!!!!!')
 	let o = { tStart: get_now(), app: 'action' };
@@ -32,6 +33,9 @@ function action_close(item) {
 	//navigator.clipboard.writeText(s); 
 	setTimeout(() => navigator.clipboard.writeText(s), 100)
 }
+//#endregion
+
+//#region book
 function book_open(item) {
 	console.log('BOOK OPEN!!!!!!!!!!!!!!!');
 	let d = iDiv(item);
@@ -43,7 +47,93 @@ function book_open(item) {
 		d1.onclick = () => book_open_title(book.id);
 	}
 }
+function book_blaettern(page){
+	if (DA.currentpage != page && isNumber(DA.currentpage)) mStyleRemove(dFooter.children[DA.currentpage], 'fg');
+	mStyle(dFooter.children[page], { fg: 'yellow' });
+	DA.currentpage = page;
+	dTitle.innerHTML = DA.currentbook.title + ' pg.' + page;
+}
+function book_get(id) { return jsCopy(DB.appdata.book.find(x => x.id == id)); }
+function book_open_title(id,page) {
+	clear_all();
 
+	dTable = mSection({ bg: DB.apps.book.color }, 'dTable', null, null, 'bookgrid');
+
+	let book = DA.currentbook = book_get(id);
+	dTitle = mDiv(dTable, {}, null, book.title)
+	dContent = mDiv(dTable, {}, 'dContent'); mCenterCenterFlex(dContent);
+	dContent.setAttribute('book', id);
+	//mLinebreak(dTable)
+	//dCode = mDiv(dTable, {}, 'dCode'); mCenterFlex(dCode);
+	let footer = dFooter = mDiv(dTable, { align: 'center' });
+	maButton('<', () => book_open_prev_page(), footer);
+	for (const p of range(1, book.pages)) {
+		maButton(p, () => book_open_page(p), footer);
+	}
+	maButton('>', () => book_open_next_page(), footer);
+	book_open_page(valf(page,1));
+}
+function book_open_next_page() {
+	let page = isNumber(DA.currentpage) ? DA.currentpage + 1 : 1;
+	if (page > DA.currentbook.pages) page = 1;
+	book_open_page(page);
+}
+function book_open_prev_page() {
+	let page = isNumber(DA.currentpage) ? DA.currentpage - 1 : DA.currentbook.pages;
+	if (page < 1) page = DA.currentbook.pages;
+	book_open_page(page);
+}
+function book_open_page(page) {
+	pauseloop(); iClear(dContent); //iClear(dCode);
+
+	book_blaettern(page);
+
+	let book = G = book_get(dContent.getAttribute('book'));
+	let func = window[`book_${book.id}_${page}`];
+	let o = G.canvas = func();
+	iReg(o);
+	dButtons = G.canvas.controls;
+
+	addKeys(G, window);	//copyKeys(G.canvas, window); //create_fiddle(dCode,o.draw);
+
+	o.play();
+
+}
+function book_cs_1() {
+	let o = mCanvas(dContent, { w: 600, h: 300 }, {}, startloop, pauseloop, 'cc');
+	o.draw = draw_random_walk;
+	//o.draw = () => draw_random_walk(o);
+	return o;
+}
+function book_cs_2() {
+	let o = mCanvas(dContent, { w: 600, h: 300 }, {}, startloop, pauseloop, 'cc');
+	o.draw = draw_perlin_x;
+	return o;
+}
+function book_cs_3() {
+	let o = mCanvas(dContent, { w: 600, h: 300 }, {}, startloop, pauseloop, 'cc');
+	o.draw = draw_perlin_xy;
+	return o;
+}
+function book_cs_4() { 
+	let o = mCanvas(dContent, { w: 600, h: 300, bg:'transparent' }, {}, startloop, pauseloop, 'cc');
+	o.draw = draw_random_walk;
+	return o;
+}
+function book_animals_1() {
+	//das ist sehr schlecht!!! creating Items that will never be cleaned up!!!!
+	
+	let pics={};
+	for(const k of KeySets.animals){
+		let item = miPic(k,dContent)
+		pics[k]=item;
+	}
+
+	return {pics:pics,play:()=>{}};
+}
+//#endregion
+
+//#region fitbit
 function fitbit_open(item) {
 	console.log('FITBIT OPEN!!!!!!!!!!!!!!!')
 	let d = iDiv(item);
@@ -64,8 +154,9 @@ function fitbit_open(item) {
 	let davg = mDiv(d2, {}, null, `avg: ${avg.toFixed(1)}K`);
 	let dtoday = mDiv(d2, {}, null, `req: ${Math.ceil(req_today)}K`);
 }
-//function fitbit_close(item) {	console.log('fitbit CLOSE!!!!!!!!!!!!!!!');}
+//#endregion
 
+//#region howto
 function howto_open(item) {
 	dSearch = mBy('dSearch');
 	mStyle(dSearch, { bg: item.color });
@@ -110,7 +201,7 @@ function show_code_list(dParent, list) {
 		let dcode = mDiv(d, {}, null, `<textarea rows=${rows} cols=120>${code.c}</textarea>`);
 	}
 }
-
+//#endregion
 
 
 

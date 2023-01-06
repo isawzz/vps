@@ -698,7 +698,7 @@ function mAutocomplete(dParent) {
 		/* inp...input element, arr...array of possible autocompleted values:*/
 		var currentFocus;
 		inp = toElem(inp);
-		inp.addEventListener('input', function (e) { /*execute a function when someone writes in the text field:*/
+		inp.addEventListener('input', function (e) { /*execute a func when someone writes in the text field:*/
 			var a, b, i, val = this.value;		/*close any already open lists of autocompleted values*/
 			closeAllLists();
 			if (!val) { return false; }
@@ -5862,7 +5862,9 @@ function jsClean(o) {
 		return onew;
 	}
 }
+function fromYaml(x){return jsyaml.load(x);}
 function jsonToYaml(o) { let y = jsyaml.dump(o); return y; }
+function toYaml(o){return jsonToYaml(o);}
 function isdef(x) { return x !== null && x !== undefined; }
 function nundef(x) { return x === null || x === undefined; }
 function isAlphaNum(s) { query = /^[a-zA-Z0-9]+$/; return query.test(s); }
@@ -5970,58 +5972,6 @@ async function load_config_new() {
 	}
 }
 async function load_db() { DB = await route_path_yaml_dict('../y/db.yaml'); }
-async function load_codebase() {
-	function parse_funcs(code) {
-		let res = {};
-		let cfunctions = 'function ' + stringAfter(code, 'function '); //jump to first function def
-		let fbodies = cfunctions.split('function').map(x => x.trim());
-		//console.log('fbodies',fbodies);
-		for (const f of fbodies) {
-			let name = stringBefore(f, '(');
-			if (isEmpty(name)) continue;
-			let params = stringBefore(stringAfter(f, '('), ')');
-			let firstline = stringBefore(stringAfter(f, '{'), '\n');
-			let body = stringBefore(stringAfter(f, '{'), '}');
-			res[name.trim()] = { name: name, params: params, firstline: firstline, body: body };
-		}
-
-		//console.log('functions', res); //get_keys(res));
-		return res;
-
-	}
-	function parse_consts(code) {
-		let res = {};
-		//split code into lines
-		let lines = code.split('\n');
-		//console.log('lines',lines);
-		for (const line of lines) {
-			if (startsWith(line, 'const')) {
-				//console.log('line',line);
-				let c = stringBefore(stringAfter(line, 'const'), '=').trim();
-				res[c] = c;
-			}
-		}
-		return res;
-	}
-
-	let dif = {}, dic = {};
-	let paths = ['basemin', 'board', 'cards', 'gamehelpers', 'select'].map(f => `../basejs/${f}.js`);
-	paths.push(`../game/done.js`);
-	for (const f of paths) { //} ['basemin','board','cards','gamehelpers', 'select']){
-		let base = await route_path_text(f); //`../basejs/${f}.js`);
-		let dinew = parse_funcs(base);
-		addKeys(dinew, dif);
-		let dicnew = parse_consts(base);
-		addKeys(dicnew, dic);
-	}
-	DA.funcs = dif;
-	DA.consts = dic;
-
-	//old code
-	//let base = await route_path_text('../basejs/basemin.js');
-	//DA.funcs = parse_funcs(base);
-
-}
 async function load_syms(path) {
 	//sollten in base/assets/allSyms.yaml sein!
 	if (nundef(path)) path = '../base/assets/';

@@ -1,3 +1,40 @@
+
+
+
+
+
+async function sidebar_load(url) {
+	let code = await route_path_text(url);
+	//jetzt brauch ich alle functions in dem code und alle globals
+	let functions = parse_funcs(code);
+	//console.log('functions', functions);
+	let keys = get_keys(functions);
+	keys.sort();
+	//console.log('keys', keys);
+	for (const k of keys) {
+		mDiv(dSidebar, { w: 100 }, null, functions[k].name)
+	}
+}
+
+
+
+
+
+//function fitbit_close(item) {	console.log('fitbit CLOSE!!!!!!!!!!!!!!!');}
+
+
+//#region canvas update
+function update_position_random(item){rPosition(item);}
+function update_position_noise(item){rnPosition(item);}
+//#endregion
+
+//#region canvas draw
+function draw_ellipse(item){}
+//#endregion
+
+
+
+
 function rNoise(min,max,lastx,speed) {
 
 	if (nundef(lastx)) lastx=Perlin.lastx;
