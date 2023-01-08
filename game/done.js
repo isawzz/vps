@@ -185,7 +185,7 @@ function getCaretCoordinates(element, position, options) {
 	if (!debug) style.visibility = 'hidden';  // not 'display: none' because we want rendering
 
 	// Transfer the element's properties to the div
-	properties.forEach(function (prop) {
+	properties.forEach(prop=> {
 		if (isInput && prop === 'lineHeight') {
 			// Special case for <input>s because text is rendered centered and line height may be != height
 			if (computed.boxSizing === "border-box") {

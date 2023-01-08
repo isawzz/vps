@@ -14,7 +14,12 @@ function show_code(ev){
 	show_fiddle(o.body,r,c,{bg:DB.apps.howto.color});
 }
 function download_all_functions(){
-	
+	let s='';
+	for(const k of CODE.index){
+		s+= CODE.funcs[k].body+'\n';
+	}
+	create_fiddle_ui(mBy('dTable'), s, 1000, 120)
+	//downloadAsText(s,'hallo','js');
 }
 
 

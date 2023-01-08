@@ -9,7 +9,7 @@ var dRight, dSidebar, dTable, dTitle, dTop; //, dTitle; //, dUsers, dGames, dTab
 var Config, Syms, SymKeys, ByGroupSubgroup, KeySets, C52, Cinno, C52Cards;
 var FORCE_REDRAW = false, TESTING = false;
 var ColorThiefObject, SelectedItem, SelectedColor;
-var FR = 50, CX, CV, AU = {}, CONTEXT=null;
+var FR = 50, CX, CV, AU = {}, CONTEXT = null;
 
 //#endregion
 
@@ -127,10 +127,10 @@ const BLUFF = {
 
 };
 const CODE = {
-	paths:[],
-	funcs:{},
-	consts:{},
-	index:[],
+	paths: [],
+	funcs: {},
+	consts: {},
+	index: [],
 
 };
 const DIBOA = {
@@ -463,109 +463,109 @@ const Geo = {
 			options: { maxZoom: 22 }
 		},
 		ru: {
-			url: 'https://core-sat.maps.yandex.net/tiles?l=sat&v=3.1025.0&x={x}&y={y}&z={z}&scale=1&lang=ru_RU',
+			url: 'https:/'+'/core-sat.maps.yandex.net/tiles?l=sat&v=3.1025.0&x={x}&y={y}&z={z}&scale=1&lang=ru_RU',
 			options: { minZoom: 0, maxZoom: 19, }
 		},
 
 		//esri
 		satellite: {
-			url: 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-			options: { maxZoom: 19, attribution: '&copy; <a href="http://www.esri.com/">Esri</a>, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community' }
+			url: 'http:/'+'/server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+			options: { maxZoom: 19, attribution: '&copy; <a href="http:/"+"www.esri.com/">Esri</a>, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community' }
 		},
 
 		//google
 		gsatellite: {
-			url: 'http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+			url: 'http:/'+'/{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
 			options: { maxZoom: 22, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'] }
 		},
 		gstreets: {
-			url: 'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+			url: 'http:/'+'/{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
 			options: { maxZoom: 22, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'] }
 		},
 		ghybrid: {
-			url: 'http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',
+			url: 'http:/'+'/{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',
 			options: { maxZoom: 22, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'] }
 		},
 		gterrain: {
-			url: 'http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',
+			url: 'http:/'+'/{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',
 			options: { maxZoom: 22, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'] }
 		},
 
 		//mapbox
 		mbsat: {
-			url: 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
-			options: { attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>', id: 'mapbox/satellite-v9', tileSize: 512, zoomOffset: -1 }
+			url: 'https:/'+'/api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+			options: { attribution: 'Map data &copy; <a href="https:/"+"/www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https:/"+"/www.mapbox.com/">Mapbox</a>', id: 'mapbox/satellite-v9', tileSize: 512, zoomOffset: -1 }
 
 		},
 		mbstreets: {
-			url: 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
-			options: { attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>', id: 'mapbox/streets-v11', tileSize: 512, zoomOffset: -1 }
+			url: 'https:/'+'/api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+			options: { attribution: 'Map data &copy; <a href="https:/"+"/www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https:/"+"/www.mapbox.com/">Mapbox</a>', id: 'mapbox/streets-v11', tileSize: 512, zoomOffset: -1 }
 
 		},
 		mb1: { //NOPE!
-			url: 'https://api.mapbox.com/styles/v1/mapbox-map-design/cl4whev1w002w16s9mgoliotw/static/-90,35,2.5,0/840x464?access_token=pk.eyJ1IjoibWFwYm94LW1hcC1kZXNpZ24iLCJhIjoiY2syeHpiaHlrMDJvODNidDR5azU5NWcwdiJ9.x0uSqSWGXdoFKuHZC5Eo_Q',
-			options: { attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>', tileSize: 512, zoomOffset: -1 }
+			url: 'https:/'+'/api.mapbox.com/styles/v1/mapbox-map-design/cl4whev1w002w16s9mgoliotw/static/-90,35,2.5,0/840x464?access_token=pk.eyJ1IjoibWFwYm94LW1hcC1kZXNpZ24iLCJhIjoiY2syeHpiaHlrMDJvODNidDR5azU5NWcwdiJ9.x0uSqSWGXdoFKuHZC5Eo_Q',
+			options: { attribution: 'Map data &copy; <a href="https:/"+"/www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https:/"+"/www.mapbox.com/">Mapbox</a>', tileSize: 512, zoomOffset: -1 }
 
 		},
 
 		cartolabels: {
-			url: 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
+			url: 'https:/'+'/{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
 			options: {
-				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+				attribution: '&copy; <a href="https:/"+"/www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https:/"+"/carto.com/attributions">CARTO</a>',
 				subdomains: 'abcd',
 				maxZoom: 20
 			}
 		},
 		cartonolabels: {
-			url: 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+			url: 'https:/'+'/{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
 			options: {
-				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+				attribution: '&copy; <a href="https:/"+"/www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https:/"+"/carto.com/attributions">CARTO</a>',
 				subdomains: 'abcd',
 				maxZoom: 20
 			}
 		},
 		cartodark: {
-			url: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
+			url: 'https:/'+'/{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
 			options: {
-				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+				attribution: '&copy; <a href="https:/"+"/www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https:/"+"/carto.com/attributions">CARTO</a>',
 				subdomains: 'abcd',
 				maxZoom: 20
 			}
 		},
 
 		osm: {
-			url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-			options: { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', subdomains: ['a', 'b', 'c'] }
+			url: 'https:/'+'/tile.openstreetmap.org/{z}/{x}/{y}.png',
+			options: { attribution: '&copy; <a href="https:/"+"/www.openstreetmap.org/copyright">OpenStreetMap</a>', subdomains: ['a', 'b', 'c'] }
 		},
 		osmg: {
-			url: 'https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png',
-			options: { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', subdomains: ['a', 'b', 'c'] }
+			url: 'https:/'+'/{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png',
+			options: { attribution: '&copy; <a href="https:/"+"/www.openstreetmap.org/copyright">OpenStreetMap</a>', subdomains: ['a', 'b', 'c'] }
 		},
 
 		//stamen
 		watercolor: {
-			url: 'http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg',
-			options: { attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.', maxZoom: 18, subdomains: 'abcd', }
+			url: 'http:/'+'/{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg',
+			options: { attribution: 'Map tiles by <a href="http:/"+"stamen.com">Stamen Design</a>, under <a href="http:/"+"creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http:/"+"openstreetmap.org">OpenStreetMap</a>, under <a href="http:/"+"creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.', maxZoom: 18, subdomains: 'abcd', }
 		},
 		labels: {
-			url: "http://tile.stamen.com/toner-labels/{z}/{x}/{y}.png",
-			options: { attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.', maxZoom: 18 } //, detectRetina: true,}
+			url: "http:/"+"tile.stamen.com/toner-labels/{z}/{x}/{y}.png",
+			options: { attribution: 'Map tiles by <a href="http:/"+"stamen.com">Stamen Design</a>, under <a href="http:/"+"creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http:/"+"openstreetmap.org">OpenStreetMap</a>, under <a href="http:/"+"www.openstreetmap.org/copyright">ODbL</a>.', maxZoom: 18 } //, detectRetina: true,}
 		},
 		terrain: {
-			url: 'http://{s}.tile.stamen.com/terrain/{z}/{x}/{y}.jpg',
-			options: { attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.', maxZoom: 18, }
+			url: 'http:/'+'/{s}.tile.stamen.com/terrain/{z}/{x}/{y}.jpg',
+			options: { attribution: 'Map tiles by <a href="http:/"+"stamen.com">Stamen Design</a>, under <a href="http:/"+"creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http:/"+"openstreetmap.org">OpenStreetMap</a>, under <a href="http:/"+"creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.', maxZoom: 18, }
 		},
 		terrainbg: {
-			url: 'http://{s}.tile.stamen.com/terrain-background/{z}/{x}/{y}.jpg',
-			options: { attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.', maxZoom: 18, }
+			url: 'http:/'+'/{s}.tile.stamen.com/terrain-background/{z}/{x}/{y}.jpg',
+			options: { attribution: 'Map tiles by <a href="http:/"+"stamen.com">Stamen Design</a>, under <a href="http:/"+"creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http:/"+"openstreetmap.org">OpenStreetMap</a>, under <a href="http:/"+"creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.', maxZoom: 18, }
 		},
 
 
 		topo: {
-			url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+			url: 'https:/'+'/{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
 			options: {
 				maxZoom: 17,
-				attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+				attribution: 'Map data: &copy; <a href="https:/"+"/www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http:/"+"viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https:/"+"/opentopomap.org">OpenTopoMap</a> (<a href="https:/"+"/creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
 			}
 		}
 	},
@@ -696,6 +696,78 @@ function mAnimateList(elem, ogoal, callback, msDuration = 1000, easing = 'cubic-
 	// DA.anim = a; return a;
 }
 function mAppend(d, child) { toElem(d).appendChild(child); return child; }
+//#region autocomplete
+function autocomplete(inp, arr) {
+	/* inp...input element, arr...array of possible autocompleted values:*/
+	var currentFocus;
+	inp = toElem(inp);
+	inp.addEventListener('input', e => { /*execute a func when someone writes in the text field:*/
+		var a, b, i, val = this.value;		/*close any already open lists of autocompleted values*/
+		autocomplete_closeAllLists();
+		if (!val) { return false; }
+		currentFocus = -1;
+		a = document.createElement('DIV'); /*create a DIV element that will contain the items (values):*/
+		a.setAttribute('id', this.id + 'autocomplete-list');
+		a.setAttribute('class', 'autocomplete-items');
+		this.parentNode.appendChild(a); /*append the DIV element as a child of the autocomplete container:*/
+		for (i = 0; i < arr.length; i++) {
+			if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+				b = document.createElement('DIV'); /*create a DIV element for each matching element:*/
+				b.innerHTML = '<strong>' + arr[i].substr(0, val.length) + '</strong>'; /*make the matching letters bold:*/
+				b.innerHTML += arr[i].substr(val.length);
+				b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>"; /*insert a input field that will hold the current array item's value:*/
+				b.addEventListener('click', e => {
+					inp.value = this.getElementsByTagName('input')[0].value; /*insert the value for the autocomplete text field:*/
+					autocomplete_closeAllLists();
+				});
+				a.appendChild(b);
+			}
+		}
+	});
+	inp.addEventListener('keydown', e => {
+		var x = document.getElementById(this.id + 'autocomplete-list');
+		if (x) x = x.getElementsByTagName('div');
+		if (e.keyCode == 40) { // arrow DOWN
+			currentFocus++;
+			autocomplete_addActive(x);
+		} else if (e.keyCode == 38) { //arrow UP
+			currentFocus--;
+			autocomplete_addActive(x);
+		} else if (e.keyCode == 13) { // ENTER
+			e.preventDefault();  // if the ENTER key is pressed, prevent the form from being submitted
+			if (currentFocus > -1) {
+				if (x) x[currentFocus].click(); // simulate a click on the "active" item:
+			}
+		}
+	});
+	inp.addEventListener('dblclick', e => { evNoBubble(e); });
+
+	document.addEventListener('click', e => {
+		autocomplete_closeAllLists(e.target);
+	});
+}
+function autocomplete_addActive(x) {
+	// works with classes from styles.css
+	if (!x) return false;
+	autocomplete_removeActive(x);
+	if (currentFocus >= x.length) currentFocus = 0;
+	if (currentFocus < 0) currentFocus = x.length - 1;
+	x[currentFocus].classList.add('autocomplete-active');
+}
+function autocomplete_removeActive(x) {
+	for (var i = 0; i < x.length; i++) {
+		x[i].classList.remove('autocomplete-active');
+	}
+}
+function autocomplete_closeAllLists(elmnt) {
+	var x = document.getElementsByClassName('autocomplete-items');
+	for (var i = 0; i < x.length; i++) {
+		if (elmnt != x[i] && elmnt != inp) {
+			x[i].parentNode.removeChild(x[i]);
+		}
+	}
+}
+//#endregion
 function mAutocomplete(dParent) {
 	let form = mCreateFrom(`
 		<form class='form' autocomplete="off" action="javascript:void(0);">
@@ -717,77 +789,6 @@ function mAutocomplete(dParent) {
 	}
 	let d = mAppend(dParent, form);
 	//console.log('cities',get_keys(Geo.cities));
-	function autocomplete(inp, arr) {
-		/* inp...input element, arr...array of possible autocompleted values:*/
-		var currentFocus;
-		inp = toElem(inp);
-		inp.addEventListener('input', function (e) { /*execute a func when someone writes in the text field:*/
-			var a, b, i, val = this.value;		/*close any already open lists of autocompleted values*/
-			closeAllLists();
-			if (!val) { return false; }
-			currentFocus = -1;
-			a = document.createElement('DIV'); /*create a DIV element that will contain the items (values):*/
-			a.setAttribute('id', this.id + 'autocomplete-list');
-			a.setAttribute('class', 'autocomplete-items');
-			this.parentNode.appendChild(a); /*append the DIV element as a child of the autocomplete container:*/
-			for (i = 0; i < arr.length; i++) {
-				if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-					b = document.createElement('DIV'); /*create a DIV element for each matching element:*/
-					b.innerHTML = '<strong>' + arr[i].substr(0, val.length) + '</strong>'; /*make the matching letters bold:*/
-					b.innerHTML += arr[i].substr(val.length);
-					b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>"; /*insert a input field that will hold the current array item's value:*/
-					b.addEventListener('click', function (e) {
-						inp.value = this.getElementsByTagName('input')[0].value; /*insert the value for the autocomplete text field:*/
-						closeAllLists();
-					});
-					a.appendChild(b);
-				}
-			}
-		});
-		inp.addEventListener('keydown', function (e) {
-			var x = document.getElementById(this.id + 'autocomplete-list');
-			if (x) x = x.getElementsByTagName('div');
-			if (e.keyCode == 40) { // arrow DOWN
-				currentFocus++;
-				addActive(x);
-			} else if (e.keyCode == 38) { //arrow UP
-				currentFocus--;
-				addActive(x);
-			} else if (e.keyCode == 13) { // ENTER
-				e.preventDefault();  // if the ENTER key is pressed, prevent the form from being submitted
-				if (currentFocus > -1) {
-					if (x) x[currentFocus].click(); // simulate a click on the "active" item:
-				}
-			}
-		});
-		inp.addEventListener('dblclick', function (e) { evNoBubble(e); });
-
-		function addActive(x) {
-			// works with classes from styles.css
-			if (!x) return false;
-			removeActive(x);
-			if (currentFocus >= x.length) currentFocus = 0;
-			if (currentFocus < 0) currentFocus = x.length - 1;
-			x[currentFocus].classList.add('autocomplete-active');
-		}
-		function removeActive(x) {
-			for (var i = 0; i < x.length; i++) {
-				x[i].classList.remove('autocomplete-active');
-			}
-		}
-		function closeAllLists(elmnt) {
-			var x = document.getElementsByClassName('autocomplete-items');
-			for (var i = 0; i < x.length; i++) {
-				if (elmnt != x[i] && elmnt != inp) {
-					x[i].parentNode.removeChild(x[i]);
-				}
-			}
-		}
-
-		document.addEventListener('click', function (e) {
-			closeAllLists(e.target);
-		});
-	}
 	autocomplete('myInput', get_values(Geo.cities).map(x => x.name));
 }
 function maButton(caption, handler, dParent, styles) {
@@ -996,12 +997,12 @@ function mDraggable(item) {
 	d.draggable = true;
 	d.ondragstart = drag;
 }
+function default_allowDrop(ev) { ev.preventDefault(); }
 function mDroppable(item, handler, dragoverhandler) {
-	function allowDrop(ev) { ev.preventDefault(); }
 
 	let d = iDiv(item);
 	//console.log('item', item);
-	d.ondragover = isdef(dragoverhandler) ? dragoverhandler : allowDrop;
+	d.ondragover = isdef(dragoverhandler) ? dragoverhandler : default_allowDrop;
 	//if (isdef(dragEnterHandler)) d.ondragenter = dragEnterHandler;
 	d.ondrop = handler;
 }
@@ -1538,7 +1539,7 @@ function mShield(dParent, styles = { bg: '#00000020' }, id = null, classnames = 
 	return d;
 }
 function mShieldsOff() { if (nundef(DA.shields)) return; for (const d of DA.shields) d.remove(); }
-function _gCreate(tag) { return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+function _gCreate(tag) { return document.createElementNS('http:/'+'/www.w3.org/2000/svg', tag); }
 function gSizeToContent(svg) {
 	//muss NACH append gemacht werden damit es klappt
 	var bbox = svg.getBBox();
@@ -2248,16 +2249,13 @@ function cRect(x, y, w, h, styles = null, ctx = null) {
 	if (isdef(styles.bg) || nundef(styles.fg)) ctx.fillRect(x, y, w, h);
 	if (isdef(styles.fg)) ctx.strokeRect(x, y, w, h);
 }
-function cStyle(styles = {}, ctx) {
+function cStyle(styles, ctx) {
 	if (nundef(ctx)) { ctx = CX; if (nundef(ctx)) { console.log('ctx undefined!!!!!!!'); return; } }
 	const di = { bg: 'fillStyle', fill: 'fillStyle', stroke: 'strokeStyle', fg: 'strokeStyle', thickness: 'lineWidth', thick: 'lineWidth', cap: 'lineCap', ending: 'lineCap' };
-
-	for (const k in styles) {
-		ctx[isdef(di[k]) ? di[k] : k] = styles[k];
+	if (isdef(styles)) {
+		for (const k in styles) { ctx[isdef(di[k]) ? di[k] : k] = styles[k]; }
 	}
 }
-
-
 function cShadow(ctx, color, offx, offy, blur) {
 	ctx.shadowColor = color;
 	ctx.shadowOffsetX = offx;
@@ -2322,39 +2320,39 @@ function iRegister(item, id) { let uid = isdef(id) ? id : getUID(); Items[uid] =
 //#endregion
 
 //#region i prefix
-function iClear(item){
-	if (isString(item)) {let id=item; if (isdef(Items[id])) item=Items[id]; else item=toElem(id);}
-	let d=iDiv(item);
+function iClear(item) {
+	if (isString(item)) { let id = item; if (isdef(Items[id])) item = Items[id]; else item = toElem(id); }
+	let d = iDiv(item);
 	if (isdef(d)) {
 		//console.log('d',d)
-		let desc= Array.from(d.querySelectorAll('[id]:not([id=""])')); //'[id]:not([id]="")');
+		let desc = Array.from(d.querySelectorAll('[id]:not([id=""])')); //'[id]:not([id]="")');
 		//console.log('elems with id',desc.map(x=>x.id))
-		desc=desc.filter(x=>isdef(Items[x.id]))
+		desc = desc.filter(x => isdef(Items[x.id]))
 		//console.log('Items with ids',desc.map(x=>x.id));
-		for(const item1 of desc) iDelete(item1.id);
+		for (const item1 of desc) iDelete(item1.id);
 		mClear(d);
 	}
 }
-function iDelete(id){
+function iDelete(id) {
 	//TODO: proper Items cleanup!
 	//console.log('deleting Item',id)
 	delete Items[id];
 }
-function iReg(item,liveprops,addprops) {
-	
+function iReg(item, liveprops, addprops) {
+
 	iRepair(item);
 
-	if (isdef(liveprops)) for(const k in liveprops){lookupSetOverride(item,['live',k],liveprops[k])}
-	if (isdef(addprops)) copyKeys(addprops,item);
+	if (isdef(liveprops)) for (const k in liveprops) { lookupSetOverride(item, ['live', k], liveprops[k]) }
+	if (isdef(addprops)) copyKeys(addprops, item);
 
 	//console.log('item',item);return;
 	//main ui of this item is either iDiv or first elem in live
 	let umain = iDiv(item); if (nundef(umain) && isdef(item.live)) { umain = get_values(item.live)[0]; }
 	//main ui will be labeled with item.id or item.id will be set to main ui.id
 	let id = item.id;
-	if (nundef(id) && umain) {id = valnwhite(umain.id,getUID()); item.id=id;}
-	else if (nundef(id)) {id=getUID(); item.id=id;}
-	if (umain) {umain.id=id;} //console.log('add id',id,'to',umain.tagName);}
+	if (nundef(id) && umain) { id = valnwhite(umain.id, getUID()); item.id = id; }
+	else if (nundef(id)) { id = getUID(); item.id = id; }
+	if (umain) { umain.id = id; } //console.log('add id',id,'to',umain.tagName);}
 
 	if (nundef(Items[id])) Items[id] = item;
 	return item;
@@ -2370,7 +2368,7 @@ function iRepair(item) {
 			//if (isEmptyOrWhiteSpace(val.id)) val.id = getUID();
 			lookupSetOverride(item, ['live', k], val); //kann immer noch  mit iDiv auf main div greifen!
 			todelete.push(k);
-		} else if (typeof val == 'function'){ //} && !lookup(item, ['funcs', k])) {
+		} else if (typeof val == 'function') { //} && !lookup(item, ['funcs', k])) {
 			lookupSet(item, ['funcs', k], true);
 		}
 	}
@@ -2518,7 +2516,7 @@ function gShape(shape, w = 20, h = 20, color = 'green', rounding) {
 	return el;
 }
 
-function gCreate(tag) { return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+function gCreate(tag) { return document.createElementNS('http:/'+'/www.w3.org/2000/svg', tag); }
 function gPos(g, x, y) { g.style.transform = `translate(${x}px, ${y}px)`; }
 function gSize(g, w, h, shape = null, iChild = 0) {
 	//console.log(getTypeOf(g))
@@ -2547,8 +2545,8 @@ function gRounding(r, rounding) {
 
 }
 function gStroke(g, color, thickness) { g.setAttribute('stroke', color); if (thickness) g.setAttribute('stroke-width', thickness); }
-function gSvg() { return gCreate('svg'); } //document.createElementNS('http://www.w3.org/2000/svg', 'svg'); }
-function gG() { return gCreate('g'); }// document.createElementNS('http://www.w3.org/2000/svg', 'g'); }
+function gSvg() { return gCreate('svg'); }
+function gG() { return gCreate('g'); }
 function gHex(w, h) { let pts = size2hex(w, h); return gPoly(pts); }
 function gPoly(pts) { let r = gCreate('polygon'); if (pts) r.setAttribute('points', pts); return r; }
 function gRect(w, h) { let r = gCreate('rect'); r.setAttribute('width', w); r.setAttribute('height', h); r.setAttribute('x', -w / 2); r.setAttribute('y', -h / 2); return r; }
@@ -2607,7 +2605,7 @@ function aSvgg(dParent, originInCenter = true) {
 	svg1.setAttribute('style', style);
 	dParent.appendChild(svg1);
 
-	let g1 = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+	let g1 = document.createElementNS('http:/'+'/www.w3.org/2000/svg', 'g');
 	svg1.appendChild(g1);
 	if (originInCenter) { g1.style.transform = "translate(50%, 50%)"; } //works!
 
@@ -2893,8 +2891,7 @@ function arrZip(arr1, arr2) {
 	return res;
 }
 function addKeys(ofrom, oto) { for (const k in ofrom) if (nundef(oto[k])) oto[k] = ofrom[k]; return oto; }
-function copyKeys(ofrom, oto, except = {}, only) {
-	//console.log(ofrom)
+function copyKeys(ofrom, oto, except = {}, only = null) {
 	let keys = isdef(only) ? only : Object.keys(ofrom);
 	for (const k of keys) {
 		if (isdef(except[k])) continue;
@@ -2902,6 +2899,7 @@ function copyKeys(ofrom, oto, except = {}, only) {
 	}
 	return oto;
 }
+
 function dict2list(d, keyName = 'id') {
 	let res = [];
 	for (const key in d) {
@@ -3135,6 +3133,29 @@ function alphaToHex(zero1) {
 	//console.log('alpha from', zero1, 'to', hex);
 	return hex;
 }
+function rgb2float(rgba) {
+	return [
+		rgba[0] / 255,
+		rgba[1] / 255,
+		rgba[2] / 255,
+		rgba[3]
+	]
+}
+
+function rgb2hex(rgba) {
+	var dig, hex = '#';
+	for (var i = 0; i < 3; ++i) {
+		dig = rgba[i];
+		dig = dig.toString(16);
+		hex += ('00' + dig).substr(dig.length);
+	}
+	return hex;
+}
+
+function rgbaStr(rgba) {
+	return 'rgba(' + rgba.join(',') + ')';
+}
+
 function colorMap(spec) {
 	const Colormap = {
 		"jet": [{ "index": 0, "rgb": [0, 0, 131] }, { "index": 0.125, "rgb": [0, 60, 170] }, { "index": 0.375, "rgb": [5, 255, 255] }, { "index": 0.625, "rgb": [255, 255, 0] }, { "index": 0.875, "rgb": [250, 0, 0] }, { "index": 1, "rgb": [128, 0, 0] }],
@@ -3182,29 +3203,6 @@ function colorMap(spec) {
 		"velocity-green": [{ "index": 0, "rgb": [23, 35, 19] }, { "index": 0.13, "rgb": [24, 64, 38] }, { "index": 0.25, "rgb": [11, 95, 45] }, { "index": 0.38, "rgb": [39, 123, 35] }, { "index": 0.5, "rgb": [95, 146, 12] }, { "index": 0.63, "rgb": [152, 165, 18] }, { "index": 0.75, "rgb": [201, 186, 69] }, { "index": 0.88, "rgb": [233, 216, 137] }, { "index": 1, "rgb": [255, 253, 205] }],
 		"cubehelix": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.07, "rgb": [22, 5, 59] }, { "index": 0.13, "rgb": [60, 4, 105] }, { "index": 0.2, "rgb": [109, 1, 135] }, { "index": 0.27, "rgb": [161, 0, 147] }, { "index": 0.33, "rgb": [210, 2, 142] }, { "index": 0.4, "rgb": [251, 11, 123] }, { "index": 0.47, "rgb": [255, 29, 97] }, { "index": 0.53, "rgb": [255, 54, 69] }, { "index": 0.6, "rgb": [255, 85, 46] }, { "index": 0.67, "rgb": [255, 120, 34] }, { "index": 0.73, "rgb": [255, 157, 37] }, { "index": 0.8, "rgb": [241, 191, 57] }, { "index": 0.87, "rgb": [224, 220, 93] }, { "index": 0.93, "rgb": [218, 241, 142] }, { "index": 1, "rgb": [227, 253, 198] }]
 	};
-	function rgb2float(rgba) {
-		return [
-			rgba[0] / 255,
-			rgba[1] / 255,
-			rgba[2] / 255,
-			rgba[3]
-		]
-	}
-
-	function rgb2hex(rgba) {
-		var dig, hex = '#';
-		for (var i = 0; i < 3; ++i) {
-			dig = rgba[i];
-			dig = dig.toString(16);
-			hex += ('00' + dig).substr(dig.length);
-		}
-		return hex;
-	}
-
-	function rgbaStr(rgba) {
-		return 'rgba(' + rgba.join(',') + ')';
-	}
-
 	var indicies, fromrgba, torgba, nsteps, cmap, colormap, format, nshades, colors, alpha, i;
 
 	if (!spec) spec = {};
@@ -3254,7 +3252,7 @@ function colorMap(spec) {
 	}
 
 	// map index points from 0..1 to 0..n-1
-	indicies = cmap.map(function (c) {
+	indicies = cmap.map(c => {
 		return Math.round(c.index * nshades);
 	});
 
@@ -3262,7 +3260,7 @@ function colorMap(spec) {
 	alpha[0] = Math.min(Math.max(alpha[0], 0), 1);
 	alpha[1] = Math.min(Math.max(alpha[1], 0), 1);
 
-	var steps = cmap.map(function (c, i) {
+	var steps = cmap.map((c, i) => {
 		var index = cmap[i].index
 
 		var rgba = cmap[i].rgb.slice();
@@ -3352,7 +3350,7 @@ function colorFrom(cAny, a, allowHsl = false) {
 		} else if (startsWith(cAny, 'rand')) {
 			let spec = capitalize(cAny.substring(4));
 			if (isdef(window['color' + spec])) {
-				//console.log('found function!', 'color' + spec);
+				//console.log('found func!', 'color' + spec);
 				c = window['color' + spec]();
 			} else c = rColor();
 			//console.log('==>(hex) color is', c);
@@ -3411,7 +3409,6 @@ function colorFrom(cAny, a, allowHsl = false) {
 		} else { //will get here only once!!!
 			ensureColorDict();
 			let c = ColorDi[cAny];
-			//console.log('nach ensure',getFunctionsNameThatCalledThisFunction(), ColorDi, 'looking for', cAny, c)
 			if (nundef(c)) {
 				if (startsWith(cAny, 'rand')) {
 					let spec = cAny.substring(4);
@@ -5157,7 +5154,7 @@ function rNumber(min = 0, max = 100) {
 }
 function rPassword(n) { return rChoose(toLetters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!.?*&%$#@:;_'), n).join(''); }
 function rPerlin(x, y = 0, z = 0) {
-	Perlin.lastx=x;
+	Perlin.lastx = x;
 	if (Perlin.perlin == null) {
 		Perlin.perlin = new Array(Perlin.PERLIN_SIZE + 1);
 		for (let i = 0; i < Perlin.PERLIN_SIZE + 1; i++) {
@@ -5307,7 +5304,9 @@ function replaceEvery(w, letter, nth) {
 	return res;
 }
 function replaceWhite(s, sby = '_') { let w = toWords(s); return w.join(sby); }
+
 function splitAtAnyOf(s, sep) {
+	//sep is a list of chars!!! does NOT work with list of strings!!!
 	let arr = [], w = '';
 	for (let i = 0; i < s.length; i++) {
 		let ch = s[i];
@@ -5873,9 +5872,9 @@ function jsClean(o) {
 		return onew;
 	}
 }
-function fromYaml(x){return jsyaml.load(x);}
+function fromYaml(x) { return jsyaml.load(x); }
 function jsonToYaml(o) { let y = jsyaml.dump(o); return y; }
-function toYaml(o){return jsonToYaml(o);}
+function toYaml(o) { return jsonToYaml(o); }
 function isdef(x) { return x !== null && x !== undefined; }
 function nundef(x) { return x === null || x === undefined; }
 function isAlphaNum(s) { query = /^[a-zA-Z0-9]+$/; return query.test(s); }
@@ -5943,7 +5942,7 @@ async function load_assets_fetch(basepath, baseminpath) {
 }
 async function load_config(port = 3000, apps = true, tables = false) {
 	Config = await route_path_yaml_dict('../y/config.yaml');
-	let server = 'http://localhost:' + port;
+	let server = 'http:/'+'/localhost:' + port;
 	if (apps) {
 		let files = await route_path_json(server + '/files?dir=appdata');
 		console.log('apps', files)
@@ -6075,7 +6074,7 @@ function posToPoint(pos = 'cc', w, h, offx = 0, offy = 0) {
 	return [px + offx, py + offy];
 }
 function post_json(url, o, callback) {
-	//usage: post_json('http://localhost:3000/post/json',o,r=>console.log('resp',r);
+	//usage: post_json('http:/'+'/localhost:3000/post/json',o,r=>console.log('resp',r);
 	fetch(url, {
 		method: 'POST',
 		headers: {
@@ -6149,7 +6148,7 @@ function set_run_state(singleclient = true, sockets = false, port = 3000, localh
 
 	SERVER = localhost ? '127.0.0.1' : '216.250.112.218';
 	PORT = port;
-	SERVERURL = `http://${SERVER}:${PORT}`;
+	SERVERURL = `http:/`+`${SERVER}:${PORT}`;
 	NODEJS = nodejs;
 	LIVE_SERVER = liveserver;
 	TESTING = testing;
@@ -6163,20 +6162,6 @@ function set_run_state(singleclient = true, sockets = false, port = 3000, localh
 	}
 
 	console.log('SERVER:' + SERVERURL, 'LIVE:' + LIVE_SERVER, 'Socket:' + Socket, TESTING ? 'TESTING' : '', SINGLECLIENT ? 'SINGLE' : '');
-
-	return;
-
-	//#region old code
-	TESTING = 'nosockets'; // live | vps | [false] | true (live for live-server, vps for vps) 
-	if (TESTING != 'nosockets') {
-		//Socket.on!!!
-		Socket = TESTING == 'live' ? io('http://127.0.0.1:3000') : TESTING == 'vps' ? io('http://216.250.112.218:3000') : io();
-		Socket.on('message', x => console.log('got message', x));
-		Socket.on('disconnect', x => console.log('got disconnect', x));
-		Socket.on('update', x => console.log('got update', x));
-	}
-	//#endregion
-
 
 }
 function show(elem, isInline = false) {
@@ -6561,7 +6546,7 @@ function db_delete(table, i, db) {
 	return db;
 }
 function db_save_client(IP = 'localhost', port = 3000) {
-	post_json(`http://${IP}:${port}/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
+	post_json(`http:/`+`/${IP}:${port}/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
 }
 
 //#endregion
