@@ -20,7 +20,7 @@ function au_show_list() {
 
 		if (isEmpty(AU.list)) {
 			AU.list = Object.keys(window).filter(x => startsWith(x, AU.prefix));
-			AU.list = AU.list.concat(get_keys(DA.consts).filter(x => startsWith(x, AU.prefix)));
+			AU.list = AU.list.concat(get_keys(CODE.consts).filter(x => startsWith(x, AU.prefix)));
 
 			//add to that Items keys
 			AU.list = AU.list.concat(get_keys(Items).filter(x => startsWith(x, AU.prefix)));
@@ -31,18 +31,20 @@ function au_show_list() {
 		} else {
 			let mousepos = getCaretCoordinates(ta, ta.selectionStart - AU.prefix.length);
 			//console.log('mousepos',mousepos)
-			let r = getRect(ta, dCode);
+			//let r = getRect(ta);
+			//let r2=getRect(dCode);
+			//console.log('ta',r.l,'ta-parent',r2.left)
 			//console.log('r',r.l,r.t)
 			//console.log('mousepos', mousepos);
 			show(popup)
-			mPos(popup, mousepos.left + r.l, mousepos.top + 18); // + 18, mousepos.top + 25);
+			mPos(popup, mousepos.left + 10, mousepos.top + 30); // + 18, mousepos.top + 25);
 			// mPos(popup, mousepos.left + 18, mousepos.top + 25);
 			iClear(popup);
 			AU.n = -1;
 			AU.selected = null;
 			for (const w of AU.list) {
 
-				if (isdef(DA.funcs[w])) mDiv(popup, {}, w, w + '(' + DA.funcs[w].params + ')')
+				if (isdef(CODE.funcs[w])) mDiv(popup, {}, w, CODE.funcs[w].sig); 
 				else mDiv(popup, {}, w, w)
 			}
 		}
@@ -316,8 +318,8 @@ function draw_perlin_xy(item) {
 //#endregion
 
 //#region fiddle
-function create_fiddle(dParent, code) {
-	let [ta, buttons, tacon] = create_fiddle_ui(dParent, code);
+function create_fiddle(dParent, code, rows=10, cols=120) {
+	let [ta, buttons, tacon] = create_fiddle_ui(dParent, code, rows, cols);
 	ta.onkeydown = ev => {
 		let k = ev.key;
 		if (k == 'Enter' && AU.selected) ev.preventDefault();
@@ -377,20 +379,18 @@ function create_fiddle(dParent, code) {
 		}
 	}
 }
-function create_fiddle_ui(dParent, code) {
+function create_fiddle_ui(dParent, code, rows, cols) {
 	mStyle(dParent, { position: 'relative' }); //, align:'center' });
-
-	let chars_per_line = 150;
-	let ta = mTextArea(10, chars_per_line, dParent, { padding: 20, position: 'relative' }, 'taCode');
+	let ta = mTextArea(rows, cols, dParent, { padding: 20, position: 'relative' }, 'taCode');
 	setTimeout(() => ta.autofocus = true, 10);
 	let buttons = mDiv(dParent, { w: getRect(ta).w, align: 'right', maright: 4 }); //align:'right','align-self':'end','justify-self':'end'})
 	let st = { fz: 14 };
 	maButton('RUN (ctl+Enter)', au_run, buttons, st);
 	maButton('LINE (ctl+shft+Enter)', au_run_line, buttons, st);
-	let tacon = mTextArea(1, chars_per_line, dParent, { matop: 4, hpadding: 20, vpadding: 10, position: 'relative' }, 'taConsole');
+	let tacon = mTextArea(1, cols, dParent, { matop: 4, hpadding: 20, vpadding: 10, position: 'relative' }, 'taConsole');
 	ta.focus();
 	AU.popup = mDiv(dParent, { position: 'absolute', wmin: 100, hmin: 100, hmax: 600, overy: 'auto', bg: 'blue', fg: 'white' });
-	AU.fnames = get_keys(DA.funcs); AU.fnames.sort();
+	AU.fnames = get_keys(CODE.funcs); AU.fnames.sort();
 	AU.ta = ta; AU.tacon = tacon;
 	au_reset();
 	if (nundef(code)) { code = localStorage.getItem('code'); if (nundef(code)) code = `pause();`; }
@@ -520,7 +520,7 @@ function show_div_ids() {
 
 //#endregion
 
-//#region top level: page
+//#region page
 function clear_all() { for (const id of ['dFiddle', 'dMenu', 'dSearch', 'dSearchResult', 'dTable']) iClear(id); console.log('ids', get_keys(Items)) }
 function show_standard_title(dParent, title) { mText(title, dParent, { margin: 20, fz: 24 }); }
 function show_apps(ms = 500) {
@@ -539,9 +539,10 @@ function show_apps(ms = 500) {
 		//if (gamelist.includes(app.id)) { let f = get_app_presenter(app.id); f(d, app); }
 	}
 }
-function show_fiddle(code) {
+function show_fiddle(code,rows,cols,fiddlestyles) {
 	let dFiddle = mBy('dFiddle'); iClear(dFiddle); mCenterFlex(dFiddle);	//transition
-	create_fiddle(dFiddle,code);
+	if (isdef(fiddlestyles)) mStyle(dFiddle,fiddlestyles)
+	create_fiddle(dFiddle, code,rows,cols);
 }
 function show_games(ms = 500) {
 	let dParent = mBy('dGames');

@@ -1,21 +1,20 @@
 
-function show_sidebar(di, prop_key, prop_info) {
-	dSidebar = mBy('dSidebar'); mStyle(dSidebar,{wmin:200, hmax:window.innerHeight-68,overy:'auto'})
-	let keys = get_keys(di);
-	keys.sort();
-	//console.log('keys', keys);
-	dBottom = mBy('dBottom')
-	for (const k of keys) { 
-		let key = isdef(prop_key)?di[k][prop_key]:k;
-		let d=mDiv(dSidebar, { cursor:'pointer',wmin: 100 }, null, key,'hop1') 
-		let info = isdef(prop_info)?di[k][prop_info]:di[k];
-
-		info = k+'('+di[k].params+')\n'+info;
-		
-
-		d.onclick = ()=>show_fiddle(info); //mNode(info,dBottom,k); //dBottom.innerHTML = `<pre>${toYaml(di[k].body)}</pre>`;
+function show_sidebar(list,handler) {
+	dSidebar = mBy('dSidebar'); mStyle(dSidebar,{w:300, h:window.innerHeight-68,overy:'auto'});
+	for (const k of list) { 
+		let d=mDiv(dSidebar, { cursor:'pointer',wmin: 100 }, null, k,'hop1') 
+		d.onclick = handler;
 	}
-	//for (const k in di) { mDiv(dSidebar, { wmin: 100 }, null, di[k][prop]) }
+}
+function show_code(ev){
+	let k=ev.target.innerHTML;
+	let o=CODE.funcs[k];
+	let [w,h]=[window.innerWidth-300,window.innerHeight-150];
+	let [r,c]=[h/18,w/9];
+	show_fiddle(o.body,r,c,{bg:DB.apps.howto.color});
+}
+function download_all_functions(){
+	
 }
 
 

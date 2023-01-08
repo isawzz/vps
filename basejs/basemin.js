@@ -12,6 +12,22 @@ var ColorThiefObject, SelectedItem, SelectedColor;
 var FR = 50, CX, CV, AU = {}, CONTEXT=null;
 
 //#endregion
+
+//#region audio
+var _audioSources = {
+	incorrect1: '../base/assets/sounds/incorrect1.wav',
+	incorrect3: '../base/assets/sounds/incorrect3.mp3',
+	goodBye: "../base/assets/sounds/level1.wav",
+	down: "../base/assets/sounds/down.mp3",
+	levelComplete: "../base/assets/sounds/sound1.wav",
+	rubberBand: "../base/assets/sounds/sound2.wav",
+	hit: "../base/assets/sounds/hit.wav",
+	mozart: "../base/assets/music/mozart_s39_4.mp3",
+};
+var _TOSound, _sndPlayer, _loaded = false, _qSound, _idleSound = true, _sndCounter = 0;
+var _AUDIOCONTEXT;// browsers limit the number of concurrent audio contexts, so you better re-use'em
+
+//#endregion
 //#region color const
 const BLUE = '#4363d8';
 const BLUEGREEN = '#004054';
@@ -108,6 +124,13 @@ const BLUFF = {
 	torank: { _: '_', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9', ten: 'T', jack: 'J', queen: 'Q', king: 'K', ace: 'A' },
 	toword: { _: '_', '3': 'three', '4': 'four', '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine', T: 'ten', J: 'jack', Q: 'queen', K: 'king', A: 'ace' },
 	rankstr: '3456789TJQKA',
+
+};
+const CODE = {
+	paths:[],
+	funcs:{},
+	consts:{},
+	index:[],
 
 };
 const DIBOA = {
@@ -2594,18 +2617,6 @@ function aSvgg(dParent, originInCenter = true) {
 //endregion
 
 //#region audio
-var _audioSources = {
-	incorrect1: '../base/assets/sounds/incorrect1.wav',
-	incorrect3: '../base/assets/sounds/incorrect3.mp3',
-	goodBye: "../base/assets/sounds/level1.wav",
-	down: "../base/assets/sounds/down.mp3",
-	levelComplete: "../base/assets/sounds/sound1.wav",
-	rubberBand: "../base/assets/sounds/sound2.wav",
-	hit: "../base/assets/sounds/hit.wav",
-	mozart: "../base/assets/music/mozart_s39_4.mp3",
-};
-var _TOSound, _sndPlayer, _loaded = false, _qSound, _idleSound = true, _sndCounter = 0;
-var _AUDIOCONTEXT;// browsers limit the number of concurrent audio contexts, so you better re-use'em
 //API:
 function audio_beep(vol, freq, duration) {
 	console.log('sollte beepen!!!'); //return;

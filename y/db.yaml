@@ -197,7 +197,7 @@ apps:
       nplayers: 2,3,4
     name: action
   howto:
-    friendly: How to...
+    friendly: Viewer
     logo: key
     color: deepskyblue
     options:

@@ -1,6 +1,6 @@
 
 function test6_sidebar(){	
-	show_sidebar(DA.funcs,'name','body');	//DA.consts);
+	show_sidebar(CODE.funcs,'name','body');	//CODE.consts);
 
 } 
 function test5_prelim(){}
@@ -28,7 +28,7 @@ function test4_intelli() {
 	AU.popup = mDiv(dTable, { position: 'absolute', wmin: 100, hmin: 100, hmax: 600, overy: 'auto', bg: 'blue', fg: 'white' });
 	hide(AU.popup)
 
-	AU.fnames = get_keys(DA.funcs); AU.fnames.sort();
+	AU.fnames = get_keys(CODE.funcs); AU.fnames.sort();
 	AU.list = [];
 	AU.prefix = '';
 	AU.selected = null;
@@ -66,7 +66,7 @@ function test4_intelli() {
 			if (isdef(AU.fnames[AU.previous])) {
 				let w = AU.selected = AU.previous;
 				//AU.ta.value = AU.ta.value + s; //.slice(0, -1) + s;
-				AU.uebernommen = DA.funcs[w];
+				AU.uebernommen = CODE.funcs[w];
 				//show(popup)
 				popup.innerHTML = AU.previous + '(' + AU.uebernommen.params + ')';
 			} else {
@@ -76,7 +76,7 @@ function test4_intelli() {
 			let w = AU.selected.innerHTML;
 			let s = stringAfter(w, AU.prefix);
 			AU.ta.value = AU.ta.value + s; //.slice(0, -1) + s;
-			AU.uebernommen = DA.funcs[w];
+			AU.uebernommen = CODE.funcs[w];
 			popup.innerHTML = w + '(' + AU.uebernommen.params + ')';
 			//hide(popup);
 		} else if (k == 'Backspace' && AU.prefix.length > 1) {

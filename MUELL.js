@@ -1,4 +1,78 @@
 
+function show_sidebar(di, prop_key, prop_info) {
+	dSidebar = mBy('dSidebar'); mStyle(dSidebar,{wmin:200, hmax:window.innerHeight-68,overy:'auto'})
+	let keys = get_keys(di);
+	keys.sort();
+	//console.log('keys', keys);
+	dBottom = mBy('dBottom')
+	for (const k of keys) { 
+		let key = isdef(prop_key)?di[k][prop_key]:k;
+		let d=mDiv(dSidebar, { cursor:'pointer',wmin: 100 }, null, key,'hop1') 
+		let info = isdef(prop_info)?di[k][prop_info]:di[k];
+
+		info = k+'('+di[k].params+')\n'+info;
+		
+
+		d.onclick = ()=>show_fiddle(info); //mNode(info,dBottom,k); //dBottom.innerHTML = `<pre>${toYaml(di[k].body)}</pre>`;
+	}
+	//for (const k in di) { mDiv(dSidebar, { wmin: 100 }, null, di[k][prop]) }
+}
+
+function show_sidebar(di, prop_key, prop_info) {
+	let h = window.innerHeight - 68;
+	// let w = window.innerWidth - 320;
+	// let rows = h / 18;
+	// let cols = w / 8;
+	dSidebar = mBy('dSidebar'); mStyle(dSidebar, { w: 300, hmax: h, overy: 'auto' });
+	//mStyle('dFiddle',{h:h})
+	let keys = get_keys(di);
+	keys.sort();
+	//console.log('keys', keys);
+	//dBottom = mBy('dBottom')
+	for (const k of keys) {
+		let key = isdef(prop_key) ? di[k][prop_key] : k;
+		let d = mDiv(dSidebar, { cursor: 'pointer', wmin: 100 }, null, key, 'hop1')
+		let info = isdef(prop_info) ? di[k][prop_info] : di[k];
+		d.onclick = () => AU.ta.value = info;
+	}
+	// show_fiddle('', rows, cols)
+}
+
+
+function perform_search(records) {
+	let words = toWords(mBy('iKeywords').value);
+	console.log('keywords are', words, 'records', records);
+
+	let res = [], i = 0;
+	for (const c of records) {
+		for (const w of words) {
+			let w1 = w.toLowerCase();
+			let kw = c.kw.toLowerCase();
+			let code = c.c.toLowerCase();
+			if (kw.includes(w1) || code.includes(w1)) {
+				res.push(c);
+				c.index = i;
+				break;
+			}
+		}
+		i++;
+	}
+
+	console.log('filtered:', res);
+	show_code_list(mBy('dSearchResult'), res);
+
+}
+function show_code_list(dParent, list) {
+	iClear(dParent);
+
+	for (const code of list) {
+		let d = mDiv(dParent, { w: '100%' });
+		let dkw = mDiv(d, {}, null, code.kw);
+		let text = code.c; let lines = text.split('\n'); let rows = lines.length; // count lines
+		//let minmax = arrMinMax(lines, x => x.length); let max = minmax.max;//find longest line
+		let dcode = mDiv(d, {}, null, `<textarea rows=${rows} cols=120>${code.c}</textarea>`);
+	}
+}
 
 
 

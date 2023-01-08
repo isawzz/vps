@@ -18,7 +18,8 @@ async function _start() {
 	timit.show();
 	//#endregion
 
-	test6_sidebar(); //test5_prelim();
+	show_apps();
+	//howto_open();	//test6_sidebar(); //test5_prelim();
 
 	//#region db tests
 	//was ist wenn ich jetzt DB modifyen will am server
