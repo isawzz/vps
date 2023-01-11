@@ -1,20 +1,38 @@
+function test8_jup(){
+	getGlobals();
+	let dParent = dTable = mBy('dTable'); 
+	let list = Globals.function.map(x=>({key:x.key,value:x.key+'('})); //CODE.index.map(x=>({key:x,value:x}));
+	for(const n in range(5)) {
+		let ta=juPlus(dParent);
+		mAutocomplete(dParent,ta,list); //['also','aber','all']);
+	}
+}
+function test7_card() {
+	dTable = mBy('dTable'); mCenterFlex(dTable);
+	let x = ui_type_hand(['3Hn', '4Hn', '4Hl'], dTable); console.log('hand',x);
 
-function test6_sidebar(){	
-	show_sidebar(CODE.funcs,'name','body');	//CODE.consts);
+	iReg(x);
 
-} 
-function test5_prelim(){}
+	let c = ari_get_card('QDn', 500); mAppend(dTable, iDiv(c));
+
+	animatedTitle();
+}
+function test6_sidebar() {
+	show_sidebar(CODE.funcs, 'name', 'body');	//CODE.consts);
+
+}
+function test5_prelim() { }
 //________________
 function test4_intelli() {
 	dTable = dTable = mSection({ position: 'relative' }, 'dTable'); mCenterFlex(dTable);
-	let ta = mTextArea(10, 90, dTable, { padding: 20, position: 'relative' });
+	let ta = mTextarea(10, 90, dTable, { padding: 20, position: 'relative' });
 	setTimeout(() => ta.autofocus = true, 10);
 	// setTimeout(()=>ta.focus(),100); //ta.autofocus=true,10);
 	let buttons = mDiv(dTable, { w: '100%', align: 'right', maright: 4 }); //align:'right','align-self':'end','justify-self':'end'})
 	let st = { fz: 14 };
 	maButton('RUN (ctl+Enter)', au_run, buttons, st);
 	maButton('LINE (ctl+shft+Enter)', au_run_line, buttons, st);
-	let tacon = mTextArea(3, 90, dTable, { matop: 4, padding: 20, position: 'relative' });
+	let tacon = mTextarea(3, 90, dTable, { matop: 4, padding: 20, position: 'relative' });
 
 	//dSidebar = mBy('dSidebar');	sidebar_load('../basejs/board.js');
 	ta.focus();

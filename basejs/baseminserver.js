@@ -2098,7 +2098,7 @@ function measureText(text, styles = {}, cx = null) { //mit canvas
 	//console.log('metrics:',metrics)
 	return { w: metrics.width, h: metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent };
 }
-function mTextArea(rows, cols, dParent, styles = {}, id) {
+function mTextarea(rows, cols, dParent, styles = {}, id) {
 	let html = `<textarea id="${id}" rows="${rows}" cols="${cols}" wrap="hard"></textarea>`;
 	let t = mCreateFrom(html);
 	mAppend(dParent, t);

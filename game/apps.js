@@ -159,9 +159,11 @@ function fitbit_open(item) {
 
 //#region howto
 function howto_open(item) {
+	iClear('dTable')
 	if (nundef(item)) item = DB.apps.howto;
-	dSearch = mBy('dSearch'); mClear(dSearch)
+	dSearch = mBy('dSearch'); mClear(dSearch);
 	show_sidebar(CODE.index,show_code);
+	show_code();
 	toggle_apps();
 	mStyle(dSearch, { bg: item.color });
 	mInputLineWithButtons(dSearch,{Code:filter_codebase,Signatures:filter_sig})

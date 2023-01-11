@@ -42,7 +42,7 @@ function bCapturedPieces(plSym, arr, idx, rows, cols, includeDiagonals = true) {
 		let i = nei[dir];
 		if (nundef(i)) continue;
 		let el = arr[i];
-		if (EmptyFunc(el) || el == plSym) continue;
+		if (empty_func(el) || el == plSym) continue;
 		let inew = [];
 		let MAX = 100, cmax = 0;
 		while (isOppPiece(el, plSym)) {
@@ -72,7 +72,7 @@ function bFreeRayDir(arr, idx, dir, rows, cols) {
 	let i = idx;
 	while (i < arr.length) {
 		i = bNeiDir(arr, i, dir, rows, cols);
-		if (!i || !EmptyFunc(arr[i])) break; else indices.push(i);
+		if (!i || !empty_func(arr[i])) break; else indices.push(i);
 	}
 	return indices;
 }
@@ -84,35 +84,35 @@ function bFreeRayDir1(arr, idx, dir, rows, cols) {
 		i = bNeiDir(arr, i, dir, rows, cols);
 		if (!i) break;
 		else indices.push(i);
-		if (!EmptyFunc(arr[i])) break;
+		if (!empty_func(arr[i])) break;
 	}
 	return indices;
 }
 
 function bFullCol(arr, icol, rows, cols) {
 	let iStart = icol;
-	let x = arr[iStart]; if (EmptyFunc(x)) return null;
+	let x = arr[iStart]; if (empty_func(x)) return null;
 	for (let i = iStart + cols; i < iStart + (cols * rows); i += cols) if (arr[i] != x) return null;
 	return x;
 }
 
 function bFullDiag(arr, rows, cols) {
 	let iStart = 0;
-	let x = arr[iStart]; if (EmptyFunc(x)) return null;
+	let x = arr[iStart]; if (empty_func(x)) return null;
 	for (let i = iStart + cols + 1; i < arr.length; i += cols + 1) { if (arr[i] != x) return null; }
 	return x;
 }
 
 function bFullDiag2(arr, rows, cols) {
 	let iStart = cols - 1;
-	let x = arr[iStart]; if (EmptyFunc(x)) return null;
+	let x = arr[iStart]; if (empty_func(x)) return null;
 	for (let i = iStart + cols - 1; i < arr.length - 1; i += cols - 1) { if (arr[i] != x) return null; }
 	return x;
 }
 
 function bFullRow(arr, irow, rows, cols) {
 	let iStart = irow * cols;
-	let x = arr[iStart]; if (EmptyFunc(x)) return null;
+	let x = arr[iStart]; if (empty_func(x)) return null;
 	for (let i = iStart + 1; i < iStart + cols; i++) if (arr[i] != x) return null;
 	return x;
 }
@@ -234,14 +234,14 @@ function bNeiDir(arr, idx, dir, rows, cols, includeDiagonals = true) {
 function bPartialCol(arr, icol, rows, cols) {
 	let iStart = icol;
 	let x = null;
-	for (let i = iStart; i < iStart + (cols * rows); i += cols) { if (EmptyFunc(arr[i])) continue; else if (EmptyFunc(x)) x = arr[i]; else if (arr[i] != x) return null; }
+	for (let i = iStart; i < iStart + (cols * rows); i += cols) { if (empty_func(arr[i])) continue; else if (empty_func(x)) x = arr[i]; else if (arr[i] != x) return null; }
 	return x;
 }
 
 function bPartialDiag(arr, rows, cols) {
 	let iStart = 0;
 	let x = null;
-	for (let i = iStart; i < arr.length; i += cols + 1) { if (EmptyFunc(arr[i])) continue; else if (EmptyFunc(x)) x = arr[i]; else if (arr[i] != x) return null; }
+	for (let i = iStart; i < arr.length; i += cols + 1) { if (empty_func(arr[i])) continue; else if (empty_func(x)) x = arr[i]; else if (arr[i] != x) return null; }
 	return x;
 }
 
@@ -249,7 +249,7 @@ function bPartialDiag2(arr, rows, cols) {
 	let iStart = cols - 1;
 	let x = null;
 	for (let i = iStart; i < arr.length - 1; i += cols - 1) {
-		if (EmptyFunc(arr[i])) continue; else if (EmptyFunc(x)) x = arr[i]; else if (arr[i] != x) return null;
+		if (empty_func(arr[i])) continue; else if (empty_func(x)) x = arr[i]; else if (arr[i] != x) return null;
 	}
 	return x;
 }
@@ -258,8 +258,8 @@ function bPartialRow(arr, irow, rows, cols) {
 	let iStart = irow * cols;
 	let x = null;
 	for (let i = iStart; i < iStart + cols; i++) {
-		if (EmptyFunc(arr[i])) continue;
-		else if (EmptyFunc(x)) x = arr[i];
+		if (empty_func(arr[i])) continue;
+		else if (empty_func(x)) x = arr[i];
 		else if (arr[i] != x) return null;
 	}
 	return x;
@@ -287,7 +287,7 @@ function bStrideColFrom(arr, irow, icol, rows, cols, stride) {
 	if (rows - irow < stride) return null;
 	let iStart = irow * cols + icol;
 	let x = arr[iStart];
-	if (EmptyFunc(x)) return null;
+	if (empty_func(x)) return null;
 	for (let i = iStart + cols; i < iStart + cols * stride; i += cols) if (arr[i] != x) return null;
 	return x;
 }
@@ -296,7 +296,7 @@ function bStrideDiag2From(arr, irow, icol, rows, cols, stride) {
 	if (rows - irow < stride || icol - stride + 1 < 0) return null;
 	let iStart = irow * cols + icol;
 	let x = arr[iStart];
-	if (EmptyFunc(x)) return null;
+	if (empty_func(x)) return null;
 	for (let i = iStart + cols - 1; i < iStart + (cols - 1) * stride; i += cols - 1) if (arr[i] != x) return null;
 	return x;
 }
@@ -305,7 +305,7 @@ function bStrideDiagFrom(arr, irow, icol, rows, cols, stride) {
 	if (rows - irow < stride || cols - icol < stride) return null;
 	let iStart = irow * cols + icol;
 	let x = arr[iStart];
-	if (EmptyFunc(x)) return null;
+	if (empty_func(x)) return null;
 	for (let i = iStart + cols + 1; i < iStart + (cols + 1) * stride; i += cols + 1) if (arr[i] != x) return null;
 	return x;
 }
@@ -322,7 +322,7 @@ function bStrideRowFrom(arr, irow, icol, rows, cols, stride) {
 	if (cols - icol < stride) return null;
 	let iStart = irow * cols + icol;
 	let x = arr[iStart];
-	if (EmptyFunc(x)) return null;
+	if (empty_func(x)) return null;
 	for (let i = iStart + 1; i < iStart + stride; i++) if (arr[i] != x) return null;
 	return x;
 }
@@ -360,11 +360,11 @@ function catanBoard(dParent, rows, topcols, styles = {}) {
 }
 
 function checkBoardEmpty(arr) {
-	for (const x of arr) { if (!EmptyFunc(x)) return false; } return true;
+	for (const x of arr) { if (!empty_func(x)) return false; } return true;
 }
 
 function checkBoardFull(arr) {
-	for (const x of arr) if (EmptyFunc(x)) return false; return true;
+	for (const x of arr) if (empty_func(x)) return false; return true;
 }
 
 function checkPotentialTTT(arr, rows, cols) {
@@ -470,7 +470,7 @@ class Board {
 		for (let i = 0; i < arr.length; i++) {
 			let item = this.items[i];
 			let val = arr[i];
-			if (!EmptyFunc(val)) {
+			if (!empty_func(val)) {
 				addLabel(item, val, { fz: 60, fg: colors[val] });
 			} else item.label = val;
 		}
@@ -531,7 +531,7 @@ class Board2D {
 		for (let i = 0; i < arr.length; i++) {
 			let item = this.items[i];
 			let val = arr[i];
-			if (!EmptyFunc(val)) {
+			if (!empty_func(val)) {
 				addLabel(item, val, { fz: 60, fg: colors[val] });
 			} else item.label = val;
 		}
@@ -1014,8 +1014,7 @@ function printMatrix(arr2d, title = 'result') {
 	let s = toBoardString(arr, rows, cols);
 	console.log(title, s)
 }
-var StateDict = {};
-var EmptyFunc = x => nundef(x) || x == ' ';
+function empty_func (x) {nundef(x) || x == ' ';}
 
 function printState(state, cols, rows) {
 	let formattedString = '';

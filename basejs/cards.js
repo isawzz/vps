@@ -1,3 +1,51 @@
+
+function mContainerSplay(d, splay, w, h, num, ov) {
+	//splay can be number(0,1,2,3,4) or word ('none','left','right','up','deck')
+	if (nundef(splay)) splay = 2;
+	if (!isNumber(splay)) splay = get_splay_number(splay);
+	if (isString(ov) && ov[ov.length - 1] == '%') ov = splay == 0 ? 1 : splay == 3 ? Number(ov) * h / 100 : Number(ov) * w / 100;
+	if (splay == 3) {
+		d.style.display = 'grid';
+		d.style.gridTemplateRows = `repeat(${num},${ov}px)`;
+		console.log('HAAAAAAAAAAAALLLLLLLLLLLLLLLLLLLLLLLLLLOOOOOOOOOOOOOOOOOOOOOOOOO')
+		d.style.minHeight = `${h + (num - 1) * (ov * 1.1)}px`;
+	} else if (splay == 2 || splay == 1) {
+		d.style.display = 'grid';
+		d.style.gridTemplateColumns = `repeat(${num},${ov}px)`;
+		let wnew = w + (num - 1) * (ov * 1.1);
+		// console.log('setting min-width to',wnew)
+		d.style.minWidth = `${w + (num - 1) * (ov * 1.1)}px`;
+	} else if (splay == 0) {
+		d.style.display = 'grid'; ov = .5
+		d.style.gridTemplateColumns = `repeat(${num},${ov}px)`;
+		d.style.minWidth = `${w + (num - 1) * (ov * 1.1)}px`;
+	} else if (splay == 5) { //lead card has wider splay than rest
+		d.style.display = 'grid';
+		d.style.gridTemplateColumns = `${ov}px repeat(${num-1},${ov/2}px)`; //100px repeat(auto-fill, 100px)
+		d.style.minWidth = `${w + (num) * (ov/2 * 1.1)}px`;
+	} else if (splay == 4) {
+		d.style.position = 'relative';
+		if (nundef(ov)) ov = .5;
+		d.style.minWidth = `${w + (num - 1) * (ov * 1.1)}px`;
+		d.style.minHeight = `${h + (num - 1) * (ov * 1.1)}px`;
+	}
+}
+function mItemSplay(item, list, splay, ov = .5) {
+	if (!isNumber(splay)) splay = get_splay_number(splay);
+	let d = iDiv(item);
+	let idx = list.indexOf(item.key);
+	if (splay == 4) {
+		let offset = (list.length - idx) * ov;
+		mStyle(d, { position: 'absolute', left: offset, top: offset }); //,Z:list.length - idx});
+		d.style.zIndex = list.length - idx;
+		// } else if (splay == 4) {
+		// 	let offset = idx * ov; //(list.length-idx)*ov;
+		// 	mStyle(d, { position: 'absolute', left: offset, top: offset });
+	} else {
+		d.style.zIndex = splay != 2 ? list.length - idx : 0;
+	}
+}
+
 function correct_handsorting(hand, plname) {
 	let pl = Z.fen.players[plname];
 	//console.log('pl',pl,'Clientdata',Clientdata);
@@ -21,7 +69,7 @@ function ari_get_card_large(ckey, h, w, ov = .2) {
 function luxury_card_deco(card) {
 	let d = iDiv(card); mStyle(d, { position: 'relative' });
 	let d1 = mDiv(d, { fg: 'dimgray', fz: 11, family: 'tangerine', position: 'absolute', left: 0, top: 0, 'writing-mode': 'vertical-rl', transform: 'scale(-1)', top: '35%' }, null, 'Luxury');
-	let html = `<img height=${18} src="../base/assets/images/icons/deco0.svg" style="transform:scaleX(-1);">`;
+	let html = `<img height=${18} src="../base/assets/icons/deco0.svg" style="transform:scaleX(-1);">`;
 	d1 = mDiv(d, { position: 'absolute', bottom: -2, left: 3, opacity: .25 }, null, html);
 }
 function ari_get_card(ckey, h, w, ov = .3) {

@@ -1,3 +1,297 @@
+
+function test8_jup(){
+	getGlobals();
+	let dParent = dTable = mBy('dTable'); 
+	let list = Globals.function.map(x=>({key:x.key,value:x.key+'('})); //CODE.index.map(x=>({key:x,value:x}));
+	for(const n in range(5)) {
+		let ta=juPlus(dParent);
+		mAutocomplete(dParent,ta,list); //['also','aber','all']);
+	}
+	return;
+	//DA.tas sind all die textareas
+	//ich brauch ein popup fuer intellisense
+	AU.popup=mPopup(null,dTable,{ position: 'absolute', wmin: 100, hmin: 100, hmax: 600, overy: 'auto', family:'verdana', bg: 'powderblue', fg: 'black', border:'gray', radius:8  });
+
+	//ich muss tas mit key handlers verseehen
+	getGlobals();
+	console.log('funcs',Globals.function);
+	for(const ta of DA.tas){ fiddlify(ta);}
+}
+function fiddlify(ta){
+	ta.onkeydown = ev => {
+		let k = ev.key;
+		if (k == 'Enter' && AU.selected) ev.preventDefault();
+		if (!isEmpty(AU.list) && (k == 'ArrowDown' || k == 'ArrowUp')) ev.preventDefault();
+	}
+	ta.onkeyup = ev => {
+		let k = ev.key; let fnames = AU.fnames; let popup = AU.popup;
+		if (k == 'Enter' && ev.ctrlKey) {
+			au_reset();
+			let code = ev.shiftKey ? getTextAreaCurrentLine(AU.ta) : AU.ta.value;
+			runcode(code);
+		} else if (k == 'Escape' && !isEmpty(AU.list)) {
+			au_reset();
+		} else if (k == 'Enter' && AU.selected) {
+			//insert at caret!
+			let w = AU.selected.innerHTML; //enthaelt params auch!
+			let params = stringAfter(w, '(');
+			let funcname = stringBefore(w, '(')
+			let s = stringAfter(w, AU.prefix); // s is portion of select entry that is NOT in ta
+			let before = AU.ta.value.slice(0, AU.ta.selectionEnd);
+			let after = AU.ta.value.slice(AU.ta.selectionEnd);
+			AU.ta.value = before + s + after;
+			ta.selectionEnd = (before + s).length;
+			au_reset();
+		} else if (k == 'ArrowDown' && !isEmpty(AU.list)) {
+			au_select_down();
+		} else if (k == 'ArrowUp' && !isEmpty(AU.list)) {
+			if (AU.n > 0) AU.n--;
+			let ch = popup.children;
+			if (AU.selected) mStyle(AU.selected, { bg: 'blue' });
+			AU.selected = ch[AU.n];
+			mStyle(AU.selected, { bg: 'green' });
+			//} else if (k.startsWith('Arrow')){
+
+
+		} else if ('abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.includes(k) && !ev.ctrlKey) { //(isAlphaNum(k) || k == '_') && k!='Shift') {
+			//console.log('pressed letter', k); //YES!
+
+			let icaret = AU.ta.selectionEnd; //getCaretPosition(AU.ta);
+			let line = getTextAreaCurrentLine(AU.ta);
+			//console.log('line',line)
+			let iline = AU.ta.value.indexOf(line);
+			let i = icaret - iline; //ok
+			//console.log('i',i);
+			let [istart, m] = lastIndexOfAny(line, [',', ' ', ')', '(', '{', '}', ';'], i - 1);
+			let pf = line.slice(0, i);
+			if (istart >= 0) pf = line.slice(istart + 1, i);
+			//console.log('i:' + i, 'istart:' + istart, 'match:' + m, '\n==>pre:' + pf);
+
+			AU.prefix = pf;
+			au_show_list();
+			if (!isEmpty(AU.list)) au_select_down();
+
+		} else if (k != 'Shift') {
+			au_reset();
+			//console.log('ELSE!!!!!!!!!')
+		}
+	}
+
+
+
+
+}
+
+function dummy_reaction(ev) { console.log('clicked', ev.target) }
+
+function test9_autocomplete(){
+	dTable = mBy('dTable'); 
+	// let tb = mDiv(dTable, { hmargin: 10, padding: 10, cursor: 'pointer' }, null, null, 'top'); mFlexWrap(tb);
+	// mButton('Dummy', dummy_reaction, tb);
+	// mAutocomplete(tb);
+
+	//mAutocomplete(dTable)
+
+	// return;
+	juPlus(dTable);
+	let ta = DA.tas[0];
+	ta.id='myinput';
+	let list = [
+		{ key: 'Alabama', value: 'Alabama' },
+		{ key: 'Alaska', value: 'Alaska' },
+		{ key: 'Arizona', value: 'Arizona' },
+		{ key: 'Arkansas', value: 'Arkansas' },
+		{ key: 'California', value: 'California' },
+		{ key: 'Colorado', value: 'Colorado' },
+		{ key: 'Connecticut', value: 'Connecticut' },
+		{ key: 'Delaware', value: 'Delaware' },
+		{ key: 'Florida', value: 'Florida' },
+		{ key: 'Georgia', value: 'Georgia' },
+		{ key: 'Hawaii', value: 'Hawaii' },
+		{ key: 'Idaho', value: 'Idaho' },
+		{ key: 'Illinois', value: 'Illinois' },
+		{ key: 'Indiana', value: 'Indiana' },
+		{ key: 'Iowa', value: 'Iowa' },
+		{ key: 'Kansas', value: 'Kansas' },
+		{ key: 'Kentucky', value: 'Kentucky' },
+		{ key: 'Louisiana', value: 'Louisiana' },
+		{ key: 'Maine', value: 'Maine' },
+		{ key: 'Maryland', value: 'Maryland' },
+		{ key: 'Massachusetts', value: 'Massachusetts' },
+		{ key: 'Michigan', value: 'Michigan' },
+		{ key: 'Minnesota', value: 'Minnesota' },
+		{ key: 'Mississippi', value: 'Mississippi' },
+		{ key: 'Missouri', value: 'Missouri' },
+		{ key: 'Montana', value: 'Montana' },
+		{ key: 'Nebraska', value: 'Nebraska' },
+		{ key: 'Nevada', value: 'Nevada' },
+		{ key: 'New Hampshire', value: 'New Hampshire' },
+		{ key: 'New Jersey', value: 'New Jersey' },
+		{ key: 'New Mexico', value: 'New Mexico' },
+		{ key: 'New York', value: 'New York' },
+		{ key: 'North Carolina', value: 'North Carolina' },
+		{ key: 'North Dakota', value: 'North Dakota' },
+		{ key: 'Ohio', value: 'Ohio' },
+		{ key: 'Oklahoma', value: 'Oklahoma' },
+		{ key: 'Oregon', value: 'Oregon' },
+		{ key: 'Pennsylvania', value: 'Pennsylvania' },
+		{ key: 'Rhode Island', value: 'Rhode Island' },
+		{ key: 'South Carolina', value: 'South Carolina' },
+		{ key: 'South Dakota', value: 'South Dakota' },
+		{ key: 'Tennessee', value: 'Tennessee' },
+		{ key: 'Texas', value: 'Texas' },
+		{ key: 'Utah', value: 'Utah' },
+		{ key: 'Vermont', value: 'Vermont' },
+		{ key: 'Virginia', value: 'Virginia' },
+		{ key: 'Washington', value: 'Washington' },
+		{ key: 'West Virginia', value: 'West Virginia' },
+		{ key: 'Wisconsin', value: 'Wisconsin' },
+		{ key: 'Wyoming', value: 'Wyoming' },
+	];
+
+	list = CODE.index.map(x=>({key:x,value:x}));
+	mAutocomplete(dTable,ta,list); //['also','aber','all']);
+}
+function mAutocomplete(dParent, elem, list) {
+
+	// let html = `
+	// 	<div id="test-autocomplete-textarea-container">
+	// 		<textarea id="test-autocomplete-textarea" rows="4" style='box-sizing:border-box;width:100%;' placeholder="States of USA"></textarea>
+	// 	</div>
+	// 	`;
+	// let d = mCreateFrom(html);
+	// //list = list.map(x=>({key:x,value:x}));
+	// mAppend(dParent, d);
+
+
+	var tributeAttributes = {
+		autocompleteMode: true,
+		noMatchTemplate: '',
+		values: list,
+		selectTemplate: function (item) {
+			if (typeof item === 'undefined') return null;
+			if (this.range.isContentEditable(this.current.element)) {
+				return '<span contenteditable="false"><a>' + item.original.key + '</a></span>';
+			}
+
+			return item.original.value;
+		},
+		menuItemTemplate: function (item) {
+			return item.string;
+		},
+	};
+	var tributeAutocompleteTestArea = new Tribute(
+		Object.assign(
+			{
+				menuContainer: dParent, //document.getElementById('test-autocomplete-textarea-container'),
+			},
+			tributeAttributes
+		)
+	);
+	tributeAutocompleteTestArea.attach(elem); //document.getElementById('test-autocomplete-textarea'));
+
+}
+
+function muell_autocomplete(dParent, elem, list) {
+	function autocomplete(inp, arr) {
+		var currentFocus;
+		inp = toElem(inp);
+		console.log('inp', inp)
+		inp.addEventListener('input', function (e) { /*execute a function when someone writes in the text field:*/
+			console.log('ev input', e)
+			var a, b, i, val = this.value;		/*close any already open lists of autocompleted values*/
+			closeAllLists();
+			if (!val) { return false; }
+			currentFocus = -1;
+			a = document.createElement('DIV'); /*create a DIV element that will contain the items (values):*/
+			a.setAttribute('id', this.id + 'autocomplete-list');
+			a.setAttribute('class', 'autocomplete-items');
+			this.parentNode.appendChild(a); /*append the DIV element as a child of the autocomplete container:*/
+			for (i = 0; i < arr.length; i++) {
+				if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+					b = document.createElement('DIV'); /*create a DIV element for each matching element:*/
+					// b.innerHTML = '<strong>' + arr[i].substr(0, val.length) + '</strong>'; /*make the matching letters bold:*/
+					b.innerHTML = arr[i].substr(0, val.length); /*make the matching letters bold:*/
+					b.innerHTML += arr[i].substr(val.length);
+					b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>"; /*insert a input field that will hold the current array item's value:*/
+					b.addEventListener('click', function (e) {
+						inp.value = this.getElementsByTagName('input')[0].value; /*insert the value for the autocomplete text field:*/
+						closeAllLists();
+					});
+					a.appendChild(b);
+				}
+			}
+		});
+		inp.addEventListener('keydown', function (e) {
+			var x = document.getElementById(this.id + 'autocomplete-list');
+			if (x) x = x.getElementsByTagName('div');
+			if (e.keyCode == 40) { // arrow DOWN
+				currentFocus++;
+				addActive(x);
+			} else if (e.keyCode == 38) { //arrow UP
+				currentFocus--;
+				addActive(x);
+			} else if (e.keyCode == 13) { // ENTER
+				e.preventDefault();  // if the ENTER key is pressed, prevent the form from being submitted
+				if (currentFocus > -1) {
+					if (x) x[currentFocus].click(); // simulate a click on the "active" item:
+				}
+			}
+		});
+		inp.addEventListener('dblclick', function (e) { evNoBubble(e); });
+
+		function addActive(x) {
+			// works with classes from styles.css
+			if (!x) return false;
+			removeActive(x);
+			if (currentFocus >= x.length) currentFocus = 0;
+			if (currentFocus < 0) currentFocus = x.length - 1;
+			x[currentFocus].classList.add('autocomplete-active');
+		}
+		function removeActive(x) {
+			for (var i = 0; i < x.length; i++) {
+				x[i].classList.remove('autocomplete-active');
+			}
+		}
+		function closeAllLists(elmnt) {
+			var x = document.getElementsByClassName('autocomplete-items');
+			for (var i = 0; i < x.length; i++) {
+				if (elmnt != x[i] && elmnt != inp) {
+					x[i].parentNode.removeChild(x[i]);
+				}
+			}
+		}
+
+		document.addEventListener('click', function (e) {
+			closeAllLists(e.target);
+		});
+	}
+	if (nundef(list)) list = Geo.continents.Europe; console.log('list', list)
+	mClass(dParent, 'autocomplete');
+	autocomplete(elem, list);
+}
+function mAutocomplete(dParent) {
+	let form = mCreateFrom(`
+		<form class='autoform' autocomplete="off" action="javascript:void(0);">
+			<div class="autocomplete" style="width: 200px">
+				<!--<input id="_myInput" type="text" name="_myCity" placeholder="City" onclick="select()" />-->
+				<textarea rows=3 id="myInput" type="text" name="myCity" placeholder="City" onclick="select()"></textarea>
+			</div>
+			<input style="margin-left:-15px" type="submit" value="Go!" />
+		</form>
+	`	);
+	form.onsubmit = () => {
+		let c = mBy('myInput').value.toLowerCase();
+		console.log('submit',c);
+		// let o = Geo.cities[c];
+		// if (nundef(o)) { c = toUmlaut(c); o = Geo.cities[c]; }
+		// console.log('c', c);
+		// let center = o.center;
+		// M.map.flyTo(center, M.map.getZoom(), { animate: false })
+	}
+	let d = mAppend(dParent, form);
+}
+
 async function load_codebase() {
 	function parse_funcs(code) {
 		let res = {};

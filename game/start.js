@@ -18,7 +18,10 @@ async function _start() {
 	timit.show();
 	//#endregion
 
-	show_apps();
+	test8_jup();
+	//show_apps();
+
+	//test7_card();
 	//howto_open();	//test6_sidebar(); //test5_prelim();
 
 	//#region db tests

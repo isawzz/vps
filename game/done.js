@@ -381,13 +381,13 @@ function create_fiddle(dParent, code, rows=10, cols=120) {
 }
 function create_fiddle_ui(dParent, code, rows, cols) {
 	mStyle(dParent, { position: 'relative' }); //, align:'center' });
-	let ta = mTextArea(rows, cols, dParent, { padding: 20, position: 'relative' }, 'taCode');
+	let ta = mTextarea(rows, cols, dParent, { padding: 20, position: 'relative' }, 'taCode');
 	setTimeout(() => ta.autofocus = true, 10);
 	let buttons = mDiv(dParent, { w: getRect(ta).w, align: 'right', maright: 4 }); //align:'right','align-self':'end','justify-self':'end'})
 	let st = { fz: 14 };
 	maButton('RUN (ctl+Enter)', au_run, buttons, st);
 	maButton('LINE (ctl+shft+Enter)', au_run_line, buttons, st);
-	let tacon = mTextArea(1, cols, dParent, { matop: 4, hpadding: 20, vpadding: 10, position: 'relative' }, 'taConsole');
+	let tacon = mTextarea(1, cols, dParent, { matop: 4, hpadding: 20, vpadding: 10, position: 'relative' }, 'taConsole');
 	ta.focus();
 	AU.popup = mDiv(dParent, { position: 'absolute', wmin: 100, hmin: 100, hmax: 600, overy: 'auto', bg: 'blue', fg: 'white' });
 	AU.fnames = get_keys(CODE.funcs); AU.fnames.sort();

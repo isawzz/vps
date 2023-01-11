@@ -1,20 +1,65 @@
+function mAutocomplete(dParent, elem, list) {
 
-function stringLast(s,n){	return s.substring(s.length-n,s.length);}
+	// let html = `
+	// 	<div id="test-autocomplete-textarea-container">
+	// 		<textarea id="test-autocomplete-textarea" rows="4" style='box-sizing:border-box;width:100%;' placeholder="States of USA"></textarea>
+	// 	</div>
+	// 	`;
+	// let d = mCreateFrom(html);
+	// //list = list.map(x=>({key:x,value:x}));
+	// mAppend(dParent, d);
+
+
+	var tributeAttributes = {
+		autocompleteMode: true,
+		noMatchTemplate: '',
+		values: list,
+		selectTemplate: function (item) {
+			if (typeof item === 'undefined') return null;
+			if (this.range.isContentEditable(this.current.element)) {
+				return '<span contenteditable="false"><a>' + item.original.key + '</a></span>';
+			}
+
+			return item.original.value;
+		},
+		menuItemTemplate: function (item) {
+			return item.string;
+		},
+	};
+	var tributeAutocompleteTestArea = new Tribute(
+		Object.assign(
+			{
+				menuContainer: dParent, //document.getElementById('test-autocomplete-textarea-container'),
+			},
+			tributeAttributes
+		)
+	);
+	tributeAutocompleteTestArea.attach(elem); //document.getElementById('test-autocomplete-textarea'));
+
+}
+function juPlus(dParent) {
+	let tas = DA.tas = valf(DA.tas, []);
+	let ta = mTextarea(3, null, dParent, { w: '100%', box: true });
+	tas.push(ta);
+	return ta;
+
+}
+function stringLast(s, n) { return s.substring(s.length - n, s.length); }
 
 async function load_codebase() {
 	function parse_funcs(code) {
 		let res = {};
 		let cfunctions = '\r\nfunction ' + stringAfter(code, 'function '); //jump to first function def
 		let asyncnames = cfunctions.split('\r\nasync function');
-		let asyncs={};
-		for(const x of asyncnames){
-			let name = stringBefore(x,'(').trim();
-			console.log('async',name);
-			asyncs[name]=true;
+		let asyncs = {};
+		for (const x of asyncnames) {
+			let name = stringBefore(x, '(').trim();
+			console.log('async', name);
+			asyncs[name] = true;
 		}
 		cfunctions = asyncnames.join('\r\nfunction');
 		let fbodies = cfunctions.split('\r\nfunction').map(x => x.trim());
-		console.log('fbodies',fbodies)
+		console.log('fbodies!!!!!!!!!!!'); //,fbodies)
 
 		//console.log('fbodies',fbodies);
 		for (const f of fbodies) {
@@ -25,23 +70,23 @@ async function load_codebase() {
 
 			let lines = (stringAfter(f, ') {')).split('\r\n');
 			let body = '';
-			for(const line of lines){
-				let ws=toWords(line);
-				if (isEmpty(ws[0]) || startsWith(ws[0],'//')) continue;
+			for (const line of lines) {
+				let ws = toWords(line);
+				if (isEmpty(ws[0]) || startsWith(ws[0], '//')) continue;
 				//if (startsWith(line,'class')) {} //TODO
 				//console.log('===>ws',ws)
 				//console.log('bp',bp)
-				let bp1=replaceAllSpecialChars(line,'\t','  ')
-				if (!bp1.includes('http')) bp1=stringBefore(bp1,'//');//achtung http://
-				body+=bp1+'\n';
+				let bp1 = replaceAllSpecialChars(line, '\t', '  ')
+				if (!bp1.includes('http')) bp1 = stringBefore(bp1, '//');//achtung http://
+				body += bp1 + '\n';
 			}
 			// let sig = `${prev_async?'async ':''}function ${name}(${params})`;
 			// body=sig+'{\n'+body;
 			// res[name.trim()] = { name: name, params: params, sig:sig, body: body, async: prev_async };
-			let isasync=isdef(asyncs[name]);
-			let sig = `${isasync?'async ':''}function ${name}(${params})`;
-			body=sig+'{\n'+body;
-			res[name.trim()] = { name: name, params: params, sig:sig, body: body, async: isasync };
+			let isasync = isdef(asyncs[name]);
+			let sig = `${isasync ? 'async ' : ''}function ${name}(${params})`;
+			body = sig + '{\n' + body;
+			res[name.trim()] = { name: name, params: params, sig: sig, body: body, async: isasync };
 		}
 
 		//console.log('functions', res); //get_keys(res));
@@ -64,12 +109,13 @@ async function load_codebase() {
 	}
 
 	let dif = {}, dic = {};
-	let paths = ['gamehelpers']; //'basemin', 'board', 'cards', 'gamehelpers', 'select'].map(f => `../basejs/${f}.js`);
-	paths = paths.map(f => `../basejs/${f}.js`);
-	//paths.push(`../game/done.js`);
+	// let paths = ['basemin', 'board', 'cards', 'gamehelpers', 'select']; //.map(f => `../basejs/${f}.js`);
+	// paths = paths.map(f => `../basejs/${f}.js`);
+	// paths.push(`../game/done.js`);
+	let paths = [`../game/aaa.js`];
 	CODE.paths = paths;
-	for (const f of paths) { 
-		let base = await route_path_text(f); 
+	for (const f of paths) {
+		let base = await route_path_text(f);
 		let dinew = parse_funcs(base);
 		addKeys(dinew, dif);
 		let dicnew = parse_consts(base);
@@ -82,9 +128,32 @@ async function load_codebase() {
 
 }
 
-function fiddle_set(k){
+function getGlobals() {
+	let di = {};
+	let keys = get_keys(window); keys.sort();
+
+	for (const k of keys) {
+		let o = window[k];
+		let type = typeof o;
+		lookupAddToList(di, [type], { key: k, o: o, type: type });
+	}
+	Globals = di;
+	return di;
+}
+function showGlobals() {
+	getGlobals();
+	dTable = mBy('dTable');
+	let d = mDiv(dTable);
+
+	for (const k in Globals) {
+		let d1 = mDiv(d, {}, null, k);
+		let d2 = mDiv(d, {}, null, Globals[k].map(x => x.key).join(',')); mFlexWrap(d2);
+	}
+}
+
+function fiddle_set(k) {
 	//simplest?
-	let code = isdef(CODE.funcs[k])?CODE.funcs[k]:CODE.consts[k];
+	let code = isdef(CODE.funcs[k]) ? CODE.funcs[k] : CODE.consts[k];
 	let ta = mBy('taCode');
 	//if (nundef(ta)) 
 }
