@@ -14,7 +14,7 @@ async function _start() {
 
 	await load_syms(); // jetzt gibt es Syms SymKeys ByGroupSubgroup Info KeySets
 	await load_db(); //console.log("DB", DB); //jetzt gibt es DB
-	await load_codebase(); //return;  //console.log('codebase',DA.codebase); return
+	//await load_codebase(); //return;  //console.log('codebase',DA.codebase); return
 	timit.show();
 	//#endregion
 

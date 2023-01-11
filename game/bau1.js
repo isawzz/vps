@@ -32,7 +32,7 @@ function mAutocomplete(dParent, elem, list) {
 }
 function juPlus(dParent) {
 	let tas = DA.tas = valf(DA.tas, []);
-	let ta = mTextarea(3, null, dParent, { w: '100%', box: true });
+	let ta = mTextarea(3, null, dParent, { fz:16, padding:10, family:'tahoma',w: '100%', box: true });
 	tas.push(ta);
 	return ta;
 

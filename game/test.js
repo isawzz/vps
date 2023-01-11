@@ -1,15 +1,20 @@
-function test8_jup(){
+function test8_jup() {
 	getGlobals();
-	let dParent = dTable = mBy('dTable'); 
-	let list = Globals.function.map(x=>({key:x.key,value:x.key+'('})); //CODE.index.map(x=>({key:x,value:x}));
-	for(const n in range(5)) {
-		let ta=juPlus(dParent);
-		mAutocomplete(dParent,ta,list); //['also','aber','all']);
+	let dParent = dTable = mBy('dTable');
+	let list = Globals.function.map(x => ({ key: x.key, value: x.key + '(' })); //CODE.index.map(x=>({key:x,value:x}));
+	for (const n in range(5)) {
+		let ta = juPlus(dParent);
+		mAutocomplete(dParent, ta, list); //['also','aber','all']);
+
+		ta.addEventListener('keyup',ev=>{
+			
+		})
+
 	}
 }
 function test7_card() {
 	dTable = mBy('dTable'); mCenterFlex(dTable);
-	let x = ui_type_hand(['3Hn', '4Hn', '4Hl'], dTable); console.log('hand',x);
+	let x = ui_type_hand(['3Hn', '4Hn', '4Hl'], dTable); console.log('hand', x);
 
 	iReg(x);
 
