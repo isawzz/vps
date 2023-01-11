@@ -1,20 +1,10 @@
 function mAutocomplete(dParent, elem, list) {
-
-	// let html = `
-	// 	<div id="test-autocomplete-textarea-container">
-	// 		<textarea id="test-autocomplete-textarea" rows="4" style='box-sizing:border-box;width:100%;' placeholder="States of USA"></textarea>
-	// 	</div>
-	// 	`;
-	// let d = mCreateFrom(html);
-	// //list = list.map(x=>({key:x,value:x}));
-	// mAppend(dParent, d);
-
-
 	var tributeAttributes = {
 		autocompleteMode: true,
 		noMatchTemplate: '',
 		values: list,
 		selectTemplate: function (item) {
+			console.log('item',item)
 			if (typeof item === 'undefined') return null;
 			if (this.range.isContentEditable(this.current.element)) {
 				return '<span contenteditable="false"><a>' + item.original.key + '</a></span>';
@@ -23,9 +13,12 @@ function mAutocomplete(dParent, elem, list) {
 			return item.original.value;
 		},
 		menuItemTemplate: function (item) {
+			console.log('item',item)
 			return item.string;
 		},
+		replaceTextSuffix: '',
 	};
+	console.log('itemclass',tributeAttributes.itemClass)
 	var tributeAutocompleteTestArea = new Tribute(
 		Object.assign(
 			{
