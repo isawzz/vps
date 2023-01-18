@@ -302,10 +302,4 @@ appdata:
       c: hallo86
     - kw: k84
       c: hallo89
-  simple:
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
 tables: null

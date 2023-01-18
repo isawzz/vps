@@ -9,103 +9,6 @@ function get_app_presenter(id) {
 }
 //#endregion
 
-//#region autocomplete in textarea
-function au_show_list() {
-	let [popup, ta, fnames] = [AU.popup, AU.ta, AU.fnames];
-
-	//console.log('prefix', AU.prefix)
-	if (isEmpty(AU.prefix)) au_reset(); //hide(popup);
-	else {
-		AU.list = fnames.filter(x => startsWith(x, AU.prefix));
-
-		if (isEmpty(AU.list)) {
-			AU.list = Object.keys(window).filter(x => startsWith(x, AU.prefix));
-			AU.list = AU.list.concat(get_keys(CODE.consts).filter(x => startsWith(x, AU.prefix)));
-
-			//add to that Items keys
-			AU.list = AU.list.concat(get_keys(Items).filter(x => startsWith(x, AU.prefix)));
-
-		}
-		if (isEmpty(AU.list)) {
-			hide(popup);
-		} else {
-			let mousepos = getCaretCoordinates(ta, ta.selectionStart - AU.prefix.length);
-			//console.log('mousepos',mousepos)
-			//let r = getRect(ta);
-			//let r2=getRect(dCode);
-			//console.log('ta',r.l,'ta-parent',r2.left)
-			//console.log('r',r.l,r.t)
-			//console.log('mousepos', mousepos);
-			show(popup)
-			mPos(popup, mousepos.left + 10, mousepos.top + 30); // + 18, mousepos.top + 25);
-			// mPos(popup, mousepos.left + 18, mousepos.top + 25);
-			iClear(popup);
-			AU.n = -1;
-			AU.selected = null;
-			for (const w of AU.list) {
-
-				if (isdef(CODE.funcs[w])) mDiv(popup, {}, w, CODE.funcs[w].sig); 
-				else mDiv(popup, {}, w, w)
-			}
-		}
-	}
-}
-function au_reset() {
-	AU.list = [];
-	AU.prefix = '';
-	AU.n = -1;
-	AU.selected = null;
-	hide(AU.popup);
-	AU.detect = false;
-
-}
-function au_select_down() {
-	if (AU.n < AU.list.length - 1) AU.n++;
-	let ch = AU.popup.children;
-	if (AU.selected) mStyle(AU.selected, { bg: 'blue' });
-	AU.selected = ch[AU.n];
-	mStyle(AU.selected, { bg: 'green' });
-
-}
-function au_run() { au_reset(); runcode(AU.ta.value); show_div_ids(); }
-function au_run_line() { au_reset(); runcode(getTextAreaCurrentLine(AU.ta)); }
-function getTextAreaCurrentLine(el) {
-	let line = '';
-	if (el instanceof HTMLTextAreaElement) {
-		// unlike substring, slice gives empty string when (1,0)
-		line = el.value.slice(el.value.lastIndexOf('\n', el.selectionStart - 1) + 1,
-			((end = el.value.indexOf('\n', el.selectionStart)) => end > -1 ? end : undefined)());
-	}
-	//document.getElementById('result').innerHTML = '"'+line+'"';
-	return line;
-}
-function getTextAreaCurrentWord(el) {
-	let line = '', w = '', prefix = '';
-	if (el instanceof HTMLTextAreaElement) {
-		let s = el.value;
-		let i_caret = el.selectionEnd;
-		let i_last_break_before_caret = s.lastIndexOf('\n', i_caret - 1); if (i_last_break_before_caret < 0) i_last_break_before_caret = 0;
-		let i_next_break = s.indexOf('\n', i_caret); if (i_next_break < 0) i_next_break = s.length - 1;
-		let i_caret_within_line = i_caret - i_last_break_before_caret;
-		line = s.slice(i_last_break_before_caret + 1, i_next_break);
-
-		let pos = i_caret_within_line - 2;
-		console.log('_________\nline:', line, '\ni_caret=' + i_caret, 'i_in_line=' + pos);
-		for (let i = pos; i >= 0; i--) {
-			let ch = line[i];
-			if (isAlphaNum(ch)) w = ch + w; else break;
-		}
-		prefix = w;
-
-		for (let i = pos + 1; i < line.length; i++) {
-			let ch = line[i];
-			if (isAlphaNum(ch)) w = w + ch; else break;
-		}
-	}
-	return [w, prefix];
-}
-//#endregion
-
 //#region basemin NEW
 function arrAverage(arr, prop) {
 	let n = arr.length; if (!n) return 0;
@@ -185,7 +88,7 @@ function getCaretCoordinates(element, position, options) {
 	if (!debug) style.visibility = 'hidden';  // not 'display: none' because we want rendering
 
 	// Transfer the element's properties to the div
-	properties.forEach(prop=> {
+	properties.forEach(prop => {
 		if (isInput && prop === 'lineHeight') {
 			// Special case for <input>s because text is rendered centered and line height may be != height
 			if (computed.boxSizing === "border-box") {
@@ -248,7 +151,55 @@ function getCaretCoordinates(element, position, options) {
 
 	return coordinates;
 }
+function getGlobals() {
+	let di = {};
+	let keys = get_keys(window); keys.sort();
+
+	for (const k of keys) {
+		let o = window[k];
+		let type = typeof o;
+		lookupAddToList(di, [type], { key: k, o: o, value: k, type: type });
+	}
+	Globals = di;
+	return di;
+}
+function getTextAreaCurrentLine(el) {
+	let line = '';
+	if (el instanceof HTMLTextAreaElement) {
+		// unlike substring, slice gives empty string when (1,0)
+		line = el.value.slice(el.value.lastIndexOf('\n', el.selectionStart - 1) + 1,
+			((end = el.value.indexOf('\n', el.selectionStart)) => end > -1 ? end : undefined)());
+	}
+	//document.getElementById('result').innerHTML = '"'+line+'"';
+	return line;
+}
+function getTextAreaCurrentWord(el) {
+	let line = '', w = '', prefix = '';
+	if (el instanceof HTMLTextAreaElement) {
+		let s = el.value;
+		let i_caret = el.selectionEnd;
+		let i_last_break_before_caret = s.lastIndexOf('\n', i_caret - 1); if (i_last_break_before_caret < 0) i_last_break_before_caret = 0;
+		let i_next_break = s.indexOf('\n', i_caret); if (i_next_break < 0) i_next_break = s.length - 1;
+		let i_caret_within_line = i_caret - i_last_break_before_caret;
+		line = s.slice(i_last_break_before_caret + 1, i_next_break);
+
+		let pos = i_caret_within_line - 2;
+		console.log('_________\nline:', line, '\ni_caret=' + i_caret, 'i_in_line=' + pos);
+		for (let i = pos; i >= 0; i--) {
+			let ch = line[i];
+			if (isAlphaNum(ch)) w = ch + w; else break;
+		}
+		prefix = w;
+
+		for (let i = pos + 1; i < line.length; i++) {
+			let ch = line[i];
+			if (isAlphaNum(ch)) w = w + ch; else break;
+		}
+	}
+	return [w, prefix];
+}
 function rName(n = 1) { let arr = MyNames; return rChoose(arr, n); }
+function stringLast(s, n) { return s.substring(s.length - n, s.length); }
 //#endregion
 
 //#region canvas loop
@@ -318,93 +269,122 @@ function draw_perlin_xy(item) {
 //#endregion
 
 //#region fiddle
-function create_fiddle(dParent, code, rows=10, cols=120) {
-	let [ta, buttons, tacon] = create_fiddle_ui(dParent, code, rows, cols);
-	ta.onkeydown = ev => {
-		let k = ev.key;
-		if (k == 'Enter' && AU.selected) ev.preventDefault();
-		if (!isEmpty(AU.list) && (k == 'ArrowDown' || k == 'ArrowUp')) ev.preventDefault();
-	}
-	ta.onkeyup = ev => {
-		let k = ev.key; let fnames = AU.fnames; let popup = AU.popup;
-		if (k == 'Enter' && ev.ctrlKey) {
-			au_reset();
-			let code = ev.shiftKey ? getTextAreaCurrentLine(AU.ta) : AU.ta.value;
-			runcode(code);
-		} else if (k == 'Escape' && !isEmpty(AU.list)) {
-			au_reset();
-		} else if (k == 'Enter' && AU.selected) {
-			//insert at caret!
-			let w = AU.selected.innerHTML; //enthaelt params auch!
-			let params = stringAfter(w, '(');
-			let funcname = stringBefore(w, '(')
-			let s = stringAfter(w, AU.prefix); // s is portion of select entry that is NOT in ta
-			let before = AU.ta.value.slice(0, AU.ta.selectionEnd);
-			let after = AU.ta.value.slice(AU.ta.selectionEnd);
-			AU.ta.value = before + s + after;
-			ta.selectionEnd = (before + s).length;
-			au_reset();
-		} else if (k == 'ArrowDown' && !isEmpty(AU.list)) {
-			au_select_down();
-		} else if (k == 'ArrowUp' && !isEmpty(AU.list)) {
-			if (AU.n > 0) AU.n--;
-			let ch = popup.children;
-			if (AU.selected) mStyle(AU.selected, { bg: 'blue' });
-			AU.selected = ch[AU.n];
-			mStyle(AU.selected, { bg: 'green' });
-			//} else if (k.startsWith('Arrow')){
+function fiddleAdd(dParent, content, idx) {
+	let ta = AU.ta = mTextarea(3, null, dParent, { fz: 16, padding: 10, family: 'tahoma', w: '100%', box: true });
+	ta.addEventListener('keydown', fiddleControlHandler);
+	DA.tribute.attach(ta);
+	DA.tas.push(ta);
+	ta.addEventListener('tribute-replaced', fiddleMessageHandler);
+	if (isdef(content)) ta.value = content; 
+	if (isdef(idx)) mInsertAt(dParent,ta,idx); //TESTEN!!!!!!!!!!!!!
+	ta.focus();
+}
+function fiddleControlHandler(ev) {
+	if (ev.ctrlKey) {
+		let instance = DA.tribute; //.events.shouldDeactivate(ev);
+		instance.isActive = false;
+		instance.hideMenu();
 
-
-		} else if ('abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.includes(k) && !ev.ctrlKey) { //(isAlphaNum(k) || k == '_') && k!='Shift') {
-			//console.log('pressed letter', k); //YES!
-
-			let icaret = AU.ta.selectionEnd; //getCaretPosition(AU.ta);
-			let line = getTextAreaCurrentLine(AU.ta);
-			//console.log('line',line)
-			let iline = AU.ta.value.indexOf(line);
-			let i = icaret - iline; //ok
-			//console.log('i',i);
-			let [istart, m] = lastIndexOfAny(line, [',', ' ', ')', '(', '{', '}', ';'], i - 1);
-			let pf = line.slice(0, i);
-			if (istart >= 0) pf = line.slice(istart + 1, i);
-			//console.log('i:' + i, 'istart:' + istart, 'match:' + m, '\n==>pre:' + pf);
-
-			AU.prefix = pf;
-			au_show_list();
-			if (!isEmpty(AU.list)) au_select_down();
-
-		} else if (k != 'Shift') {
-			au_reset();
-			//console.log('ELSE!!!!!!!!!')
+		//console.log('ev.key', ev.key)
+		if (ev.key == 'Enter') {
+			runcode(ev.target.value);
+		} else if (ev.key == '+' || ev.key == '=') {
+			evStop(ev);
+			fiddleAdd(dFiddle);
+		} else if (ev.key == '-' || ev.key == '_') {
+			//remove all empty fiddles
+			evStop(ev);
+			let empty = DA.tas.filter(x => isEmptyOrWhiteSpace(x.value));
+			let elfocus = document.activeElement;
+			let nofocus = false;
+			for (const ta of empty) { if (ta == elfocus) nofocus = true; ta.remove(); }
+			DA.tas = arrMinus(DA.tas, empty);
+			if (isEmpty(DA.tas)) fiddleAdd(dFiddle);
+			else if (nofocus) { AU.ta = DA.tas[0]; AU.ta.focus(); }
+		} else if (ev.key == 'ArrowDown') {
+			let ta = AU.ta = arrNext(DA.tas, AU.ta);
+			ta.focus();
+		} else if (ev.key == 'ArrowUp') {
+			let ta = AU.ta = arrPrev(DA.tas, AU.ta);
+			ta.focus();
 		}
 	}
 }
-function create_fiddle_ui(dParent, code, rows, cols) {
-	mStyle(dParent, { position: 'relative' }); //, align:'center' });
-	let ta = mTextarea(rows, cols, dParent, { padding: 20, position: 'relative' }, 'taCode');
-	setTimeout(() => ta.autofocus = true, 10);
-	let buttons = mDiv(dParent, { w: getRect(ta).w, align: 'right', maright: 4 }); //align:'right','align-self':'end','justify-self':'end'})
-	let st = { fz: 14 };
-	maButton('RUN (ctl+Enter)', au_run, buttons, st);
-	maButton('LINE (ctl+shft+Enter)', au_run_line, buttons, st);
-	let tacon = mTextarea(1, cols, dParent, { matop: 4, hpadding: 20, vpadding: 10, position: 'relative' }, 'taConsole');
-	ta.focus();
-	AU.popup = mDiv(dParent, { position: 'absolute', wmin: 100, hmin: 100, hmax: 600, overy: 'auto', bg: 'blue', fg: 'white' });
-	AU.fnames = get_keys(CODE.funcs); AU.fnames.sort();
-	AU.ta = ta; AU.tacon = tacon;
-	au_reset();
-	if (nundef(code)) { code = localStorage.getItem('code'); if (nundef(code)) code = `pause();`; }
-	else {
-		var tab = RegExp("\\t", "g");
-		code = code.toString().replace(tab, ' ');
+function fiddleInit(dParent) {
+	dFiddle = valf(dParent,dTable); 
+	dMessage = mDiv(dFiddle, { w: '100%', bg: 'dimgray', fg: 'yellow', box: true, hpadding: 10 }, 'dMessage', 'enter code:');
+	getGlobals();
+	let list = Globals.function.map(x => ({ key: x.key, value: x.key + '(' }));
+	DA.tas = [];
+
+	var tributeAttributes = {
+		autocompleteMode: true,
+		//trigger: ' ',
+		//noMatchTemplate: '', //null, //' ',
+		noMatchTemplate: () => {
+			return '<span style:"visibility: hidden;"></span>';
+		},
+		//values: function (text, cb) {			fiddleSearch(text, cb);		},
+		values: fiddleSearch,
+		selectTemplate: function (item) {
+			//console.log('item',item)
+			if (typeof item === 'undefined') return null;
+			if (this.range.isContentEditable(this.current.element)) {
+				return '<span contenteditable="false"><a>' + item.original.key + '</a></span>';
+			}
+			return item.original.value;
+		},
+		menuItemTemplate: function (item) {
+			//console.log('item',item)
+			return item.string;
+		},
+		replaceTextSuffix: '(',
+		menuShowMinLength: 1,
+	};
+	var trib = DA.tribute = new Tribute(Object.assign({ menuContainer: dParent, }, tributeAttributes));
+
+	//from localStorage get how many fiddles there should be plus content
+	let saved = localStorage.getItem('codelist');
+	let codelist = saved ? JSON.parse(saved) : [];
+	//console.log('saved',saved)
+	if (codelist.length == 0) codelist = [`console.log('hallo');`];
+	for (const code of codelist) {
+		fiddleAdd(dFiddle, code);
 	}
-	AU.ta.value = code;
-	return [ta, buttons, tacon];
+	//create that many fiddles, at least 1 empty fiddle
+	setTimeout(() => dFiddle.children[0].focus(), 100);
 }
-function runcode(code) {
+function fiddleMessageHandler(ev) {
+	//console.log('Original Event:', ev.detail.event);
+	//console.log('Matched item:', ev.detail.item);
+	//if matched item is of type function
+	let key = ev.detail.item.original.key;
+	let item = window[key];
+	if (typeof item == 'function') {
+		//jetzt will ich param info!
+		let d = mBy('dMessage');
+		d.innerHTML = stringBefore(item.toString(), ') {') + ')';
+	}
+
+}
+function fiddleSave() {
+	if (isdef(dFiddle)) {
+		let codelist=arrChildren(dFiddle).slice(1).filter(x=>!isEmptyOrWhiteSpace(x.value)).map(x => x.value);
+		localStorage.setItem('codelist', JSON.stringify(codelist));
+		lookupSetOverride(DB,['env','fiddle'],codelist);
+	}else console.log('fiddle closed - not saved')
+}
+function fiddleSearch(text, callback) {
+	//console.log('text', text)
+	let list = Globals.function;
+	let list1 = list.filter(x => startsWith(x.key, text));
+	callback(list1);
+}
+function runcode(code, callback = null) {
 	let x = eval(code);
-	AU.tacon.value = x;
+	if (callback) callback(x); else console.log('result:', x);
 }
+
 
 //#endregion
 
@@ -539,11 +519,7 @@ function show_apps(ms = 500) {
 		//if (gamelist.includes(app.id)) { let f = get_app_presenter(app.id); f(d, app); }
 	}
 }
-function show_fiddle(code,rows,cols,fiddlestyles) {
-	let dFiddle = mBy('dFiddle'); iClear(dFiddle); mCenterFlex(dFiddle);	//transition
-	if (isdef(fiddlestyles)) mStyle(dFiddle,fiddlestyles)
-	create_fiddle(dFiddle, code,rows,cols);
-}
+function show_fiddle() { fiddleInit(); }
 function show_games(ms = 500) {
 	let dParent = mBy('dGames');
 	iClear(dParent);
@@ -566,6 +542,17 @@ function show_games(ms = 500) {
 			mLinebreak(d1, 4);
 			mDiv(d1, { fz: 18, align: 'center' }, null, g.friendly);
 		}
+	}
+}
+function showGlobals() {
+	getGlobals();
+	console.log('Globals',Globals)
+	dTable = mBy('dTable');
+	let d = mDiv(dTable);
+
+	for (const k in Globals) {
+		let d1 = mDiv(d, {}, null, k);
+		let d2 = mDiv(d, {}, null, Globals[k].map(x => x.key).join(',')); mFlexWrap(d2);
 	}
 }
 function show_game_options_menu(gamename) {
@@ -604,7 +591,7 @@ function show_game_options(dParent, gamename) {
 	}
 }
 function toggle_apps() { if (isEmpty(mBy('dApps').innerHTML)) show_apps(); else iClear('dApps'); }
-function toggle_fiddle() { if (isEmpty(mBy('dFiddle').innerHTML)) show_fiddle(); else iClear('dFiddle'); }
+function toggle_fiddle() { if (nundef(dFiddle)) show_fiddle(); else { fiddleSave(); iClear(dFiddle); dFiddle = null; } }
 function toggle_games() { if (isEmpty(mBy('dGames').innerHTML)) show_games(); else iClear('dGames'); }
 //#endregion
 

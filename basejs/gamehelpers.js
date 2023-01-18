@@ -88,7 +88,7 @@ function if_hotseat_autoswitch(result) {
 		let turn = lookup(result, ['table', 'fen', 'turn']);
 		assertion(isdef(turn), 'turn is NOT defined (_sendSIMSIM) !!!!');
 		//console.log('turn', turn, 'res', result)
-		let uname = turn.length == 1 ? turn[0] : get_next_in_list(U.name, turn);
+		let uname = turn.length == 1 ? turn[0] : arrNext(turn,U.name);
 		//console.log('uname', uname);
 		if (uname != U.name) switch_uname(uname);
 	}
@@ -279,7 +279,7 @@ function get_checked_radios(rg) {
 	//console.log('list',list)
 	return list;
 }
-function get_next_in_list(el, list) {
+function arrNext(el, list) {
 	let iturn = list.indexOf(el);
 	let nextplayer = list[(iturn + 1) % list.length];
 	return nextplayer;

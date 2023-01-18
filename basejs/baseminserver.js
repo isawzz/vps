@@ -773,7 +773,7 @@ function old_mButtonX(dParent, pos = 'tr', handler = null, defaultBehavior = 'hi
 	// let styles = { box:true, border:`blue solid ${3*sz/34}px`, bg: GREEN, rounding:'50%', cursor:'pointer',w:sz,h:sz };
 	let styles = { cursor: 'pointer', w: sz, h: sz };
 
-	// let d2 = mDiv(dParent, { family:'opensans', box:true, align:'center','line-height':34,w: 32, h: 32, pointer: 'cursor' }, null, `<i class="fa-thin fa-times" style="font-size:${sz}px;"></i>`, 'btnX');
+	// let d2 = mDiv(dParent, { family:'opensans', box:true, align:'center','line-height':34,w: 32, h: 32, cursor: 'pointer' }, null, `<i class="fa-thin fa-times" style="font-size:${sz}px;"></i>`, 'btnX');
 	let d2 = mDiv(dParent, styles, null, `<svg width='100%' height='100%' ><use xlink:href="#Times" /></svg>`); //, 'btnX');
 	mClass(d2, 'svgbtnX');
 
@@ -782,8 +782,8 @@ function old_mButtonX(dParent, pos = 'tr', handler = null, defaultBehavior = 'hi
 	return d2;
 }
 function mButtonX(dParent, handler, pos = 'tr', sz = 25, color = 'white') {
-	let d2 = mDiv(dParent, { fg: color, w: sz, h: sz, pointer: 'cursor' }, null, `<i class="fa fa-times" style="font-size:${sz}px;"></i>`, 'btnX');
-	//let d2 = mDiv(dParent, { fg:'white', w: sz, h: sz, pointer: 'cursor' }, null, 'CLOSE', 'btnX');
+	let d2 = mDiv(dParent, { fg: color, w: sz, h: sz, cursor: 'pointer' }, null, `<i class="fa fa-times" style="font-size:${sz}px;"></i>`, 'btnX');
+	//let d2 = mDiv(dParent, { fg:'white', w: sz, h: sz, cursor: 'pointer' }, null, 'CLOSE', 'btnX');
 	mPlace(d2, pos, 2);
 	d2.onclick = handler;
 	return d2;
@@ -5675,7 +5675,7 @@ function get_mouse_pos(ev) {
 	return ({ x: x, y: y });
 
 }
-function get_next_in_list(el, list) {
+function arrNext(el, list) {
 	let i = list.indexOf(el);
 	let nextplayer = list[(i + 1) % list.length];
 	return nextplayer;
@@ -6443,7 +6443,7 @@ function db_delete(table, i, db) {
 	if (nundef(i)) delete db.appdata[table]; else arrRemovip(lookup(db, ['appdata', table])[i]);
 	return db;
 }
-function db_save_client(IP = 'localhost', port = 3000) {
+function dbSave(IP = 'localhost', port = 3000) {
 	post_json(`http://${IP}:${port}/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
 }
 

@@ -1,3 +1,611 @@
+function create_fiddle(dParent, code, rows = 10, cols = 120) {
+	let [ta, buttons, tacon] = create_fiddle_ui(dParent, code, rows, cols);
+	ta.onkeydown = ev => {
+		let k = ev.key;
+		if (k == 'Enter' && AU.selected) ev.preventDefault();
+		if (!isEmpty(AU.list) && (k == 'ArrowDown' || k == 'ArrowUp')) ev.preventDefault();
+	}
+	ta.onkeyup = ev => {
+		let k = ev.key; let fnames = AU.fnames; let popup = AU.popup;
+		if (k == 'Enter' && ev.ctrlKey) {
+			au_reset();
+			let code = ev.shiftKey ? getTextAreaCurrentLine(AU.ta) : AU.ta.value;
+			runcode(code);
+		} else if (k == 'Escape' && !isEmpty(AU.list)) {
+			au_reset();
+		} else if (k == 'Enter' && AU.selected) {
+			let w = AU.selected.innerHTML;
+			let params = stringAfter(w, '(');
+			let funcname = stringBefore(w, '(')
+			let s = stringAfter(w, AU.prefix);
+			let before = AU.ta.value.slice(0, AU.ta.selectionEnd);
+			let after = AU.ta.value.slice(AU.ta.selectionEnd);
+			AU.ta.value = before + s + after;
+			ta.selectionEnd = (before + s).length;
+			au_reset();
+		} else if (k == 'ArrowDown' && !isEmpty(AU.list)) {
+			au_select_down();
+		} else if (k == 'ArrowUp' && !isEmpty(AU.list)) {
+			if (AU.n > 0) AU.n--;
+			let ch = popup.children;
+			if (AU.selected) mStyle(AU.selected, { bg: 'blue' });
+			AU.selected = ch[AU.n];
+			mStyle(AU.selected, { bg: 'green' });
+		} else if ('abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.includes(k) && !ev.ctrlKey) {
+			let icaret = AU.ta.selectionEnd;
+			let line = getTextAreaCurrentLine(AU.ta);
+			let iline = AU.ta.value.indexOf(line);
+			let i = icaret - iline;
+			let [istart, m] = lastIndexOfAny(line, [',', ' ', ')', '(', '{', '}', ';'], i - 1);
+			let pf = line.slice(0, i);
+			if (istart >= 0) pf = line.slice(istart + 1, i);
+			AU.prefix = pf;
+			au_show_list();
+			if (!isEmpty(AU.list)) au_select_down();
+		} else if (k != 'Shift') {
+			au_reset();
+		}
+	}
+}
+
+function create_fiddle_ui(dParent, code, rows, cols) {
+	mStyle(dParent, { position: 'relative' });
+	let ta = mTextarea(rows, cols, dParent, { padding: 20, position: 'relative' }, 'taCode');
+	setTimeout(() => ta.autofocus = true, 10);
+	let buttons = mDiv(dParent, { w: getRect(ta).w, align: 'right', maright: 4 });
+	let st = { fz: 14 };
+	maButton('RUN (ctl+Enter)', au_run, buttons, st);
+	maButton('LINE (ctl+shft+Enter)', au_run_line, buttons, st);
+	let tacon = mTextarea(1, cols, dParent, { matop: 4, hpadding: 20, vpadding: 10, position: 'relative' }, 'taConsole');
+	ta.focus();
+	AU.popup = mDiv(dParent, { position: 'absolute', wmin: 100, hmin: 100, hmax: 600, overy: 'auto', bg: 'blue', fg: 'white' });
+	AU.fnames = get_keys(CODE.funcs); AU.fnames.sort();
+	AU.ta = ta; AU.tacon = tacon;
+	au_reset();
+	if (nundef(code)) { code = localStorage.getItem('code'); if (nundef(code)) code = `pause();`; }
+	else {
+		var tab = RegExp("\\t", "g");
+		code = code.toString().replace(tab, ' ');
+	}
+	AU.ta.value = code;
+	return [ta, buttons, tacon];
+}
+
+function parse_funcs(code) {
+	let res = {};
+	let cfunctions = '\r\nfunction ' + stringAfter(code, 'function '); //jump to first function def
+	let asyncnames = cfunctions.split('\r\nasync function');
+	let asyncs = {};
+	for (const x of asyncnames) {
+		let name = stringBefore(x, '(').trim();
+		//console.log('async', name);
+		asyncs[name] = true;
+	}
+	cfunctions = asyncnames.join('\r\nfunction');
+	let fbodies = cfunctions.split('\r\nfunction').map(x => x.trim());
+	//console.log('fbodies!!!!!!!!!!!'); //,fbodies)
+
+	//console.log('fbodies',fbodies);
+	for (const f of fbodies) {
+		if ("'\"_!".includes(f[0])) continue;
+		let name = stringBefore(f, '(');
+		if (isEmpty(name)) continue;
+		let params = stringBefore(stringAfter(f, '('), ') {');
+
+		let lines = (stringAfter(f, ') {')).split('\r\n');
+		let body = '';
+		for (const line of lines) {
+			let ws = toWords(line);
+			if (isEmpty(ws[0]) || startsWith(ws[0], '//')) continue;
+			//if (startsWith(line,'class')) {} //TODO
+			//console.log('===>ws',ws)
+			//console.log('bp',bp)
+			let bp1 = replaceAllSpecialChars(line, '\t', '  ')
+			if (!bp1.includes('http')) bp1 = stringBefore(bp1, '//');//achtung http://
+			body += bp1 + '\n';
+		}
+		// let sig = `${prev_async?'async ':''}function ${name}(${params})`;
+		// body=sig+'{\n'+body;
+		// res[name.trim()] = { name: name, params: params, sig:sig, body: body, async: prev_async };
+		let isasync = isdef(asyncs[name]);
+		let sig = `${isasync ? 'async ' : ''}function ${name}(${params})`;
+		body = sig + '{\n' + body;
+		res[name.trim()] = { name: name, params: params, sig: sig, body: body, async: isasync };
+	}
+
+	//console.log('functions', res); //get_keys(res));
+	return res;
+
+}
+function parse_consts(code) {
+	let res = {};
+	//split code into lines
+	let lines = code.split('\n');
+	//console.log('lines',lines);
+	for (const line of lines) {
+		if (startsWith(line, 'const')) {
+			//console.log('line',line);
+			let c = stringBefore(stringAfter(line, 'const'), '=').trim();
+			res[c] = c;
+		}
+	}
+	return res;
+}
+
+async function load_codebase() {
+	let dif = {}, dic = {};
+	let paths = ['basemin', 'board', 'cards', 'gamehelpers', 'select']; //.map(f => `../basejs/${f}.js`);
+	paths = paths.map(f => `../basejs/${f}.js`);
+	paths.push(`../game/done.js`);
+	// let paths = [`../game/aaa.js`];
+	CODE.paths = paths;
+	for (const f of paths) {
+		CODE.current_file = stringBefore(stringAfterLast(f,'/'),'.'); console.log('current file',CODE.current_file)
+		let base = await route_path_text(f);
+		let dinew = parse_funcs(base);
+		addKeys(dinew, dif);
+		let dicnew = parse_consts(base);
+		addKeys(dicnew, dic);
+	}
+	CODE.funcs = dif;
+	CODE.consts = dic;
+	CODE.index = get_keys(dif);
+	CODE.index.sort();
+
+}
+
+
+//#region autocomplete in textarea
+function au_show_list() {
+	let [popup, ta, fnames] = [AU.popup, AU.ta, AU.fnames];
+
+	//console.log('prefix', AU.prefix)
+	if (isEmpty(AU.prefix)) au_reset(); //hide(popup);
+	else {
+		AU.list = fnames.filter(x => startsWith(x, AU.prefix));
+
+		if (isEmpty(AU.list)) {
+			AU.list = Object.keys(window).filter(x => startsWith(x, AU.prefix));
+			AU.list = AU.list.concat(get_keys(CODE.consts).filter(x => startsWith(x, AU.prefix)));
+
+			//add to that Items keys
+			AU.list = AU.list.concat(get_keys(Items).filter(x => startsWith(x, AU.prefix)));
+
+		}
+		if (isEmpty(AU.list)) {
+			hide(popup);
+		} else {
+			let mousepos = getCaretCoordinates(ta, ta.selectionStart - AU.prefix.length);
+			//console.log('mousepos',mousepos)
+			//let r = getRect(ta);
+			//let r2=getRect(dCode);
+			//console.log('ta',r.l,'ta-parent',r2.left)
+			//console.log('r',r.l,r.t)
+			//console.log('mousepos', mousepos);
+			show(popup)
+			mPos(popup, mousepos.left + 10, mousepos.top + 30); // + 18, mousepos.top + 25);
+			// mPos(popup, mousepos.left + 18, mousepos.top + 25);
+			iClear(popup);
+			AU.n = -1;
+			AU.selected = null;
+			for (const w of AU.list) {
+
+				if (isdef(CODE.funcs[w])) mDiv(popup, {}, w, CODE.funcs[w].sig);
+				else mDiv(popup, {}, w, w)
+			}
+		}
+	}
+}
+function au_reset() {
+	AU.list = [];
+	AU.prefix = '';
+	AU.n = -1;
+	AU.selected = null;
+	hide(AU.popup);
+	AU.detect = false;
+
+}
+function au_select_down() {
+	if (AU.n < AU.list.length - 1) AU.n++;
+	let ch = AU.popup.children;
+	if (AU.selected) mStyle(AU.selected, { bg: 'blue' });
+	AU.selected = ch[AU.n];
+	mStyle(AU.selected, { bg: 'green' });
+
+}
+function au_run() { au_reset(); runcode(AU.ta.value); show_div_ids(); }
+function au_run_line() { au_reset(); runcode(getTextAreaCurrentLine(AU.ta)); }
+function getTextAreaCurrentLine(el) {
+	let line = '';
+	if (el instanceof HTMLTextAreaElement) {
+		// unlike substring, slice gives empty string when (1,0)
+		line = el.value.slice(el.value.lastIndexOf('\n', el.selectionStart - 1) + 1,
+			((end = el.value.indexOf('\n', el.selectionStart)) => end > -1 ? end : undefined)());
+	}
+	//document.getElementById('result').innerHTML = '"'+line+'"';
+	return line;
+}
+function getTextAreaCurrentWord(el) {
+	let line = '', w = '', prefix = '';
+	if (el instanceof HTMLTextAreaElement) {
+		let s = el.value;
+		let i_caret = el.selectionEnd;
+		let i_last_break_before_caret = s.lastIndexOf('\n', i_caret - 1); if (i_last_break_before_caret < 0) i_last_break_before_caret = 0;
+		let i_next_break = s.indexOf('\n', i_caret); if (i_next_break < 0) i_next_break = s.length - 1;
+		let i_caret_within_line = i_caret - i_last_break_before_caret;
+		line = s.slice(i_last_break_before_caret + 1, i_next_break);
+
+		let pos = i_caret_within_line - 2;
+		console.log('_________\nline:', line, '\ni_caret=' + i_caret, 'i_in_line=' + pos);
+		for (let i = pos; i >= 0; i--) {
+			let ch = line[i];
+			if (isAlphaNum(ch)) w = ch + w; else break;
+		}
+		prefix = w;
+
+		for (let i = pos + 1; i < line.length; i++) {
+			let ch = line[i];
+			if (isAlphaNum(ch)) w = w + ch; else break;
+		}
+	}
+	return [w, prefix];
+}
+//#endregion
+
+function show_fiddle(code, rows, cols, fiddlestyles) {
+	fiddleInit();
+	// let dFiddle = mBy('dFiddle'); iClear(dFiddle); mCenterFlex(dFiddle);	//transition
+	// if (isdef(fiddlestyles)) mStyle(dFiddle, fiddlestyles)
+	// create_fiddle(dFiddle, code, rows, cols);
+}
+function fiddleControlHandler(ev) {
+	if (ev.ctrlKey) {
+		let instance = DA.tribute; //.events.shouldDeactivate(ev);
+		instance.isActive = false;
+		instance.hideMenu();
+
+		console.log('ev.key', ev.key)
+		if (ev.key == 'Enter') {
+			runcode(ev.target.value);
+			//let code = ev.shiftKey ? ev.target.value : getTextAreaCurrentLine(ev.target); runcode(code);
+		} else if (ev.key == '+' || ev.key == '=') { 
+			evStop(ev);
+			fiddleAdd(dFiddle); 
+		} else if (ev.key == '-' || ev.key == '_') {
+			//remove all empty fiddles
+			evStop(ev);
+			let empty = DA.tas.filter(x => isEmptyOrWhiteSpace(x.value));
+			let elfocus = document.activeElement;
+			let nofocus = false;
+			for (const ta of empty) { if (ta == elfocus) nofocus = true; ta.remove(); }
+			DA.tas = arrMinus(DA.tas, empty);
+			if (isEmpty(DA.tas)) fiddleAdd(dFiddle);
+			else if (nofocus) { AU.ta = DA.tas[0]; AU.ta.focus(); }
+		} else if (ev.key == 'ArrowDown') {
+			let ta = AU.ta = arrNext(DA.tas, AU.ta);
+			ta.focus();
+		} else if (ev.key == 'ArrowUp') {
+			let ta = AU.ta = arrPrev(DA.tas, AU.ta);
+			ta.focus();
+		}
+		return;
+		if (ev.key == 'a') return;
+		evStop(ev);
+		//DA.tribute.current.mentionText='';
+		//if (DA.tribute.isActive) { DA.tribute.appendCurrent([], true); DA.tribute.hideMenu(); }
+		if (ev.key == 'Enter') {
+			let code = ev.shiftKey ? ev.target.value : getTextAreaCurrentLine(ev.target);
+			runcode(code);
+		} else if (ev.key == '+' || ev.key == '=') {
+			//create another fiddle below!
+			fiddleAdd(dFiddle);
+			DA.tribute.hideMenu();
+		} else if (ev.key == '-' || ev.key == '_') {
+			//remove all empty fiddles
+			//let fi = arrChildren(dFiddle).slice(1, DA.tas.length + 1);
+			let empty = DA.tas.filter(x => isEmptyOrWhiteSpace(x.value));
+			let elfocus = document.activeElement;
+			let nofocus = false;
+			for (const ta of empty) { if (ta == elfocus) nofocus = true; ta.remove(); }
+			DA.tas = arrMinus(DA.tas, empty);
+			if (isEmpty(DA.tas)) fiddleAdd(dFiddle);
+			else if (nofocus) { AU.ta = DA.tas[0]; AU.ta.focus(); }
+			DA.tribute.hideMenu();
+		} else if (ev.key == 'ArrowDown') {
+			let ta = AU.ta = arrNext(arrChildren(dFiddle), AU.ta, 1, DA.tas.length + 1);
+			ta.focus();
+			DA.tribute.hideMenu();
+		} else if (ev.key == 'ArrowUp') {
+			let ta = AU.ta = arrPrev(arrChildren(dFiddle), AU.ta, 1, DA.tas.length + 1);
+			ta.focus();
+			DA.tribute.hideMenu();
+		}
+		//console.log('document.activeElement',document.activeElement)
+	}
+}
+function arrMUELL(arr, el, inc, imin = 0, imax = null) {
+	let i = arr.indexOf(el);
+	let inew = i + inc;
+	while (inew < 0) inew += arr.length;
+	inew = inew % arr.length;
+	inew = clamp(inew, imin, valf(imax, arr.length));
+	let res = arr[inew];
+	return res;
+}
+function create_fiddle(dParent, code, rows = 10, cols = 120) {
+	let [ta, buttons, tacon] = create_fiddle_ui(dParent, code, rows, cols);
+	ta.onkeydown = ev => {
+		let k = ev.key;
+		if (k == 'Enter' && AU.selected) ev.preventDefault();
+		if (!isEmpty(AU.list) && (k == 'ArrowDown' || k == 'ArrowUp')) ev.preventDefault();
+	}
+	ta.onkeyup = ev => {
+		let k = ev.key; let fnames = AU.fnames; let popup = AU.popup;
+		if (k == 'Enter' && ev.ctrlKey) {
+			au_reset();
+			let code = ev.shiftKey ? getTextAreaCurrentLine(AU.ta) : AU.ta.value;
+			runcode(code);
+		} else if (k == 'Escape' && !isEmpty(AU.list)) {
+			au_reset();
+		} else if (k == 'Enter' && AU.selected) {
+			//insert at caret!
+			let w = AU.selected.innerHTML; //enthaelt params auch!
+			let params = stringAfter(w, '(');
+			let funcname = stringBefore(w, '(')
+			let s = stringAfter(w, AU.prefix); // s is portion of select entry that is NOT in ta
+			let before = AU.ta.value.slice(0, AU.ta.selectionEnd);
+			let after = AU.ta.value.slice(AU.ta.selectionEnd);
+			AU.ta.value = before + s + after;
+			ta.selectionEnd = (before + s).length;
+			au_reset();
+		} else if (k == 'ArrowDown' && !isEmpty(AU.list)) {
+			au_select_down();
+		} else if (k == 'ArrowUp' && !isEmpty(AU.list)) {
+			if (AU.n > 0) AU.n--;
+			let ch = popup.children;
+			if (AU.selected) mStyle(AU.selected, { bg: 'blue' });
+			AU.selected = ch[AU.n];
+			mStyle(AU.selected, { bg: 'green' });
+			//} else if (k.startsWith('Arrow')){
+
+
+		} else if ('abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.includes(k) && !ev.ctrlKey) { //(isAlphaNum(k) || k == '_') && k!='Shift') {
+			//console.log('pressed letter', k); //YES!
+
+			let icaret = AU.ta.selectionEnd; //getCaretPosition(AU.ta);
+			let line = getTextAreaCurrentLine(AU.ta);
+			//console.log('line',line)
+			let iline = AU.ta.value.indexOf(line);
+			let i = icaret - iline; //ok
+			//console.log('i',i);
+			let [istart, m] = lastIndexOfAny(line, [',', ' ', ')', '(', '{', '}', ';'], i - 1);
+			let pf = line.slice(0, i);
+			if (istart >= 0) pf = line.slice(istart + 1, i);
+			//console.log('i:' + i, 'istart:' + istart, 'match:' + m, '\n==>pre:' + pf);
+
+			AU.prefix = pf;
+			au_show_list();
+			if (!isEmpty(AU.list)) au_select_down();
+
+		} else if (k != 'Shift') {
+			au_reset();
+			//console.log('ELSE!!!!!!!!!')
+		}
+	}
+}
+function create_fiddle_ui(dParent, code, rows, cols) {
+	mStyle(dParent, { position: 'relative' }); //, align:'center' });
+	let ta = mTextarea(rows, cols, dParent, { padding: 20, position: 'relative' }, 'taCode');
+	setTimeout(() => ta.autofocus = true, 10);
+	let buttons = mDiv(dParent, { w: getRect(ta).w, align: 'right', maright: 4 }); //align:'right','align-self':'end','justify-self':'end'})
+	let st = { fz: 14 };
+	maButton('RUN (ctl+Enter)', au_run, buttons, st);
+	maButton('LINE (ctl+shft+Enter)', au_run_line, buttons, st);
+	let tacon = mTextarea(1, cols, dParent, { matop: 4, hpadding: 20, vpadding: 10, position: 'relative' }, 'taConsole');
+	ta.focus();
+	AU.popup = mDiv(dParent, { position: 'absolute', wmin: 100, hmin: 100, hmax: 600, overy: 'auto', bg: 'blue', fg: 'white' });
+	AU.fnames = get_keys(CODE.funcs); AU.fnames.sort();
+	AU.ta = ta; AU.tacon = tacon;
+	au_reset();
+	if (nundef(code)) { code = localStorage.getItem('code'); if (nundef(code)) code = `pause();`; }
+	else {
+		var tab = RegExp("\\t", "g");
+		code = code.toString().replace(tab, ' ');
+	}
+	AU.ta.value = code;
+	return [ta, buttons, tacon];
+}
+function mIntellisense(dParent, elem, list) {
+	var tributeAttributes = {
+		autocompleteMode: true,
+		noMatchTemplate: '',
+		values: list,
+		selectTemplate: function (item) {
+			//console.log('item',item)
+			if (typeof item === 'undefined') return null;
+			if (this.range.isContentEditable(this.current.element)) {
+				return '<span contenteditable="false"><a>' + item.original.key + '</a></span>';
+			}
+			return item.original.value;
+		},
+		menuItemTemplate: function (item) {
+			//console.log('item',item)
+			return item.string;
+		},
+		replaceTextSuffix: '',
+	};
+	var trib = new Tribute(Object.assign({menuContainer: dParent,},tributeAttributes));
+	trib.attach(elem); //document.getElementById('test-autocomplete-textarea'));
+
+	elem.addEventListener('tribute-replaced', function (e) {
+		console.log('Original Event:', e.detail.event);
+		console.log('Matched item:', e.detail.item);
+		//if matched item is of type function
+		let key = e.detail.item.original.key;
+		let item = window[key];
+		if (typeof item == 'function'){
+			//jetzt will ich param info!
+			let d=mBy('dMessage');
+			d.innerHTML = stringBefore(item.toString(),') {')+')';
+		}
+	});
+
+
+	return trib;
+
+}
+function juPlus(dParent) {
+	let tas = DA.tas = valf(DA.tas, []);
+	let ta = mTextarea(3, null, dParent, { fz: 16, padding: 10, family: 'tahoma', w: '100%', box: true });
+	tas.push(ta);
+	return ta;
+
+}
+async function load_codebase() {
+	function parse_funcs(code) {
+		let res = {};
+		let cfunctions = '\r\nfunction ' + stringAfter(code, 'function '); //jump to first function def
+		let asyncnames = cfunctions.split('\r\nasync function');
+		let asyncs = {};
+		for (const x of asyncnames) {
+			let name = stringBefore(x, '(').trim();
+			console.log('async', name);
+			asyncs[name] = true;
+		}
+		cfunctions = asyncnames.join('\r\nfunction');
+		let fbodies = cfunctions.split('\r\nfunction').map(x => x.trim());
+		console.log('fbodies!!!!!!!!!!!'); //,fbodies)
+
+		//console.log('fbodies',fbodies);
+		for (const f of fbodies) {
+			if ("'\"_!".includes(f[0])) continue;
+			let name = stringBefore(f, '(');
+			if (isEmpty(name)) continue;
+			let params = stringBefore(stringAfter(f, '('), ') {');
+
+			let lines = (stringAfter(f, ') {')).split('\r\n');
+			let body = '';
+			for (const line of lines) {
+				let ws = toWords(line);
+				if (isEmpty(ws[0]) || startsWith(ws[0], '//')) continue;
+				//if (startsWith(line,'class')) {} //TODO
+				//console.log('===>ws',ws)
+				//console.log('bp',bp)
+				let bp1 = replaceAllSpecialChars(line, '\t', '  ')
+				if (!bp1.includes('http')) bp1 = stringBefore(bp1, '//');//achtung http://
+				body += bp1 + '\n';
+			}
+			// let sig = `${prev_async?'async ':''}function ${name}(${params})`;
+			// body=sig+'{\n'+body;
+			// res[name.trim()] = { name: name, params: params, sig:sig, body: body, async: prev_async };
+			let isasync = isdef(asyncs[name]);
+			let sig = `${isasync ? 'async ' : ''}function ${name}(${params})`;
+			body = sig + '{\n' + body;
+			res[name.trim()] = { name: name, params: params, sig: sig, body: body, async: isasync };
+		}
+
+		//console.log('functions', res); //get_keys(res));
+		return res;
+
+	}
+	function parse_consts(code) {
+		let res = {};
+		//split code into lines
+		let lines = code.split('\n');
+		//console.log('lines',lines);
+		for (const line of lines) {
+			if (startsWith(line, 'const')) {
+				//console.log('line',line);
+				let c = stringBefore(stringAfter(line, 'const'), '=').trim();
+				res[c] = c;
+			}
+		}
+		return res;
+	}
+
+	let dif = {}, dic = {};
+	// let paths = ['basemin', 'board', 'cards', 'gamehelpers', 'select']; //.map(f => `../basejs/${f}.js`);
+	// paths = paths.map(f => `../basejs/${f}.js`);
+	// paths.push(`../game/done.js`);
+	let paths = [`../game/aaa.js`];
+	CODE.paths = paths;
+	for (const f of paths) {
+		let base = await route_path_text(f);
+		let dinew = parse_funcs(base);
+		addKeys(dinew, dif);
+		let dicnew = parse_consts(base);
+		addKeys(dicnew, dic);
+	}
+	CODE.funcs = dif;
+	CODE.consts = dic;
+	CODE.index = get_keys(dif);
+	CODE.index.sort();
+
+}
+
+function fiddle_set(k) {
+	//simplest?
+	let code = isdef(CODE.funcs[k]) ? CODE.funcs[k] : CODE.consts[k];
+	let ta = mBy('taCode');
+	//if (nundef(ta)) 
+}
+
+
+
+function test9_simple_intellisense() {
+	let dParent = dTable = mBy('dTable');
+	dMessage = mDiv(dTable, { w: '100%', bg: 'dimgray', fg: 'yellow', box: true, hpadding: 10 }, 'dMessage', 'enter code:');
+	let ta = AU.ta = mTextarea(3, null, dParent, { fz: 16, padding: 10, family: 'tahoma', w: '100%', box: true });
+	ta.addEventListener('keydown', ev => {
+		if (ev.ctrlKey) {
+			evStop(ev);
+			console.log('tribute', DA.tribute.current.mentionText)
+			if (ev.key == 'Enter') {
+				let code = ev.shiftKey ? ev.target.value : getTextAreaCurrentLine(ev.target);
+				runcode(code);
+			} else if (ev.key == 'ArrowDown') {
+				//create another fiddle below!
+			}
+		}
+	});
+	getGlobals();
+	let list = Globals.function.map(x => ({ key: x.key, value: x.key + '(' })); //CODE.index.map(x=>({key:x,value:x}));
+	DA.tribute = mIntellisense(dParent, ta, list); //muss danach geschehen damit propagation gestopped wird!
+	ta.value = localStorage.getItem('code')
+}
+function test8_jup() {
+	getGlobals();
+	let dParent = dTable = mBy('dTable');
+	let list = Globals.function.map(x => ({ key: x.key, value: x.key + '(' })); //CODE.index.map(x=>({key:x,value:x}));
+	for (const n in range(5)) {
+		let ta = juPlus(dParent);
+
+		ta.addEventListener('keydown', ev => {
+			if (ev.ctrlKey) {
+				//console.log('stop!', ev.key)
+				ev.preventDefault();
+				ev.stopPropagation();
+				ev.stopImmediatePropagation();
+				if (ev.key == 'Enter') {
+					let t = ev.target;
+					let code = ev.shiftKey ? getTextAreaCurrentLine(t) : t.value;
+					console.log('should run code', code)
+					runcode(code);
+				}
+			}
+		})
+		// ta.addEventListener('keyup', ev => {
+		// 	if (ev.ctrlKey) console.log('TRIGGER!!!', ev, ev.target, ev.target.value); return;
+		// 	if (ev.key == 'Enter' && ev.ctrlKey) {
+		// 		let t = ev.target;
+		// 		let code = ev.shiftKey ? getTextAreaCurrentLine(t) : t.value;
+		// 		runcode(code);
+		// 	}
+		// })
+		mAutocomplete(dParent, ta, list); //muss danach geschehen damit propagation gestopped wird!
+
+	}
+}
 
 function test8_jup(){
 	getGlobals();

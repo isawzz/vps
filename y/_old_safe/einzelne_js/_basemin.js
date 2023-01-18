@@ -1546,7 +1546,7 @@ function db_readall(db) {
 	return db;
 }
 
-function db_save_client(IP = 'localhost', port = 3000) {
+function dbSave(IP = 'localhost', port = 3000) {
 	post_json(`http:/` + `/${IP}:${port}/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
 }
 

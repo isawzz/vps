@@ -1,16 +1,8 @@
-function test8_jup() {
-	getGlobals();
-	let dParent = dTable = mBy('dTable');
-	let list = Globals.function.map(x => ({ key: x.key, value: x.key + '(' })); //CODE.index.map(x=>({key:x,value:x}));
-	for (const n in range(5)) {
-		let ta = juPlus(dParent);
-		mAutocomplete(dParent, ta, list); //['also','aber','all']);
-
-		ta.addEventListener('keyup',ev=>{
-			
-		})
-
-	}
+function test9_dbSave() { DB.appdata.simple = [1, 2, 3, 4, 5]; } //dbSave(); }
+function test8_simple_intellisense() {
+	dTable = mBy('dTable');
+	fiddleInit();
+	//fiddleAdd(dParent);
 }
 function test7_card() {
 	dTable = mBy('dTable'); mCenterFlex(dTable);

@@ -1,4 +1,46 @@
 
+async function load_codebase() {
+	let dif = {}, dic = {};
+	let paths = ['basemin']; //, 'board', 'cards', 'gamehelpers', 'select']; //.map(f => `../basejs/${f}.js`);
+	paths = paths.map(f => `../basejs/${f}.js`);
+	//paths.push(`../game/done.js`);
+	// let paths = [`../game/aaa.js`];
+	CODE.paths = paths;
+	for (const f of paths) {
+		CODE.current_file = stringBefore(stringAfterLast(f, '/'), '.'); //console.log('current file', CODE.current_file)
+		let base = await route_path_text(f);
+
+		let res = parse_funcs_1(base,CODE.current_file);
+
+		// let dinew = parse_funcs(base);
+		// addKeys(dinew, dif);
+		// let dicnew = parse_consts(base);
+		// addKeys(dicnew, dic);
+	}
+	CODE.funcs = dif;
+	CODE.consts = dic;
+	CODE.index = get_keys(dif);
+	CODE.index.sort();
+
+}
+function firstWordAfter(s, sub) {
+	let s1=stringAfter(s,sub);
+	//console.log(s1);
+	let s2=toWords(s1)[0]
+	return s2;
+}
+function firstWord(s){return toWords(s)[0];}
+
+
+
+
+
+
+
+
+
+
+
 function show_sidebar(list, handler) {
 	dSidebar = mBy('dSidebar'); mStyle(dSidebar, { w: 300, h: window.innerHeight - 68, overy: 'auto' });
 	for (const k of list) {

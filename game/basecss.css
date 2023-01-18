@@ -77,6 +77,12 @@
 	border: none;
 	opacity: 0;
 }
+.op0if{
+	opacity:1;
+}
+.op0if:empty{
+	opacity:0;
+}
 /* #region my */
 .mymain {
 	display: flex;

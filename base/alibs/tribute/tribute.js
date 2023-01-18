@@ -1270,7 +1270,9 @@
 						}
 					}
 
+					//console.log('pattern',pattern);
 					var rendered = _this2.match(pattern, str, opts);
+					//console.log('rendered',rendered);
 
 					if (rendered != null) {
 						prev[prev.length] = {
@@ -1459,6 +1461,7 @@
 		_createClass(Tribute, [{
 			key: "triggers",
 			value: function triggers() {
+				//console.log('==>',getFunctionCallerName())
 				return this.collection.map(function (config) {
 					return config.trigger;
 				});
@@ -1466,6 +1469,7 @@
 		}, {
 			key: "attach",
 			value: function attach(el) {
+				//console.log('==>',getFunctionCallerName())
 				if (!el) {
 					throw new Error("[Tribute] Must pass in a DOM node or NodeList.");
 				} // Check if it is a jQuery collection
@@ -1489,6 +1493,7 @@
 		}, {
 			key: "_attach",
 			value: function _attach(el) {
+				//console.log('==>',getFunctionCallerName())
 				if (el.hasAttribute("data-tribute")) {
 					console.warn("Tribute was already bound to " + el.nodeName);
 				}
@@ -1500,6 +1505,7 @@
 		}, {
 			key: "ensureEditable",
 			value: function ensureEditable(element) {
+				//console.log('==>',getFunctionCallerName())
 				if (Tribute.inputTypes().indexOf(element.nodeName) === -1) {
 					if (element.contentEditable) {
 						element.contentEditable = true;
@@ -1511,6 +1517,7 @@
 		}, {
 			key: "createMenu",
 			value: function createMenu(containerClass) {
+				//console.log('==>',getFunctionCallerName())
 				var wrapper = this.range.getDocument().createElement("div"),
 					ul = this.range.getDocument().createElement("ul");
 				wrapper.className = containerClass;
@@ -1526,6 +1533,11 @@
 			key: "showMenuFor",
 			value: function showMenuFor(element, scrollTo) {
 				var _this2 = this;
+				//console.log('__________\n==> active:',this.isActive,getFunctionCallerName())
+				//console.log('...cur element',this.current.element, element,document.activeElement)
+				//console.log('...cur mentionText',this.current.mentionText)
+				if (isEmptyOrWhiteSpace(this.current.mentionText)) return;
+				if (isdef(this.prevElement) && this.current.element !== this.prevElement) return;
 
 				// Only proceed if menu isn't already shown for the current element & mentionText
 				if (this.isActive && this.current.element === element && this.current.mentionText === this.currentMentionTextSnapshot) {
@@ -1549,10 +1561,9 @@
 
 				var processValues = function processValues(values) {
 					// Tribute may not be active any more by the time the value callback returns
-					if (!_this2.isActive) {
-						return;
-					}
+					if (!_this2.isActive) {						return;					}
 
+					//console.log('values',values)
 					var items = _this2.search.filter(_this2.current.mentionText, values, {
 						pre: _this2.current.collection.searchOpts.pre || "<span>",
 						post: _this2.current.collection.searchOpts.post || "</span>",
@@ -1632,6 +1643,9 @@
 						this.range.positionMenuAtCaret(scrollTo);
 					}
 
+					// let vals=this.current.collection.values(this.current.mentionText);
+					// processValues(vals);
+
 					this.current.collection.values(this.current.mentionText, processValues);
 				} else {
 					processValues(this.current.collection.values);
@@ -1640,6 +1654,7 @@
 		}, {
 			key: "_findLiTarget",
 			value: function _findLiTarget(el) {
+				//console.log('==>',getFunctionCallerName())
 				if (!el) return [];
 				var index = el.getAttribute("data-index");
 				return !index ? this._findLiTarget(el.parentNode) : [el, index];
@@ -1647,12 +1662,14 @@
 		}, {
 			key: "showMenuForCollection",
 			value: function showMenuForCollection(element, collectionIndex) {
+				//console.log('==>',getFunctionCallerName())
 				if (element !== document.activeElement) {
 					this.placeCaretAtEnd(element);
 				}
 
 				this.current.collection = this.collection[collectionIndex || 0];
 				this.current.externalTrigger = true;
+				this.prevElement = this.current.element;
 				this.current.element = element;
 				if (element.isContentEditable) this.insertTextAtCursor(this.current.collection.trigger); else this.insertAtCaret(element, this.current.collection.trigger);
 				this.showMenuFor(element);
@@ -1661,6 +1678,8 @@
 		}, {
 			key: "placeCaretAtEnd",
 			value: function placeCaretAtEnd(el) {
+				console.log('==>',getFunctionCallerName())
+				//this.hideMenu(); return;
 				el.focus();
 
 				if (typeof window.getSelection != "undefined" && typeof document.createRange != "undefined") {
@@ -1681,6 +1700,7 @@
 		}, {
 			key: "insertTextAtCursor",
 			value: function insertTextAtCursor(text) {
+				//console.log('==>',getFunctionCallerName())
 				var sel, range;
 				sel = window.getSelection();
 				range = sel.getRangeAt(0);
@@ -1696,6 +1716,7 @@
 		}, {
 			key: "insertAtCaret",
 			value: function insertAtCaret(textarea, text) {
+				//console.log('==>',getFunctionCallerName())
 				var scrollPos = textarea.scrollTop;
 				var caretPos = textarea.selectionStart;
 				var front = textarea.value.substring(0, caretPos);
@@ -1710,6 +1731,7 @@
 		}, {
 			key: "hideMenu",
 			value: function hideMenu() {
+				//console.log('==>',getFunctionCallerName())
 				if (this.menu) {
 					this.menu.style.cssText = "display: none;";
 					this.isActive = false;
@@ -1720,6 +1742,7 @@
 		}, {
 			key: "selectItemAtIndex",
 			value: function selectItemAtIndex(index, originalEvent) {
+				//console.log('==>',getFunctionCallerName())
 				index = parseInt(index);
 				if (typeof index !== "number" || isNaN(index)) return;
 				var item = this.current.filteredItems[index];
@@ -1729,11 +1752,13 @@
 		}, {
 			key: "replaceText",
 			value: function replaceText(content, originalEvent, item) {
+				//console.log('==>',getFunctionCallerName())
 				this.range.replaceTriggerText(content, true, true, originalEvent, item);
 			}
 		}, {
 			key: "_append",
 			value: function _append(collection, newValues, replace) {
+				//console.log('==>',getFunctionCallerName())
 				if (typeof collection.values === "function") {
 					throw new Error("Unable to append to values, as it is a function.");
 				} else if (!replace) {
@@ -1745,6 +1770,7 @@
 		}, {
 			key: "append",
 			value: function append(collectionIndex, newValues, replace) {
+				//console.log('==>',getFunctionCallerName())
 				var index = parseInt(collectionIndex);
 				if (typeof index !== "number") throw new Error("please provide an index for the collection to update.");
 				var collection = this.collection[index];
@@ -1754,6 +1780,7 @@
 		}, {
 			key: "appendCurrent",
 			value: function appendCurrent(newValues, replace) {
+				//console.log('==>',getFunctionCallerName())
 				if (this.isActive) {
 					this._append(this.current.collection, newValues, replace);
 				} else {
@@ -1763,6 +1790,7 @@
 		}, {
 			key: "detach",
 			value: function detach(el) {
+				//console.log('==>',getFunctionCallerName())
 				if (!el) {
 					throw new Error("[Tribute] Must pass in a DOM node or NodeList.");
 				} // Check if it is a jQuery collection
@@ -1786,6 +1814,7 @@
 		}, {
 			key: "_detach",
 			value: function _detach(el) {
+				//console.log('==>',getFunctionCallerName())
 				var _this3 = this;
 
 				this.events.unbind(el);
@@ -1806,9 +1835,11 @@
 		}, {
 			key: "isActive",
 			get: function get() {
+				//console.log('==>',getFunctionCallerName())
 				return this._isActive;
 			},
 			set: function set(val) {
+				//console.log('==>',val,':',getFunctionCallerName())
 				if (this._isActive != val) {
 					this._isActive = val;
 
@@ -1821,6 +1852,7 @@
 		}], [{
 			key: "defaultSelectTemplate",
 			value: function defaultSelectTemplate(item) {
+				//console.log('==>',getFunctionCallerName())
 				if (typeof item === "undefined") return "".concat(this.current.collection.trigger).concat(this.current.mentionText);
 
 				if (this.range.isContentEditable(this.current.element)) {
@@ -1832,11 +1864,13 @@
 		}, {
 			key: "defaultMenuItemTemplate",
 			value: function defaultMenuItemTemplate(matchItem) {
+				//console.log('==>',getFunctionCallerName())
 				return matchItem.string;
 			}
 		}, {
 			key: "inputTypes",
 			value: function inputTypes() {
+				//console.log('==>',getFunctionCallerName())
 				return ["TEXTAREA", "INPUT"];
 			}
 		}]);

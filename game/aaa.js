@@ -1,6 +1,6 @@
 //#region globals: Session data
 var Pollmode = 'auto';
-var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 0 };
+var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 0 }, Counter1 = 0;
 var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
 var uiActivated = false, Selected, Turn, Prevturn;
 var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
@@ -12,7 +12,7 @@ var ColorThiefObject, SelectedItem, SelectedColor;
 var FR = 50, CX, CV, AU = {}, CONTEXT = null;
 var UIDCounter = 0;
 var FRUIDCounter = -1;
-var SHAPEFUNCS = {	'circle': agCircle,	'hex': agHex,	'rect': agRect,};
+var SHAPEFUNCS = { 'circle': agCircle, 'hex': agHex, 'rect': agRect, };
 var MyEasing = 'cubic-bezier(1,-0.03,.86,.68)';
 var TOFleetingMessage, dFleetingMessage, Animation1;
 //#endregion
@@ -2120,8 +2120,6 @@ function PRHLayout() {
 	Clientdata.historyLayout = 'prh';
 }
 
-
-
 //#region color
 function HSLAToRGBA(hsla, isPct) {
 	let ex = /^hsla\(((((([12]?[1-9]?\d)|[12]0\d|(3[0-5]\d))(\.\d+)?)|(\.\d+))(deg)?|(0|0?\.\d+)turn|(([0-6](\.\d+)?)|(\.\d+))rad)(((,\s?(([1-9]?\d(\.\d+)?)|100|(\.\d+))%){2},\s?)|((\s(([1-9]?\d(\.\d+)?)|100|(\.\d+))%){2}\s\/\s))((0?\.\d+)|[01]|(([1-9]?\d(\.\d+)?)|100|(\.\d+))%)\)$/i;
@@ -2362,8 +2360,8 @@ function RGBToHex7(c) {
 }
 
 //#region ani
-function aFlip(d, ms = 300, x = 0, y = 1, easing = 'cubic-bezier(1,-0.03,.27,1)') {
-	return d.animate({ transform: `scale(${2}px,${y}px)` }, { easing: easing, duration: ms });
+function aFlip(d, ms = 300, easing = 'cubic-bezier(1,-0.03,.27,1)') {
+	return anime({ targets: d, scaleX: -1, duration: ms, easing: 'easeInOutSine' });
 }
 
 function aJumpby(elem, h = 40, ms = 1000) {
@@ -2396,9 +2394,11 @@ function aMove(d, dSource, dTarget, callback, offset, ms, easing, fade) {
 	a.onfinish = () => { d.style.zIndex = iZMax(); if (isdef(callback)) callback(); };
 }
 
-function aRollby(elem, dx, ms = 3000) {
-	anime({ targets: elem, translateX: dx, rotate: '1turn', duration: ms });
+function aRollby(elem, dx = 100, ms = 3000) {
+	return anime({ targets: elem, translateX: dx, rotate: '1turn', duration: ms, direction: 'alternate' });
 }
+
+function aRestore(elem) { elem.style.transform = ''; }
 
 function aRotate(d, ms = 2000) {
 	return d.animate({ transform: `rotate(360deg)` }, ms);
@@ -2408,6 +2408,7 @@ function aRotateAccel(d, ms) {
 	return d.animate({ transform: `rotate(1200deg)` }, { easing: 'cubic-bezier(.72, 0, 1, 1)', duration: ms });
 }
 
+//#region svg
 function aSvg(dParent) {
 	if (!dParent.style.position) dParent.style.position = 'relative';
 	let svg1 = gSvg();
@@ -2433,6 +2434,7 @@ function aSvgg(dParent, originInCenter = true) {
 	return g1;
 }
 
+//#region ani
 function aTranslateBy(d, x, y, ms) {
 	return d.animate({ transform: `translate(${x}px,${y}px)` }, ms);
 }
@@ -2460,7 +2462,7 @@ function activate_ui() {
 	uiActivated = true; DA.ai_is_moving = false;
 }
 
-//#region arrays and dicts
+//#region arrdict
 function addIf(arr, el) {
 	if (!arr.includes(el)) arr.push(el);
 }
@@ -2469,7 +2471,7 @@ function addKeys(ofrom, oto) {
 	for (const k in ofrom) if (nundef(oto[k])) oto[k] = ofrom[k]; return oto;
 }
 
-//#region data time
+//#region datetime
 function addMonthToDate(date, months) {
 	let d = new Date(date);
 	d.setMonth(d.getMonth() + months);
@@ -2509,6 +2511,7 @@ function add_transaction(cmd) {
 	DA.transactionlist.push(cmd);
 }
 
+//#region svg
 function agCircle(g, sz) {
 	let r = gEllipse(sz, sz); g.appendChild(r); return r;
 }
@@ -2548,6 +2551,7 @@ function agShape(g, shape, w, h, color, rounding) {
 	return sh;
 }
 
+//#region arrdict
 function aggregate_elements(list_of_object, propname) {
 	let result = [];
 	for (let i = 0; i < list_of_object.length; i++) {
@@ -2560,6 +2564,7 @@ function aggregate_elements(list_of_object, propname) {
 	return result;
 }
 
+//#region gamehelpers
 function aggregate_player_hands_by_rank(fen) {
 	let di_ranks = {};
 	let akku = [];
@@ -2576,11 +2581,13 @@ function aggregate_player_hands_by_rank(fen) {
 	return di_ranks;
 }
 
+//#region string
 function allNumbers(s) {
 	let m = s.match(/\-.\d+|\-\d+|\.\d+|\d+\.\d+|\d+\b|\d+(?=\w)/g);
 	if (m) return m.map(v => Number(v)); else return null;
 }
 
+//#region color
 function alphaToHex(zero1) {
 	zero1 = Math.round(zero1 * 100) / 100;
 	var alpha = Math.round(zero1 * 255);
@@ -2592,6 +2599,7 @@ function alphaToHex(zero1) {
 	return hex;
 }
 
+//#region ani
 function anim_face_down(item, ms = 300, callback = null) {
 	face_up(item); anim_toggle_face(item, callback);
 }
@@ -2714,10 +2722,12 @@ function animatedTitle(msg = 'DU BIST DRAN!!!!!') {
 	}, 1000);
 }
 
+//#region graph
 function applyStyles(g, id, styles) {
 	g.mStyle(id, styles, isdef(g.getNode(id)) ? 'node' : 'edge');
 }
 
+//#region card
 function ari_get_card(ckey, h, w, ov = .3) {
 	let type = ckey[2];
 	let sz = { largecard: 100, smallcard: 50 };
@@ -2736,6 +2746,7 @@ function ari_get_card_large(ckey, h, w, ov = .2) {
 	return card;
 }
 
+//#region select
 function ari_make_selectable(item, dParent, dInstruction) {
 	let A = Z.A;
 	switch (item.itemtype) {
@@ -2772,6 +2783,7 @@ function ari_make_unselected(item) {
 	}
 }
 
+//#region gamehelpers
 function ari_show_handsorting_buttons_for(plname) {
 	if (Z.role == 'spectator' || isdef(mBy('dHandButtons'))) return;
 	let fen = Z.fen;
@@ -2782,6 +2794,7 @@ function ari_show_handsorting_buttons_for(plname) {
 	show_player_button('sort', dHandButtons, onclick_by_rank);
 }
 
+//#region arrdict
 function arrAdd(arr1, arr2) {
 	let i = 0; return arr1.map(x => x + arr2[i++]);
 }
@@ -2893,6 +2906,21 @@ function arrMinus(a, b) {
 	if (isList(b)) return a.filter(x => !b.includes(x)); else return a.filter(x => x != b);
 }
 
+function arrNext(arr, el, imin = 0, imax = null) {
+	return arrAtDist(arr, el, 1, imin, imax);
+}
+function arrAtDist(arr, el, inc, imin = 0, imax = null) {
+	if (!imax) imax = arr.length; else imax++;
+	let arr2 = arr.slice(imin, imax);
+	//console.log('arr2',arr2)
+	let len = arr2.length;
+	let i = arr2.indexOf(el);
+	let inew = i + inc;
+	while (inew < 0) inew += len;
+	inew %= len;
+	return arr2[inew];
+}
+
 function arrNoDuplicates(arr) {
 	let di = {};
 	let arrNew = [];
@@ -2907,6 +2935,10 @@ function arrNoDuplicates(arr) {
 
 function arrPlus(a, b) {
 	b.map(x => a.push(x)); return a;
+}
+
+function arrPrev(arr, el, imin = 0, imax = null) {
+	return arrAtDist(arr, el, -1, imin, imax);
 }
 
 function arrRange(from = 1, to = 10, step = 1) {
@@ -3067,6 +3099,7 @@ function arr_get_min(arr, func) {
 	let res = arrTakeWhile(aug, x => x.val == min); return res.map(x => arr[x.i]);
 }
 
+//#region dev
 function assertion(cond) {
 	if (!cond) {
 		let args = [...arguments];
@@ -3077,58 +3110,7 @@ function assertion(cond) {
 	}
 }
 
-function au_reset() {
-	AU.list = [];
-	AU.prefix = '';
-	AU.n = -1;
-	AU.selected = null;
-	hide(AU.popup);
-	AU.detect = false;
-}
-
-function au_run() {
-	au_reset(); runcode(AU.ta.value); show_div_ids();
-}
-
-function au_run_line() {
-	au_reset(); runcode(getTextAreaCurrentLine(AU.ta));
-}
-
-function au_select_down() {
-	if (AU.n < AU.list.length - 1) AU.n++;
-	let ch = AU.popup.children;
-	if (AU.selected) mStyle(AU.selected, { bg: 'blue' });
-	AU.selected = ch[AU.n];
-	mStyle(AU.selected, { bg: 'green' });
-}
-
-function au_show_list() {
-	let [popup, ta, fnames] = [AU.popup, AU.ta, AU.fnames];
-	if (isEmpty(AU.prefix)) au_reset();
-	else {
-		AU.list = fnames.filter(x => startsWith(x, AU.prefix));
-		if (isEmpty(AU.list)) {
-			AU.list = Object.keys(window).filter(x => startsWith(x, AU.prefix));
-			AU.list = AU.list.concat(get_keys(CODE.consts).filter(x => startsWith(x, AU.prefix)));
-			AU.list = AU.list.concat(get_keys(Items).filter(x => startsWith(x, AU.prefix)));
-		}
-		if (isEmpty(AU.list)) {
-			hide(popup);
-		} else {
-			let mousepos = getCaretCoordinates(ta, ta.selectionStart - AU.prefix.length);
-			show(popup)
-			mPos(popup, mousepos.left + 10, mousepos.top + 30);
-			iClear(popup);
-			AU.n = -1;
-			AU.selected = null;
-			for (const w of AU.list) {
-				if (isdef(CODE.funcs[w])) mDiv(popup, {}, w, CODE.funcs[w].sig);
-				else mDiv(popup, {}, w, w)
-			}
-		}
-	}
-}
-
+//#region audio
 function audio_beep(vol, freq, duration) {
 	console.log('sollte beepen!!!');
 	if (nundef(_AUDIOCONTEXT)) _AUDIOCONTEXT = new AudioContext();
@@ -3175,78 +3157,7 @@ function audio_toggle(key) {
 	DA.isSound = true;
 }
 
-function _autocomplete(inp, arr) {
-	/* inp...input element, arr...array of possible autocompleted values:*/
-	var currentFocus;
-	inp = toElem(inp);
-	inp.addEventListener('input', e => { /*execute a func when someone writes in the text field:*/
-		var a, b, i, val = this.value;    /*close any already open lists of autocompleted values*/
-		autocomplete_closeAllLists();
-		if (!val) { return false; }
-		currentFocus = -1;
-		a = document.createElement('DIV'); /*create a DIV element that will contain the items (values):*/
-		a.setAttribute('id', this.id + 'autocomplete-list');
-		a.setAttribute('class', 'autocomplete-items');
-		this.parentNode.appendChild(a); /*append the DIV element as a child of the autocomplete container:*/
-		for (i = 0; i < arr.length; i++) {
-			if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-				b = document.createElement('DIV'); /*create a DIV element for each matching element:*/
-				b.innerHTML = '<strong>' + arr[i].substr(0, val.length) + '</strong>'; /*make the matching letters bold:*/
-				b.innerHTML += arr[i].substr(val.length);
-				b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>"; /*insert a input field that will hold the current array item's value:*/
-				b.addEventListener('click', e => {
-					inp.value = this.getElementsByTagName('input')[0].value; /*insert the value for the autocomplete text field:*/
-					autocomplete_closeAllLists();
-				});
-				a.appendChild(b);
-			}
-		}
-	});
-	inp.addEventListener('keydown', e => {
-		var x = document.getElementById(this.id + 'autocomplete-list');
-		if (x) x = x.getElementsByTagName('div');
-		if (e.keyCode == 40) {
-			currentFocus++;
-			autocomplete_addActive(x);
-		} else if (e.keyCode == 38) {
-			currentFocus--;
-			autocomplete_addActive(x);
-		} else if (e.keyCode == 13) {
-			e.preventDefault();
-			if (currentFocus > -1) {
-				if (x) x[currentFocus].click();
-			}
-		}
-	});
-	inp.addEventListener('dblclick', e => { evNoBubble(e); });
-	document.addEventListener('click', e => {
-		autocomplete_closeAllLists(e.target);
-	});
-}
-
-function autocomplete_addActive(x) {
-	if (!x) return false;
-	autocomplete_removeActive(x);
-	if (currentFocus >= x.length) currentFocus = 0;
-	if (currentFocus < 0) currentFocus = x.length - 1;
-	x[currentFocus].classList.add('autocomplete-active');
-}
-
-function autocomplete_closeAllLists(elmnt) {
-	var x = document.getElementsByClassName('autocomplete-items');
-	for (var i = 0; i < x.length; i++) {
-		if (elmnt != x[i] && elmnt != inp) {
-			x[i].parentNode.removeChild(x[i]);
-		}
-	}
-}
-
-function autocomplete_removeActive(x) {
-	for (var i = 0; i < x.length; i++) {
-		x[i].classList.remove('autocomplete-active');
-	}
-}
-
+//#region board
 function bCapturedPieces(plSym, arr, idx, rows, cols, includeDiagonals = true) {
 	let res = [];
 	let nei = bNei(arr, idx, rows, cols, includeDiagonals);
@@ -3539,6 +3450,7 @@ function bStrideRowFrom(arr, irow, icol, rows, cols, stride) {
 	return x;
 }
 
+//#region gamehelpers
 function beautify_history(lines, title, fen, uplayer) {
 	let html = `<div class="history"><span style="color:red;font-weight:bold;">${title}: </span>`;
 	for (const l of lines) {
@@ -3558,6 +3470,7 @@ function beautify_history(lines, title, fen, uplayer) {
 	return html;
 }
 
+//#region board
 function boardArrOmitFirstRowCol(boardArr, rows, cols) {
 	let res = [];
 	for (let r = 1; r < rows; r++) {
@@ -3578,6 +3491,7 @@ function boardToNode(state) {
 	return res;
 }
 
+//#region arrdict
 function bottom_elem_from_to(arr1, arr2) {
 	last_elem_from_to(arr1, arr2);
 }
@@ -3586,6 +3500,7 @@ function bottom_elem_from_to_top(arr1, arr2) {
 	arr2.unshift(arr1.pop());
 }
 
+//#region canvas
 function cCenterOrigin(cnv, ctx) {
 	cSetOrigin(ctx, cnv.width / 2, cnv.height / 2);
 }
@@ -3660,12 +3575,14 @@ function cStyle_dep(cvx, fill, stroke, wline, cap) {
 	if (isdef(cap)) cvx.lineCap = cap;
 }
 
+//#region card
 function calc_hand_value(hand, card_func = ferro_get_card) {
 	let vals = hand.map(x => card_func(x).val);
 	let sum = vals.reduce((a, b) => a + b, 0);
 	return sum;
 }
 
+//#region datetime
 function calculateDaysBetweenDates(begin, end) {
 	var oneDay = 24 * 60 * 60 * 1000;
 	var firstDate = new Date(begin);
@@ -3674,10 +3591,12 @@ function calculateDaysBetweenDates(begin, end) {
 	return diffDays;
 }
 
+//#region gamehelpers
 function cancel_game() {
 	iClear('dMenu');
 }
 
+//#region string
 function cap_each_word(s) {
 	let arr = s.split(' ');
 	let res = '';
@@ -3690,6 +3609,7 @@ function capitalize(s) {
 	return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+//#region card
 function cardFromInfo(info, h, w, ov) {
 	let svgCode = C52[info.c52key];
 	svgCode = '<div>' + svgCode + '</div>';
@@ -3704,6 +3624,7 @@ function cardFromInfo(info, h, w, ov) {
 	return res;
 }
 
+//#region board
 function catanBoard(dParent, rows, topcols, styles = {}) {
 	let g = hex1Board(dParent, rows, topcols, styles);
 	hexCornerNodes(g);
@@ -3796,6 +3717,7 @@ function checkWinnerTTT(arr, rows, cols) {
 	return checkWinner(arr, rows, cols);
 }
 
+//#region random
 function choose(arr, n, excepti) {
 	return rChoose(arr, n, null, excepti);
 }
@@ -3804,6 +3726,7 @@ function chooseRandom(arr) {
 	return rChoose(arr);
 }
 
+//#region board
 function circleCenters(rows, cols, wCell, hCell) {
 	let [w, h] = [cols * wCell, rows * hCell];
 	let cx = w / 2;
@@ -3821,10 +3744,12 @@ function circleCenters(rows, cols, wCell, hCell) {
 	return [centers, wCell * cols, hCell * rows];
 }
 
+//#region math
 function clamp(x, min, max) {
 	return Math.min(Math.max(x, min), max);
 }
 
+//#region tbd
 function clearElement(elem) {
 	if (isString(elem)) elem = document.getElementById(elem);
 	if (window.jQuery == undefined) { elem.innerHTML = ''; return elem; }
@@ -3845,6 +3770,7 @@ function clear_all() {
 	for (const id of ['dFiddle', 'dMenu', 'dSearch', 'dSearchResult', 'dTable']) iClear(id); console.log('ids', get_keys(Items))
 }
 
+//#region select
 function clear_select(selected, selstyle = 'selected') {
 	for (const item of selected) {
 		item.isSelected = false;
@@ -3868,6 +3794,7 @@ function clear_selection() {
 	A.selected = [];
 }
 
+//#region tbd
 function clear_status() {
 	if (nundef(mBy('dStatus'))) return; clearTimeout(TO.fleeting); mRemove("dStatus");
 }
@@ -3881,14 +3808,17 @@ function clear_title() {
 	mClear('dTitleMiddle'); mClear('dTitleLeft'); mClear('dTitleRight');
 }
 
+//#region transaction
 function clear_transaction() {
 	DA.simulate = false; DA.transactionlist = [];
 }
 
+//#region random
 function coin(percent = 50) {
 	return Math.random() * 100 < percent;
 }
 
+//#region gamehelpers
 function collect_game_specific_options(game) {
 	let poss = Config.games[game].options;
 	if (nundef(poss)) return;
@@ -3901,6 +3831,7 @@ function collect_game_specific_options(game) {
 	return di;
 }
 
+//#region color
 function colorChannelMixer(colorChannelA, colorChannelB, amountToMix) {
 	var channelA = colorChannelA * amountToMix;
 	var channelB = colorChannelB * (1 - amountToMix);
@@ -4319,6 +4250,7 @@ function colorsFromBFA(bg, fg, alpha) {
 	return [bg, fg];
 }
 
+//#region obj
 function complexCompare(obj1, obj2) {
 	const obj1Keys = Object.keys(obj1);
 	const obj2Keys = Object.keys(obj2);
@@ -4340,6 +4272,7 @@ function complexCompare(obj1, obj2) {
 	return true;
 }
 
+//#region gamehelpers
 function compute_hidden(plname) {
 	let [fen, uplayer] = [Z.fen, Z.uplayer];
 	let pl = fen.players[plname];
@@ -4351,18 +4284,22 @@ function compute_hidden(plname) {
 	return hidden;
 }
 
+//#region string
 function contains(s, sSub) {
 	return s.toLowerCase().includes(sSub.toLowerCase());
 }
 
+//#region gamehelpers
 function continue_after_error() {
 	dError.innerHTML = ''; if (isdef(DA.callback)) { DA.callback(); delete (DA.callback); }
 }
 
+//#region math
 function convert_to_range(x, min1, max1, min2, max2) {
 	return (x - min1) * ((max2 - min2) / (max1 - min1)) + min2;
 }
 
+//#region obj
 function copyKeys(ofrom, oto, except = {}, only = null) {
 	let keys = isdef(only) ? only : Object.keys(ofrom);
 	for (const k of keys) {
@@ -4372,6 +4309,7 @@ function copyKeys(ofrom, oto, except = {}, only = null) {
 	return oto;
 }
 
+//#region math
 function correctPolys(polys, approx = 10) {
 	let clusters = [];
 	for (const p of polys) {
@@ -4428,6 +4366,7 @@ function correctPolys(polys, approx = 10) {
 	return vertices;
 }
 
+//#region card
 function correct_handsorting(hand, plname) {
 	let pl = Z.fen.players[plname];
 	let [cs, pls, locs] = [Clientdata.handsorting, pl.handsorting, localStorage.getItem('handsorting')];
@@ -4436,6 +4375,7 @@ function correct_handsorting(hand, plname) {
 	return hand;
 }
 
+//#region string
 function countAll(s, scount) {
 	let letters = toLetters(scount);
 	function counter(total, ch) { if (letters.includes(ch)) return total + 1; else return total; }
@@ -4443,6 +4383,7 @@ function countAll(s, scount) {
 	return res;
 }
 
+//#region card
 function create_card_assets_c52() {
 	let ranknames = { A: 'Ace', K: 'King', T: '10', J: 'Jack', Q: 'Queen' };
 	let suitnames = { S: 'Spades', H: 'Hearts', C: 'Clubs', D: 'Diamonds' };
@@ -4469,79 +4410,7 @@ function create_fen_deck(cardtype, num_decks = 1, num_jokers = 0) {
 	return newarr;
 }
 
-function create_fiddle(dParent, code, rows = 10, cols = 120) {
-	let [ta, buttons, tacon] = create_fiddle_ui(dParent, code, rows, cols);
-	ta.onkeydown = ev => {
-		let k = ev.key;
-		if (k == 'Enter' && AU.selected) ev.preventDefault();
-		if (!isEmpty(AU.list) && (k == 'ArrowDown' || k == 'ArrowUp')) ev.preventDefault();
-	}
-	ta.onkeyup = ev => {
-		let k = ev.key; let fnames = AU.fnames; let popup = AU.popup;
-		if (k == 'Enter' && ev.ctrlKey) {
-			au_reset();
-			let code = ev.shiftKey ? getTextAreaCurrentLine(AU.ta) : AU.ta.value;
-			runcode(code);
-		} else if (k == 'Escape' && !isEmpty(AU.list)) {
-			au_reset();
-		} else if (k == 'Enter' && AU.selected) {
-			let w = AU.selected.innerHTML;
-			let params = stringAfter(w, '(');
-			let funcname = stringBefore(w, '(')
-			let s = stringAfter(w, AU.prefix);
-			let before = AU.ta.value.slice(0, AU.ta.selectionEnd);
-			let after = AU.ta.value.slice(AU.ta.selectionEnd);
-			AU.ta.value = before + s + after;
-			ta.selectionEnd = (before + s).length;
-			au_reset();
-		} else if (k == 'ArrowDown' && !isEmpty(AU.list)) {
-			au_select_down();
-		} else if (k == 'ArrowUp' && !isEmpty(AU.list)) {
-			if (AU.n > 0) AU.n--;
-			let ch = popup.children;
-			if (AU.selected) mStyle(AU.selected, { bg: 'blue' });
-			AU.selected = ch[AU.n];
-			mStyle(AU.selected, { bg: 'green' });
-		} else if ('abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.includes(k) && !ev.ctrlKey) {
-			let icaret = AU.ta.selectionEnd;
-			let line = getTextAreaCurrentLine(AU.ta);
-			let iline = AU.ta.value.indexOf(line);
-			let i = icaret - iline;
-			let [istart, m] = lastIndexOfAny(line, [',', ' ', ')', '(', '{', '}', ';'], i - 1);
-			let pf = line.slice(0, i);
-			if (istart >= 0) pf = line.slice(istart + 1, i);
-			AU.prefix = pf;
-			au_show_list();
-			if (!isEmpty(AU.list)) au_select_down();
-		} else if (k != 'Shift') {
-			au_reset();
-		}
-	}
-}
-
-function create_fiddle_ui(dParent, code, rows, cols) {
-	mStyle(dParent, { position: 'relative' });
-	let ta = mTextarea(rows, cols, dParent, { padding: 20, position: 'relative' }, 'taCode');
-	setTimeout(() => ta.autofocus = true, 10);
-	let buttons = mDiv(dParent, { w: getRect(ta).w, align: 'right', maright: 4 });
-	let st = { fz: 14 };
-	maButton('RUN (ctl+Enter)', au_run, buttons, st);
-	maButton('LINE (ctl+shft+Enter)', au_run_line, buttons, st);
-	let tacon = mTextarea(1, cols, dParent, { matop: 4, hpadding: 20, vpadding: 10, position: 'relative' }, 'taConsole');
-	ta.focus();
-	AU.popup = mDiv(dParent, { position: 'absolute', wmin: 100, hmin: 100, hmax: 600, overy: 'auto', bg: 'blue', fg: 'white' });
-	AU.fnames = get_keys(CODE.funcs); AU.fnames.sort();
-	AU.ta = ta; AU.tacon = tacon;
-	au_reset();
-	if (nundef(code)) { code = localStorage.getItem('code'); if (nundef(code)) code = `pause();`; }
-	else {
-		var tab = RegExp("\\t", "g");
-		code = code.toString().replace(tab, ' ');
-	}
-	AU.ta.value = code;
-	return [ta, buttons, tacon];
-}
-
+//#region gamehelpers
 function create_random_players(n = 1) {
 	let colors = rWheel(n);
 	let res = [{ name: 'mimi', playmode: 'human', color: colors[0] }];
@@ -4554,6 +4423,7 @@ function create_random_players(n = 1) {
 	return res;
 }
 
+//#region data
 function csv2list(allText, hasHeadings = true) {
 	var numHeadings = 11;
 	var allTextLines = allText.split(/\r\n|\n/);
@@ -4573,6 +4443,7 @@ function csv2list(allText, hasHeadings = true) {
 	return records;
 }
 
+//#region math
 function cycle(x, min, max) {
 	let d = max - min; return (x - min) % d + min;
 }
@@ -4585,10 +4456,12 @@ function dSquare(pos1, pos2) {
 	return dx + dy;
 }
 
+//#region datetime
 function date2locale(date) {
 	return date.toLocaleDateString();
 }
 
+//#region data
 function db_create(table, rec, db) {
 	if (!db) { db = DB; }
 	lookupAddToList(db, ['appdata', table], rec);
@@ -4610,8 +4483,16 @@ function db_readall(db) {
 	return db;
 }
 
-function db_save_client(IP = 'localhost', port = 3000) {
-	post_json(`http:/` + `/${IP}:${port}/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
+function dbSave() {
+	if (NODEJS) {
+		let route = `/post/json`;
+		let o = { filename: 'db', data: DB }
+		let callback = () => console.log('saved db');
+		post_json(route,o,callback);
+		//console.log('full route',route);
+		//post_json(SERVERURL + `/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
+	}	else console.log('not saved - no server running!')
+	//post_json(`http:/` + `/${IP}:${port}/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
 }
 
 function db_update(table, i, rec, save = false) {
@@ -4619,18 +4500,22 @@ function db_update(table, i, rec, save = false) {
 	if (NODEJS) post_json(SERVERURL + `/update`, { table: table, i: i, rec: rec, save: save }, () => console.log('updated db'));
 }
 
+//#region gamehelpers
 function deactivate_ui() {
 	uiActivated = false; DA.ai_is_moving = true;
 }
 
+//#region dom
 function default_allowDrop(ev) {
 	ev.preventDefault();
 }
 
+//#region gamehelpers
 function delete_table(friendly) {
 	stop_game(); phpPost({ friendly: friendly }, 'delete_table');
 }
 
+//#region board
 function destroySudokuRule(pattern, rows, cols) {
 	let sz = Math.min(rows, cols);
 	let [r1, r2] = choose(range(0, sz - 1), 2);
@@ -4639,6 +4524,7 @@ function destroySudokuRule(pattern, rows, cols) {
 	else if (coin(50)) { arrSwap2d(pattern, c, r1, c, r2); }
 }
 
+//#region arrdict
 function dict2list(d, keyName = 'id') {
 	let res = [];
 	for (const key in d) {
@@ -4651,6 +4537,7 @@ function dict2list(d, keyName = 'id') {
 	return res;
 }
 
+//#region math
 function distance(x1, y1, x2, y2) {
 	return Math.sqrt(dSquare({ x: x1, y: y1 }, { x: x2, y: y2 }));
 }
@@ -4659,11 +4546,13 @@ function divInt(a, b) {
 	return Math.trunc(a / b);
 }
 
+//#region tbd
 function doit(secs, f, interval) {
 	if (get_now() - DA.start < secs * 1000) setTimeout(() => { f(); doit(secs, f, interval); }, interval);
 	else console.log('DONE!!!');
 }
 
+//#region data
 function downloadAsText(s, filename, ext = 'txt') {
 	saveFileAtClient(
 		filename + "." + ext,
@@ -4687,6 +4576,7 @@ function downloadJson(o, filename) {
 	dl.click();
 }
 
+//#region dom
 function drawFlatHex(dParent, styles, classes, sizing) {
 	if (nundef(styles)) styles = { w: 100, h: 100, bg: 'blue' };
 	if (nundef(classes)) classes = ['frameOnHover'];
@@ -4741,6 +4631,7 @@ function drawTriangle(dParent, styles, classes, sizing) {
 	return d;
 }
 
+//#region card
 function draw_from_deck_to(deck, arr) {
 	top_elem_from_to(deck, arr);
 }
@@ -4749,6 +4640,7 @@ function draw_from_deck_to_board(deck, arr) {
 	top_elem_from_to_top(deck, arr);
 }
 
+//#region canvas
 function draw_perlin_x(item) {
 	let [cv, cx] = [item.live.cv, item.live.cx];
 	cClear(cv, cx);
@@ -4774,6 +4666,7 @@ function draw_random_walk(item) {
 	cEllipse(rInc(item, 'x', -2, 2), rInc(item, 'y', -2, 2), 30, 20, { bg: 'blue', fg: 'green' }, 0, cx);
 }
 
+//#region arrdict
 function elem_from_to(el, arr1, arr2) {
 	removeInPlace(arr1, el); arr2.push(el);
 }
@@ -4782,10 +4675,12 @@ function elem_from_to_top(el, arr1, arr2) {
 	removeInPlace(arr1, el); arr2.unshift(el);
 }
 
+//#region string
 function endsWith(s, sSub) {
 	let i = s.indexOf(sSub); return i >= 0 && i == s.length - sSub.length;
 }
 
+//#region color
 function ensureColorDict() {
 	if (isdef(ColorDi)) return;
 	ColorDi = {};
@@ -4842,12 +4737,21 @@ function ensureColorDict() {
 	}
 }
 
+//#region dev
 function errlog() {
 	console.log('ERROR!', ...arguments);
 }
 
+//#region event
 function evNoBubble(ev) {
 	ev.preventDefault(); ev.cancelBubble = true;
+}
+
+function evStop(ev) {
+	ev.preventDefault();
+	ev.stopPropagation();
+	ev.stopImmediatePropagation();
+	ev.cancelBubble = true;
 }
 
 function evToClass(ev, className) {
@@ -4887,12 +4791,14 @@ function ev_to_gname(ev) {
 	evNoBubble(ev); return evToTargetAttribute(ev, 'gamename');
 }
 
+//#region arrdict
 function exchange_by_index(arr1, i1, arr2, i2) {
 	let temp = arr1[i1];
 	arr1[i1] = arr2[i2];
 	arr2[i2] = temp;
 }
 
+//#region board
 function expandBoard(board, rNew, cNew, iInsert) {
 	let [boardArrOld, rOld, cOld] = [board.fields.map(x => isdef(x.item) ? x.item.index : null), board.rows, board.cols];
 	let boardArrNew = new Array(rNew * cNew);
@@ -4915,6 +4821,7 @@ function expandBoard(board, rNew, cNew, iInsert) {
 	return { rows: rNew, cols: cNew, boardArr: boardArrNew, extras: [] };
 }
 
+//#region card
 function face_down(item, color, texture) {
 	if (!item.faceUp) return;
 	if (isdef(texture) || lookup(item, ['live', 'dCover'])) {
@@ -4963,6 +4870,7 @@ function ferro_get_card(ckey, h, w, ov = .25) {
 	return card;
 }
 
+//#region card
 function fillColarr(colarr, items) {
 	let i = 0;
 	let result = [];
@@ -4976,6 +4884,7 @@ function fillColarr(colarr, items) {
 	return result;
 }
 
+//#region dom
 function findAncestorElemOfType(el, type) {
 	while (el) {
 		let t = getTypeOf(el);
@@ -5058,10 +4967,12 @@ function findDescendantWithId(id, parent) {
 	return null;
 }
 
+//#region data
 function findKeys(s) {
 	return SymKeys.filter(x => contains(x, s) || contains(Syms[x].E, s) || isdef(Syms[x].D) && contains(Syms[x].D, s));
 }
 
+//#region dom
 function findParentWithClass(elem, className) {
 	while (elem && !mHasClass(elem, className)) { elem = elem.parentNode; } return elem;
 }
@@ -5070,6 +4981,7 @@ function findParentWithId(elem) {
 	while (elem && !(elem.id)) { elem = elem.parentNode; } return elem;
 }
 
+//#region card
 function find_card(index, ui_item) {
 	return ui_item.items[index];
 }
@@ -5092,6 +5004,7 @@ function find_jolly_rank(j, rankstr = 'A23456789TJQKA') {
 	}
 }
 
+//#region arrdict
 function find_minimum(array) {
 	let min = array[0];
 	for (let i = 1; i < array.length; i++) {
@@ -5108,6 +5021,7 @@ function find_minimum_by_function(array, func) {
 	return min;
 }
 
+//#region event
 function fireClick(elem) {
 	const evt = new Event("click", { "bubbles": true, "cancelable": false });
 	elem.dispatchEvent(evt);
@@ -5142,6 +5056,7 @@ function fireWheel(node) {
 	}
 }
 
+//#region arrdict
 function firstCond(arr, func) {
 	if (nundef(arr)) return null;
 	for (const a of arr) {
@@ -5199,6 +5114,7 @@ function fisherYates(arr) {
 	return arr;
 }
 
+//#region tbd
 function fleetingMessage(msg, d, styles, ms, fade) {
 	if (isString(msg)) {
 		dFleetingMessage.innerHTML = msg;
@@ -5210,10 +5126,12 @@ function fleetingMessage(msg, d, styles, ms, fade) {
 	return dFleetingMessage;
 }
 
+//#region arrdict
 function forAll(arr, func) {
 	for (const a of arr) if (!func(a)) return false; return true;
 }
 
+//#region datetime
 function formatDate(d) {
 	const date = isdef(d) ? d : new Date();
 	const month = ('0' + date.getMonth()).slice(0, 2);
@@ -5223,10 +5141,12 @@ function formatDate(d) {
 	return dateString;
 }
 
+//#region data
 function format_currency(num) {
 	return '$' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
+//#region datetime
 function format_date(date) {
 	let d = new Date(date);
 	let month = '' + (d.getMonth() + 1);
@@ -5237,10 +5157,12 @@ function format_date(date) {
 	return [month, day, year].join('/');
 }
 
+//#region data
 function fromLocalStorage(name = '_all') {
 	return JSON.parse(localStorage.getItem(name));
 }
 
+//#region string
 function fromUmlaut(w) {
 	if (isList(w)) {
 		let res = [];
@@ -5257,10 +5179,12 @@ function fromUmlaut(w) {
 	}
 }
 
+//#region data
 function fromYaml(x) {
 	return jsyaml.load(x);
 }
 
+//#region svg
 function gBg(g, color) {
 	g.setAttribute('fill', color);
 }
@@ -5364,6 +5288,7 @@ function gSvg() {
 	return gCreate('svg');
 }
 
+//#region data
 function genCats(n) {
 	let di = {};
 	let cats = Object.keys(Categories);
@@ -5377,6 +5302,7 @@ function genCats(n) {
 	return di;
 }
 
+//#region gamehelpers
 function generate_table_name(n) {
 	let existing = Serverdata.tables.map(x => x.friendly);
 	while (true) {
@@ -5389,14 +5315,17 @@ function generate_table_name(n) {
 	}
 }
 
+//#region tbd
 function generic_present(d, g) {
 	let ui = ui_type_tile(g, d); return;
 }
 
+//#region string
 function germanize(s) {
 	return toUmlaut(s);
 }
 
+//#region data
 function getAnimals() {
 	let gr = 'Animals & Nature';
 	let result = [];
@@ -5406,6 +5335,7 @@ function getAnimals() {
 	return result;
 }
 
+//#region dom
 function getCaretCoordinates(element, position, options) {
 	var properties = [
 		'direction',
@@ -5509,6 +5439,7 @@ function getCaretCoordinates(element, position, options) {
 	return coordinates;
 }
 
+//#region board
 function getCenters(layout, rows, cols, wCell, hCell,) {
 	if (layout == 'quad') { return quadCenters(rows, cols, wCell, hCell); }
 	else if (layout == 'hex') { return hexCenters(rows, cols, wCell, hCell); }
@@ -5548,6 +5479,7 @@ function getCirclePoints(rad, n, disp = 0) {
 	return pts;
 }
 
+//#region color
 function getColorHexes(x) {
 	return [
 		'f0f8ff',
@@ -5854,6 +5786,7 @@ function getColorNames() {
 	];
 }
 
+//#region string
 function getConsonants(w, except = []) {
 	w = w.toLowerCase();
 	let vowels = 'aeiouy' + except.join('');
@@ -5864,6 +5797,7 @@ function getConsonants(w, except = []) {
 	return res;
 }
 
+//#region board
 function getCornerVertices(centers, w = 100, h = 100) {
 	let polys = [];
 	for (const pt of centers) {
@@ -5889,6 +5823,7 @@ function getEllipsePoints(radx, rady, n, disp = 0) {
 	return pts;
 }
 
+//#region tbd
 function getFruid(pref = '') {
 	const alpha = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	FRUIDCounter += 1;
@@ -5896,8 +5831,10 @@ function getFruid(pref = '') {
 	return pref + FRUIDCounter - alpha.length;
 }
 
+//#region dev
 function getFunctionCallerName() {
-	return new Error().stack.match(/at (\S+)/g)[1].slice(3);
+
+	return '' + (Counter1++) + ':' + new Error().stack.match(/at (\S+)/g)[1].slice(3);
 }
 
 function getFunctionsNameThatCalledThisFunction() {
@@ -5908,6 +5845,7 @@ function getFunctionsNameThatCalledThisFunction() {
 	return c2.name;
 }
 
+//#region data
 function getGSGElements(gCond, sCond) {
 	let keys = [];
 	let byg = ByGroupSubgroup;
@@ -5921,11 +5859,13 @@ function getGSGElements(gCond, sCond) {
 	return keys.sort();
 }
 
+//#region math
 function getHexPoly(x, y, w, h) {
 	let hex = [[0, -0.5], [0.5, -0.25], [0.5, 0.25], [0, 0.5], [-0.5, 0.25], [-0.5, -0.25]];
 	return getPoly(hex, x, y, w, h);
 }
 
+//#region data
 function getKeySets() {
 	makeCategories();
 	let res = {};
@@ -5942,6 +5882,7 @@ function getKeySets() {
 	return res;
 }
 
+//#region string
 function getLettersExcept(w, except = []) {
 	w = w.toLowerCase();
 	let res = [];
@@ -5951,6 +5892,7 @@ function getLettersExcept(w, except = []) {
 	return res;
 }
 
+//#region data
 function getNature() {
 	let gr = 'Animals & Nature';
 	let result = [];
@@ -5960,6 +5902,7 @@ function getNature() {
 	return result;
 }
 
+//#region math
 function getPoly(offsets, x, y, w, h) {
 	let poly = [];
 	for (let p of offsets) {
@@ -5975,10 +5918,12 @@ function getQuadPoly(x, y, w, h) {
 	return getPoly(q, x, y, w, h);
 }
 
+//#region random
 function getRandomLetter(w, except = []) {
 	let cons = getLettersExcept(w, except); return chooseRandom(cons);
 }
 
+//#region dom
 function getRect(elem, relto) {
 	if (isString(elem)) elem = document.getElementById(elem);
 	let res = elem.getBoundingClientRect();
@@ -6020,6 +5965,7 @@ function getStyleProp(elem, prop) {
 	return getComputedStyle(elem).getPropertyValue(prop);
 }
 
+//#region board
 function getSudokuPattern(r, c) {
 	let patterns = {
 		44: [
@@ -6041,6 +5987,7 @@ function getSudokuPatternFromDB(r, c, index) {
 	return { pattern: pattern, puzzle: puzzle };
 }
 
+//#region dom
 function getTextAreaCurrentLine(el) {
 	let line = '';
 	if (el instanceof HTMLTextAreaElement) {
@@ -6082,6 +6029,7 @@ function getTextWidth(text, font) {
 	return metrics.width;
 }
 
+//#region math
 function getTriangleDownPoly(x, y, w, h) {
 	let tridown = [[-0.5, 0.5], [0.5, 0.5], [-0.5, 0.5]];
 	return getPoly(tridown, x, y, w, h);
@@ -6092,6 +6040,7 @@ function getTriangleUpPoly(x, y, w, h) {
 	return getPoly(triup, x, y, w, h);
 }
 
+//#region data
 function getTypeOf(param) {
 	let type = typeof param;
 	if (type == 'string') {
@@ -6107,11 +6056,13 @@ function getTypeOf(param) {
 	return type;
 }
 
+//#region tbd
 function getUID(pref = '') {
 	UIDCounter += 1;
 	return pref + '_' + UIDCounter;
 }
 
+//#region string
 function getVowels(w, except = []) {
 	w = w.toLowerCase();
 	let vowels = 'aeiouy';
@@ -6122,6 +6073,7 @@ function getVowels(w, except = []) {
 	return res;
 }
 
+//#region gamehelpers
 function get_admin_player(list) {
 	let res = valf(firstCond(list, x => x == 'mimi'), firstCond(list, x => ['felix', 'amanda', 'lauren'].includes(x)));
 	return res ?? list[0];
@@ -6132,6 +6084,7 @@ function get_app_presenter(id) {
 	return di[id] || generic_present;
 }
 
+//#region dom
 function get_checked_radios(rg) {
 	let inputs = rg.getElementsByTagName('INPUT');
 	let list = [];
@@ -6150,6 +6103,7 @@ function get_containertitle_styles(styles = {}) {
 	let defaults = valf(Config.ui.containertitle, {}); defaults.position = 'absolute'; addKeys(defaults, styles); return styles;
 }
 
+//#region gamehelpers
 function get_default_options(gamename) {
 	let options = {};
 	for (const k in Config.games[gamename].options) options[k] = arrLast(Config.games[gamename].options[k]);
@@ -6160,16 +6114,19 @@ function get_game_color(game) {
 	return colorFrom(Config.games[game].color);
 }
 
+//#region card
 function get_group_rank(j) {
 	let non_jolly_key = firstCond(j, x => !is_jolly(x)); return non_jolly_key[0];
 }
 
+//#region dom
 function get_img_html(path, styles, classes) {
 	let img = mImage(path, null, styles, classes);
 	let x = img.outerHTML;
 	return img.outerHTML;
 }
 
+//#region card
 function get_joker_info() {
 	return {
 		c52key: `card_0J`,
@@ -6190,21 +6147,25 @@ function get_joker_info() {
 	};
 }
 
+//#region obj
 function get_keys(o) {
 	return Object.keys(o);
 }
 
+//#region gamehelpers
 function get_logout_button() {
 	let html = `<a id="aLogout" href="javascript:onclick_logout()">logout</a>`;
 	return mCreateFrom(html);
 }
 
+//#region dom
 function get_mouse_pos(ev) {
 	let x = ev.pageX - document.body.scrollLeft;
 	let y = ev.pageY - document.body.scrollTop;
 	return ({ x: x, y: y });
 }
 
+//#region gamehelpers
 function get_multi_trigger() {
 	return lookup(Z, ['fen', 'trigger']);
 }
@@ -6222,12 +6183,6 @@ function get_next_human_player(plname) {
 	return plnew;
 }
 
-function get_next_in_list(el, list) {
-	let i = list.indexOf(el);
-	let nextplayer = list[(i + 1) % list.length];
-	return nextplayer;
-}
-
 function get_next_player(g, uname) {
 	let plorder = g.fen.plorder;
 	let iturn = plorder.indexOf(uname);
@@ -6235,10 +6190,12 @@ function get_next_player(g, uname) {
 	return nextplayer;
 }
 
+//#region datetime
 function get_now() {
 	return Date.now();
 }
 
+//#region gamehelpers
 function get_playmode(uname) {
 	return Z.fen.players[uname].playmode;
 }
@@ -6250,6 +6207,7 @@ function get_present_order() {
 	return arrCycle(Z.fen.plorder, Z.fen.plorder.indexOf(show_first));
 }
 
+//#region dom
 function get_screen_distance(child, newParent) {
 	child = toElem(child);
 	newParent = toElem(newParent);
@@ -6266,18 +6224,22 @@ function get_screen_distance(child, newParent) {
 	return [x1 - x0, y1 - y0];
 }
 
+//#region card
 function get_sequence_suit(j) {
 	let non_jolly_key = firstCond(j, x => !is_jolly(x)); return non_jolly_key[1];
 }
 
+//#region data
 function get_texture(name) {
 	return `url(../base/assets/textures/${name}.png)`;
 }
 
+//#region datetime
 function get_timestamp() {
 	return Date.now();
 }
 
+//#region gamehelpers
 function get_user_color(uname) {
 	let u = firstCond(Serverdata.users, x => x.name == uname); return colorFrom(u.color);
 }
@@ -6302,24 +6264,29 @@ function get_user_pic_html(uname, sz = 50, border = 'solid medium white') {
 	return `<img src='../base/assets/users/${uname}.jpg' width='${sz}' height='${sz}' class='img_person' style='margin:0px 4px;border:${border}'>`
 }
 
+//#region obj
 function get_values(o) {
 	return Object.values(o);
 }
 
+//#region gamehelpers
 function get_waiting_html(sz = 30) {
 	return `<img src="../base/assets/icons/active_player.gif" height="${sz}" style="margin:0px ${sz / 3}px" />`;
 }
 
+//#region datetime
 function get_weekday(date) {
 	let d = new Date(date);
 	return d.getDay();
 }
 
+//#region dom
 function hFunc(content, funcname, arg1, arg2, arg3) {
 	let html = `<a style='color:blue' href="javascript:${funcname}('${arg1}','${arg2}','${arg3}');">${content}</a>`;
 	return html;
 }
 
+//#region arrdict
 function hasDuplicate(arr, efunc) {
 	let di = {};
 	if (nundef(efunc)) efunc = x => { return x === ' ' };
@@ -6333,10 +6300,12 @@ function hasDuplicate(arr, efunc) {
 	return false;
 }
 
+//#region string
 function hasWhiteSpace(s) {
 	return /\s/g.test(s);
 }
 
+//#region card
 function has_at_most_n_jolly(j, n = 1) {
 	return j.filter(x => is_jolly(x)).length <= n;
 }
@@ -6345,6 +6314,7 @@ function has_jolly(j) {
 	return firstCond(j, x => is_jolly(x));
 }
 
+//#region board
 function hex1Board(dParent, rows, topcols, styles = {}) {
 	let g = new UIGraph(dParent, styles);
 	let [w, h] = [valf(lookup(styles, ['node', 'w']), 50), valf(lookup(styles, ['node', 'h']), 50)];
@@ -6427,6 +6397,7 @@ function hex1Indices(rows, topcols) {
 	return res;
 }
 
+//#region color
 function hexAToHSLA(H) {
 	let ex = /^#([\da-f]{4}){1,2}$/i;
 	if (ex.test(H)) {
@@ -6471,6 +6442,7 @@ function hexAToHSLA(H) {
 	}
 }
 
+//#region board
 function hexCenters(rows, cols, wCell = 100, hCell) {
 	if (nundef(hCell)) hCell = (hCell / .866);
 	let hline = hCell * .75;
@@ -6501,6 +6473,7 @@ function hexCornerNodes(g) {
 	}
 }
 
+//#region color
 function hexToHSL(H) {
 	let ex = /^#([\da-f]{3}){1,2}$/i;
 	if (ex.test(H)) {
@@ -6541,6 +6514,7 @@ function hexToHSL(H) {
 	}
 }
 
+//#region dom
 function hide(elem) {
 	if (isString(elem)) elem = document.getElementById(elem);
 	if (nundef(elem)) return;
@@ -6555,6 +6529,7 @@ function hide0(id) {
 	mBy(id).style.display = "none";
 }
 
+//#region gamehelpers
 function hide_buildings() {
 	let uplayer = Z.uplayer;
 	let buildings = UI.players[uplayer].buildinglist;
@@ -6567,6 +6542,7 @@ function hide_buildings() {
 	}
 }
 
+//#region color
 function hslToHex(h, s, l) {
 	l /= 100;
 	const a = s * Math.min(l, 1 - l) / 100;
@@ -6578,6 +6554,7 @@ function hslToHex(h, s, l) {
 	return `#${f(0)}${f(8)}${f(4)}`;
 }
 
+//#region item
 function iAdd(item, liveprops, addprops) {
 	let id, l;
 	if (isString(item)) { id = item; item = valf(Items[id], {}); }
@@ -6724,7 +6701,7 @@ function if_hotseat_autoswitch(result) {
 	if (isdef(result.table) && isdef(Z) && Z.mode == 'hotseat') {
 		let turn = lookup(result, ['table', 'fen', 'turn']);
 		assertion(isdef(turn), 'turn is NOT defined (_sendSIMSIM) !!!!');
-		let uname = turn.length == 1 ? turn[0] : get_next_in_list(U.name, turn);
+		let uname = turn.length == 1 ? turn[0] : arrNext(turn, U.name);
 		if (uname != U.name) switch_uname(uname);
 	}
 }
@@ -7119,7 +7096,7 @@ async function load_config_new() {
 
 async function load_db() {
 	DB = await route_path_yaml_dict('../y/db.yaml');
-	Config=DB;
+	Config = DB;
 }
 
 async function load_syms(path) {
@@ -7293,7 +7270,80 @@ function mAttrs(elem, attrs) {
 	for (const k in attrs) { elem.setAttribute(k, attrs[k]); }
 }
 
-function mAutocomplete(dParent,list) {
+function mAutocomplete(dParent, list) {
+	function _autocomplete(inp, arr) {
+		/* inp...input element, arr...array of possible autocompleted values:*/
+		var currentFocus;
+		inp = toElem(inp);
+		inp.addEventListener('input', e => { /*execute a func when someone writes in the text field:*/
+			var a, b, i, val = this.value;    /*close any already open lists of autocompleted values*/
+			autocomplete_closeAllLists();
+			if (!val) { return false; }
+			currentFocus = -1;
+			a = document.createElement('DIV'); /*create a DIV element that will contain the items (values):*/
+			a.setAttribute('id', this.id + 'autocomplete-list');
+			a.setAttribute('class', 'autocomplete-items');
+			this.parentNode.appendChild(a); /*append the DIV element as a child of the autocomplete container:*/
+			for (i = 0; i < arr.length; i++) {
+				if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+					b = document.createElement('DIV'); /*create a DIV element for each matching element:*/
+					b.innerHTML = '<strong>' + arr[i].substr(0, val.length) + '</strong>'; /*make the matching letters bold:*/
+					b.innerHTML += arr[i].substr(val.length);
+					b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>"; /*insert a input field that will hold the current array item's value:*/
+					b.addEventListener('click', e => {
+						inp.value = this.getElementsByTagName('input')[0].value; /*insert the value for the autocomplete text field:*/
+						autocomplete_closeAllLists();
+					});
+					a.appendChild(b);
+				}
+			}
+		});
+		inp.addEventListener('keydown', e => {
+			var x = document.getElementById(this.id + 'autocomplete-list');
+			if (x) x = x.getElementsByTagName('div');
+			if (e.keyCode == 40) {
+				currentFocus++;
+				autocomplete_addActive(x);
+			} else if (e.keyCode == 38) {
+				currentFocus--;
+				autocomplete_addActive(x);
+			} else if (e.keyCode == 13) {
+				e.preventDefault();
+				if (currentFocus > -1) {
+					if (x) x[currentFocus].click();
+				}
+			}
+		});
+		inp.addEventListener('dblclick', e => { evNoBubble(e); });
+		document.addEventListener('click', e => {
+			autocomplete_closeAllLists(e.target);
+		});
+	}
+
+	function autocomplete_addActive(x) {
+		if (!x) return false;
+		autocomplete_removeActive(x);
+		if (currentFocus >= x.length) currentFocus = 0;
+		if (currentFocus < 0) currentFocus = x.length - 1;
+		x[currentFocus].classList.add('autocomplete-active');
+	}
+
+	function autocomplete_closeAllLists(elmnt) {
+		var x = document.getElementsByClassName('autocomplete-items');
+		for (var i = 0; i < x.length; i++) {
+			if (elmnt != x[i] && elmnt != inp) {
+				x[i].parentNode.removeChild(x[i]);
+			}
+		}
+	}
+
+	function autocomplete_removeActive(x) {
+		for (var i = 0; i < x.length; i++) {
+			x[i].classList.remove('autocomplete-active');
+		}
+	}
+
+
 	let form = mCreateFrom(`
     <form class='form' autocomplete="off" action="javascript:void(0);">
       <div class="autocomplete" style="width: 200px">
@@ -7311,7 +7361,7 @@ function mAutocomplete(dParent,list) {
 		M.map.flyTo(center, M.map.getZoom(), { animate: false })
 	}
 	let d = mAppend(dParent, form);
-	if (nundef(list)) list = get_values(Geo.cities).map(x => x.name); 
+	if (nundef(list)) list = get_values(Geo.cities).map(x => x.name);
 	autocomplete('myInput', list);
 }
 
@@ -7339,7 +7389,7 @@ function mButton(caption, handler, dParent, styles, classes, id) {
 }
 
 function mButtonX(dParent, handler, pos = 'tr', sz = 25, color = 'white') {
-	let d2 = mDiv(dParent, { fg: color, w: sz, h: sz, pointer: 'cursor' }, null, `<i class="fa fa-times" style="font-size:${sz}px;"></i>`, 'btnX');
+	let d2 = mDiv(dParent, { fg: color, w: sz, h: sz, cursor: 'pointer' }, null, `<i class="fa fa-times" style="font-size:${sz}px;"></i>`, 'btnX');
 	mPlace(d2, pos, 2);
 	d2.onclick = handler;
 	return d2;
@@ -7509,8 +7559,8 @@ function mContainerSplay(d, splay, w, h, num, ov) {
 		d.style.minWidth = `${w + (num - 1) * (ov * 1.1)}px`;
 	} else if (splay == 5) { //lead card has wider splay than rest
 		d.style.display = 'grid';
-		d.style.gridTemplateColumns = `${ov}px repeat(${num-1},${ov/2}px)`; //100px repeat(auto-fill, 100px)
-		d.style.minWidth = `${w + (num) * (ov/2 * 1.1)}px`;
+		d.style.gridTemplateColumns = `${ov}px repeat(${num - 1},${ov / 2}px)`; //100px repeat(auto-fill, 100px)
+		d.style.minWidth = `${w + (num) * (ov / 2 * 1.1)}px`;
 	} else if (splay == 4) {
 		d.style.position = 'relative';
 		if (nundef(ov)) ov = .5;
@@ -7731,6 +7781,15 @@ function mFall(d, ms = 800, dist = 50) {
 	toElem(d).animate([{ opacity: 0, transform: `translateY(-${dist}px)` }, { opacity: 1, transform: 'translateY(0px)' },], { fill: 'both', duration: ms, easing: 'ease' });
 }
 
+function mFleeting(inner,d,ms=3000,styles={},classes=null){
+	d = toElem(d);
+	addKeys({transition: 'all .5s ease',padding:10,box:true,fg:'red'},styles)
+	if (isdef(styles)) mStyle(d,styles);
+	if (isdef(classes)) mClass(d,classes);
+	d.innerHTML = inner;
+	TO.fleeting = setTimeout(()=>mClear(d),ms);
+}
+
 function mFlex(d, or = 'h') {
 	d = toElem(d);
 	d.style.display = 'flex';
@@ -7893,7 +7952,7 @@ function mItemSplay(item, list, splay, ov = .5) {
 	let idx = list.indexOf(item.key);
 	if (splay == 4) {
 		let offset = (list.length - idx) * ov;
-		mStyle(d, { position: 'absolute', left: offset, top: offset }); 
+		mStyle(d, { position: 'absolute', left: offset, top: offset });
 		d.style.zIndex = list.length - idx;
 	} else {
 		d.style.zIndex = splay != 2 ? list.length - idx : 0;
@@ -8570,8 +8629,8 @@ function mText(text, dParent, styles, classes) {
 
 function mTextarea(rows, cols, dParent, styles = {}, id) {
 	let html = `<textarea id="${id}"`;
-	if (isdef(rows)) html+=` rows="${rows}"`;
-	if (isdef(cols)) html+=` cols="${cols}"`;
+	if (isdef(rows)) html += ` rows="${rows}"`;
+	if (isdef(cols)) html += ` cols="${cols}"`;
 	html += ` wrap="hard"></textarea>`;
 	let t = mCreateFrom(html);
 	mAppend(dParent, t);
@@ -8996,7 +9055,7 @@ function oneWordKeys(keys) {
 function onpagedeactivated(handler) {
 	document.addEventListener('visibilitychange',
 		() => {
-			console.log('visibilityState', document.visibilityState);
+			//console.log('visibilityState', document.visibilityState);
 			if (document.visibilityState !== 'visible') handler();
 		});
 }
@@ -9116,6 +9175,7 @@ function posToPoint(pos = 'cc', w, h, offx = 0, offy = 0) {
 }
 
 function post_json(url, o, callback) {
+	if (document.URL.includes('5500')) {console.log('attempt to post to live-server!!!'); return;}
 	fetch(url, {
 		method: 'POST',
 		headers: {
@@ -9642,9 +9702,9 @@ function run_for_seconds(secs, f, interval = 50) {
 	DA.start = get_now(); doit(secs, f, interval);
 }
 
-function runcode(code) {
+function runcode(code, callback) {
 	let x = eval(code);
-	AU.tacon.value = x;
+	if (isdef(callback)) callback(x); else console.log('result:', x);
 }
 
 function sameList(l1, l2) {
@@ -10009,6 +10069,15 @@ function set_run_state(singleclient = true, sockets = false, port = 3000, localh
 	}
 	console.log('SERVER:' + SERVERURL, 'LIVE:' + LIVE_SERVER, 'Socket:' + Socket, TESTING ? 'TESTING' : '', SINGLECLIENT ? 'SINGLE' : '');
 }
+function set_run_state_no_server(){
+	set_run_state(true, false, 3000, true, true, true, false);
+}
+function set_run_state_local(){
+	set_run_state(true, false, 3000, true, false, true, true);
+}
+function set_run_state_vps(){
+	set_run_state(false, false, 3000, false, false, false, true);
+}
 
 function set_user(name) {
 	if (isdef(Z) && isdef(U) && U.name != name) {
@@ -10108,9 +10177,7 @@ function show_div_ids() {
 }
 
 function show_fiddle(code, rows, cols, fiddlestyles) {
-	let dFiddle = mBy('dFiddle'); iClear(dFiddle); mCenterFlex(dFiddle);
-	if (isdef(fiddlestyles)) mStyle(dFiddle, fiddlestyles)
-	create_fiddle(dFiddle, code, rows, cols);
+	fiddleInit();
 }
 
 function show_fleeting_message(s, dParent, styles, id, ms = 2000) {
@@ -10908,7 +10975,9 @@ function toUmlaut(w) {
 }
 
 function toWords(s) {
-	let arr = s.split(/(?:,|\s|!)+/);
+	let arr = s.split(/\W+/); //\W heisst: NOT alphanum or _
+	//let arr = s.split(/(?:,|\s|!|;|:|\.)+/);
+	//console.log('arr',arr)
 	return arr.filter(x => !isEmpty(x));
 }
 
@@ -10995,7 +11064,7 @@ function toggle_face(item) {
 }
 
 function toggle_fiddle() {
-	if (isEmpty(mBy('dFiddle').innerHTML)) show_fiddle(); else iClear('dFiddle');
+	if (nundef(dFiddle)) show_fiddle(); else { fiddleSave(); iClear(dFiddle); dFiddle = null; }
 }
 
 function toggle_games() {

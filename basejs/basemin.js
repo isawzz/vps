@@ -1,20 +1,21 @@
-//#region globals: Session data
-var Pollmode = 'auto',Globals;
+//#region vars globals Session data
+var Pollmode = 'auto', Globals;
 var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 0 };
 var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
 var uiActivated = false, Selected, Turn, Prevturn;
 var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
 var dBottom, dButtons, dCenter, dCode, dContent, dFiddle, dFooter, dHeader, dLeft, dMap, dMain, dMenu, dMessage, dPage, dPuppet;
-var dRight, dSidebar, dTable, dTitle, dTop; //, dTitle; //, dUsers, dGames, dTables, dLogo, dLoggedIn, dPlayerNames, dInstruction, dError, dMessage, dStatus, dTableName, dGameControls, dUserControls, dMoveControls, dSubmitMove, dPlayerStats;
+var dRight, dSidebar, dTable, dTitle, dTop; 
 var Config, Syms, SymKeys, ByGroupSubgroup, KeySets, C52, Cinno, C52Cards;
 var FORCE_REDRAW = false, TESTING = false;
 var ColorThiefObject, SelectedItem, SelectedColor;
 var FR = 50, CX, CV, AU = {}, CONTEXT = null;
 var UIDCounter = 0;
 var FRUIDCounter = -1;
-var SHAPEFUNCS = {	'circle': agCircle,	'hex': agHex,	'rect': agRect,};
-var MyEasing = 'cubic-bezier(1,-0.03,.86,.68)';
 var TOFleetingMessage, dFleetingMessage, Animation1;
+
+const SHAPEFUNCS = { 'circle': agCircle, 'hex': agHex, 'rect': agRect, };
+const MyEasing = 'cubic-bezier(1,-0.03,.86,.68)';
 //#endregion
 
 //#region STYLE_PARAMS
@@ -83,7 +84,7 @@ var _audioSources = {
 	mozart: "../base/assets/music/mozart_s39_4.mp3",
 };
 var _TOSound, _sndPlayer, _loaded = false, _qSound, _idleSound = true, _sndCounter = 0;
-var _AUDIOCONTEXT;// browsers limit the number of concurrent audio contexts, so you better re-use'em
+var _AUDIOCONTEXT;// browsers limit the number of concurrent audio contexts so you better re-use them
 
 //#endregion
 //#region color const
@@ -2260,7 +2261,7 @@ function old_mButtonX(dParent, pos = 'tr', handler = null, defaultBehavior = 'hi
 	// let styles = { box:true, border:`blue solid ${3*sz/34}px`, bg: GREEN, rounding:'50%', cursor:'pointer',w:sz,h:sz };
 	let styles = { cursor: 'pointer', w: sz, h: sz };
 
-	// let d2 = mDiv(dParent, { family:'opensans', box:true, align:'center','line-height':34,w: 32, h: 32, pointer: 'cursor' }, null, `<i class="fa-thin fa-times" style="font-size:${sz}px;"></i>`, 'btnX');
+	// let d2 = mDiv(dParent, { family:'opensans', box:true, align:'center','line-height':34,w: 32, h: 32, cursor: 'pointer' }, null, `<i class="fa-thin fa-times" style="font-size:${sz}px;"></i>`, 'btnX');
 	let d2 = mDiv(dParent, styles, null, `<svg width='100%' height='100%' ><use xlink:href="#Times" /></svg>`); //, 'btnX');
 	mClass(d2, 'svgbtnX');
 
@@ -2269,8 +2270,8 @@ function old_mButtonX(dParent, pos = 'tr', handler = null, defaultBehavior = 'hi
 	return d2;
 }
 function mButtonX(dParent, handler, pos = 'tr', sz = 25, color = 'white') {
-	let d2 = mDiv(dParent, { fg: color, w: sz, h: sz, pointer: 'cursor' }, null, `<i class="fa fa-times" style="font-size:${sz}px;"></i>`, 'btnX');
-	//let d2 = mDiv(dParent, { fg:'white', w: sz, h: sz, pointer: 'cursor' }, null, 'CLOSE', 'btnX');
+	let d2 = mDiv(dParent, { fg: color, w: sz, h: sz, cursor: 'pointer' }, null, `<i class="fa fa-times" style="font-size:${sz}px;"></i>`, 'btnX');
+	//let d2 = mDiv(dParent, { fg:'white', w: sz, h: sz, cursor: 'pointer' }, null, 'CLOSE', 'btnX');
 	mPlace(d2, pos, 2);
 	d2.onclick = handler;
 	return d2;
@@ -2599,6 +2600,14 @@ function mEditableInput(dParent, label, val, styles, classes, id) {
 	return elem;
 }
 //#endregion
+function mFleeting(inner,d,ms=3000,styles={},classes=null){
+	d = toElem(d);
+	addKeys({transition: 'all .5s ease',padding:10,box:true,fg:'red'},styles)
+	if (isdef(styles)) mStyle(d,styles);
+	if (isdef(classes)) mClass(d,classes);
+	d.innerHTML = inner;
+	TO.fleeting = setTimeout(()=>mClear(d),ms);
+}
 function mFlexEvenly(d) {
 	let styles = { display: 'flex' };
 	styles['justify-content'] = 'space-evenly';
@@ -3429,8 +3438,8 @@ function measureText(text, styles = {}, cx = null) { //mit canvas
 }
 function mTextarea(rows, cols, dParent, styles = {}, id) {
 	let html = `<textarea id="${id}"`;
-	if (isdef(rows)) html+=` rows="${rows}"`;
-	if (isdef(cols)) html+=` cols="${cols}"`;
+	if (isdef(rows)) html += ` rows="${rows}"`;
+	if (isdef(cols)) html += ` cols="${cols}"`;
 	html += ` wrap="hard"></textarea>`;
 	let t = mCreateFrom(html);
 	mAppend(dParent, t);
@@ -3592,11 +3601,10 @@ function aTranslateByEase(d, x, y, ms, easing = 'cubic-bezier(1,-0.03,.27,1)') {
 }
 function aRotate(d, ms = 2000) { return d.animate({ transform: `rotate(360deg)` }, ms); }
 function aRotateAccel(d, ms) { return d.animate({ transform: `rotate(1200deg)` }, { easing: 'cubic-bezier(.72, 0, 1, 1)', duration: ms }); }
-function aFlip(d, ms = 300, x = 0, y = 1, easing = 'cubic-bezier(1,-0.03,.27,1)') {
-	// return d.animate({ 'transform-origin': '50% 50%',transform: `scale(${x}px,${y}px)` }, {easing:easing,duration:ms}); 
-	return d.animate({ transform: `scale(${2}px,${y}px)` }, { easing: easing, duration: ms });
+function aFlip(d, ms = 300) {
+	return anime({ targets: d, scaleX: -1, duration: ms, easing: 'easeInOutSine' });
 }
-function aRollby(elem, dx, ms = 3000) {
+function aRollby(elem, dx = 100, ms = 3000) {
 	anime({ targets: elem, translateX: dx, rotate: '1turn', duration: ms });
 }
 function aJumpby(elem, h = 40, ms = 1000) {
@@ -3620,7 +3628,7 @@ function aJumpby(elem, h = 40, ms = 1000) {
 		//loop: 2,
 	});
 }
-
+function aRestore(elem){elem.style.transform = '';}
 //#endregion
 
 //#region canvas c prefix
@@ -6767,9 +6775,9 @@ function stringBetweenLast(sFull, sStart, sEnd) {
 }
 function toLetters(s) { return [...s]; }
 function toWords(s) {
-	//console.log('s',s);
-	let arr = s.split(/(?:,|\s|!)+/);
-	//console.log('arr',arr);
+	let arr = s.split(/[\W|_]+/);
+	//let arr = s.split(/(?:,|\s|!|;|:|\.)+/);
+	//console.log('arr',arr)
 	return arr.filter(x => !isEmpty(x));
 }
 function toUmlaut(w) {
@@ -6890,6 +6898,12 @@ function countAll(s, scount) {
 function divInt(a, b) { return Math.trunc(a / b); }
 function errlog() { console.log('ERROR!', ...arguments); }
 function evNoBubble(ev) { ev.preventDefault(); ev.cancelBubble = true; }
+function evStop(ev) {
+	ev.preventDefault();
+	ev.stopPropagation();
+	ev.stopImmediatePropagation();
+	ev.cancelBubble = true;
+}
 function _evToClass(ev, className) {
 	//returns first ancestor that has this class
 	let elem = findParentWithClass(ev.target, className);
@@ -7060,7 +7074,7 @@ function get_mouse_pos(ev) {
 	return ({ x: x, y: y });
 
 }
-function get_next_in_list(el, list) {
+function arrNext(el, list) {
 	let i = list.indexOf(el);
 	let nextplayer = list[(i + 1) % list.length];
 	return nextplayer;
@@ -7259,7 +7273,7 @@ async function load_config_new() {
 		Config.apps[k].data = data[k];
 	}
 }
-async function load_db() { DB = await route_path_yaml_dict('../y/db.yaml'); Config=DB; }
+async function load_db() { DB = await route_path_yaml_dict('../y/db.yaml'); Config = DB; }
 async function load_syms(path) {
 	//sollten in base/assets/allSyms.yaml sein!
 	if (nundef(path)) path = '../base/assets/';
@@ -7354,7 +7368,7 @@ function posToPoint(pos = 'cc', w, h, offx = 0, offy = 0) {
 	return [px + offx, py + offy];
 }
 function post_json(url, o, callback) {
-	//usage: post_json('http:/'+'/localhost:3000/post/json',o,r=>console.log('resp',r);
+	//usage: post_json('/post/json',o,r=>console.log('resp',r);
 	fetch(url, {
 		method: 'POST',
 		headers: {
@@ -7428,7 +7442,7 @@ function set_run_state(singleclient = true, sockets = false, port = 3000, localh
 
 	SERVER = localhost ? '127.0.0.1' : '216.250.112.218';
 	PORT = port;
-	SERVERURL = `http:/` + `${SERVER}:${PORT}`;
+	SERVERURL = `http:/` + `${SERVER}:${PORT}`; //das ist aber nur wenn app.js aus dem dir game oder wise kommt!
 	NODEJS = nodejs;
 	LIVE_SERVER = liveserver;
 	TESTING = testing;
@@ -7825,8 +7839,16 @@ function db_delete(table, i, db) {
 	if (nundef(i)) delete db.appdata[table]; else arrRemovip(lookup(db, ['appdata', table])[i]);
 	return db;
 }
-function db_save_client(IP = 'localhost', port = 3000) {
-	post_json(`http:/` + `/${IP}:${port}/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
+function dbSave() {
+	if (NODEJS) {
+		let route = `/post/json`;
+		let o = { filename: 'db', data: DB }
+		let callback = () => console.log('saved db');
+		post_json(route,o,callback);
+		console.log('full route',route);
+		//post_json(SERVERURL + `/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
+	}	else console.log('not saved - no app running!')
+	//post_json(`http:/` + `/${IP}:${port}/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
 }
 
 //#endregion
