@@ -18,12 +18,12 @@ async function _start() {
 
 function onclick_start() {
 	mClear(dTable);
-	let b=mButtonX(dTable, ev => mClear(dTable), 'tr',20,'silver'); //mButton('X',()=>mClear(dTable),dTable,{w:20,h:20});
-	mPlace(b,'tr');
-	DA.selectedItem=null;
+	let b = mButtonX(dTable, ev => mClear(dTable), 'tr', 20, 'silver'); //mButton('X',()=>mClear(dTable),dTable,{w:20,h:20});
+	mPlace(b, 'tr');
+	DA.selectedItem = null;
 
 	DA.items = [];
-	let dParent = mDiv(dTable, { margin: 20}); //, 'justify-self':'start' });
+	let dParent = mDiv(dTable, { margin: 20 }); //, 'justify-self':'start' });
 	for (let i = 0; i < DA.n; i++) {
 		let item = jsCopy(DA.sayings[i + DA.index]);
 		// let d = mDiv(dParent, { w: '100%', cursor: 'pointer' }, null, '' + (i + 1) + ') ' + item.start + '...', 'hop1');
@@ -38,8 +38,8 @@ function onclick_start() {
 
 }
 function onclick_end() {
-	if (isEmpty(dTable.children)){ mFleeting('please, click start!','dMessage'); return; }
-	if (nundef(DA.selectedItem)) { mFleeting('please, select a saying!','dMessage'); return; }
+	if (isEmpty(dTable.children)) { mFleeting('please, click start!', 'dMessage'); return; }
+	if (nundef(DA.selectedItem)) { mFleeting('please, select a saying!', 'dMessage'); return; }
 	let item = DA.selectedItem;
 	if (nundef(item)) return;
 	mLinebreak(dTable, 12)

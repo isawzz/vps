@@ -1,200 +1,103 @@
 
-function parse_funcs_1(code, fname) {
-
+function parseCodefile(content, fname, preserveRegionNames = true) {
 	let di = {}, text = '';
-
-	let lines = code.split('\r\n');
-	let di_started = false;
-	let parsing=false,code,ending;
-
-	for (const l of lines) {
-
-		if (parsing){
-			if (ending(l)){
-				parsing=false;
-				
-			}
-			code += 
-		}
-		if (startsWith(l, '//#region')) {
-			let region=CODE.region = firstWordAfter(l, 'region');
-			//console.log('file',fname,'#region',region);
-			continue;
-		}else if (startsWith(l,'var')){
-			//define all vars in this line
-			let vs = stringAfter(l,'var').trim().split(',');
-			vs.map(x=>firstWord(x)).map(y=>lookupAddToList(di,['var'],y));
-			//return;
-		}else if (startsWith(l,'const')){
-			lookupAddToList(di,['const'],toWords(l)[1]);
-		} else if (startsWith(l,'class')){
-			//parse a class
-			//how to parse a class???
-		}else if (startsWith(l,'async') || startsWith(l,'function')){
-			//how to parse a func?
-			//diese line bis line starting with '}'
-			parsing=true;
-			code = l;
-			ending = l=>startsWith(l,'}');
-		}
-
-
-
-	}
-
-	di.var.sort();
-	console.log('di',di);
-	return {di:di,text:text};
-}
-
-
-
-
-function parse_funcs_muell(code) {
-	let cfunctions = '\r\nfunction ' + stringAfter(code, 'function '); //jump to first function def
-	let asyncnames = cfunctions.split('\r\nasync function');
-	let asyncs = {};
-	for (const x of asyncnames) {
-		let name = stringBefore(x, '(').trim();
-		//console.log('async', name);
-		asyncs[name] = true;
-	}
-	cfunctions = asyncnames.join('\r\nfunction');
-	let fbodies = cfunctions.split('\r\nfunction').map(x => x.trim());
-	//console.log('fbodies!!!!!!!!!!!'); //,fbodies)
-
-	//console.log('fbodies',fbodies);
-	for (const f of fbodies) {
-		if ("'\"_!".includes(f[0])) continue;
-		let name = stringBefore(f, '(');
-		if (isEmpty(name)) continue;
-		let params = stringBefore(stringAfter(f, '('), ') {');
-
-		let lines = (stringAfter(f, ') {')).split('\r\n');
-		let body = '';
-		for (const line of lines) {
-			let ws = toWords(line);
-			if (isEmpty(ws[0]) || startsWith(ws[0], '//')) continue;
-			//if (startsWith(line,'class')) {} //TODO
-			//console.log('===>ws',ws)
-			//console.log('bp',bp)
-			let bp1 = replaceAllSpecialChars(line, '\t', '  ')
-			if (!bp1.includes('http')) bp1 = stringBefore(bp1, '//');//achtung http://
-			body += bp1 + '\n';
-		}
-		// let sig = `${prev_async?'async ':''}function ${name}(${params})`;
-		// body=sig+'{\n'+body;
-		// res[name.trim()] = { name: name, params: params, sig:sig, body: body, async: prev_async };
-		let isasync = isdef(asyncs[name]);
-		let sig = `${isasync ? 'async ' : ''}function ${name}(${params})`;
-		body = sig + '{\n' + body;
-		res[name.trim()] = { name: name, params: params, sig: sig, body: body, async: isasync };
-	}
-
-	//console.log('functions', res); //get_keys(res));
-	return res;
-
-}
-
-
-
-
-
-
-
-
-function parse_funcs(code) {
-	let res = {};
-	let cfunctions = '\r\nfunction ' + stringAfter(code, 'function '); //jump to first function def
-	let asyncnames = cfunctions.split('\r\nasync function');
-	let asyncs = {};
-	for (const x of asyncnames) {
-		let name = stringBefore(x, '(').trim();
-		//console.log('async', name);
-		asyncs[name] = true;
-	}
-	cfunctions = asyncnames.join('\r\nfunction');
-	let fbodies = cfunctions.split('\r\nfunction').map(x => x.trim());
-	//console.log('fbodies!!!!!!!!!!!'); //,fbodies)
-
-	//console.log('fbodies',fbodies);
-	for (const f of fbodies) {
-		if ("'\"_!".includes(f[0])) continue;
-		let name = stringBefore(f, '(');
-		if (isEmpty(name)) continue;
-		let params = stringBefore(stringAfter(f, '('), ') {');
-
-		let lines = (stringAfter(f, ') {')).split('\r\n');
-		let body = '';
-		for (const line of lines) {
-			let ws = toWords(line);
-			if (isEmpty(ws[0]) || startsWith(ws[0], '//')) continue;
-			//if (startsWith(line,'class')) {} //TODO
-			//console.log('===>ws',ws)
-			//console.log('bp',bp)
-			let bp1 = replaceAllSpecialChars(line, '\t', '  ')
-			if (!bp1.includes('http')) bp1 = stringBefore(bp1, '//');//achtung http://
-			body += bp1 + '\n';
-		}
-		// let sig = `${prev_async?'async ':''}function ${name}(${params})`;
-		// body=sig+'{\n'+body;
-		// res[name.trim()] = { name: name, params: params, sig:sig, body: body, async: prev_async };
-		let isasync = isdef(asyncs[name]);
-		let sig = `${isasync ? 'async ' : ''}function ${name}(${params})`;
-		body = sig + '{\n' + body;
-		res[name.trim()] = { name: name, params: params, sig: sig, body: body, async: isasync };
-	}
-
-	//console.log('functions', res); //get_keys(res));
-	return res;
-
-}
-function parse_consts(code) {
-	let res = {};
-	//split code into lines
-	let lines = code.split('\n');
-	//console.log('lines',lines);
+	let dicode = {};
+	let diregion = {};
+	let lines = content.split('\r\n');
+	let classes_started = true;
+	let parsing = false, code, type, key, regionName, regionOrig;
+	let firstletters = [];
 	for (const line of lines) {
-		if (startsWith(line, 'const')) {
-			//console.log('line',line);
-			let c = stringBefore(stringAfter(line, 'const'), '=').trim();
-			res[c] = c;
+		let l = line;
+		if (!l.includes("'//") && !l.includes("//'")) {
+			l = replaceAllFast(line, '://', '://');
+			l = replaceAllFast(l, '//#', '@@#');
+			l = stringBefore(l, '//');
+			l = replaceAllFast(l, '@@#', '//#');
+			l = replaceAllFast(l, '://', '://');
 		}
+		if (isEmptyOrWhiteSpace(l.trim())) continue;
+		if (parsing) {
+			if (!classes_started) console.log('line', l)
+			assertion(classes_started, 'parsing but NOT classes_started!!!!');
+			let l1 = replaceAllSpecialChars(l, '\t', '  ');
+			let ch = l1[0];
+			if (' }'.includes(ch)) code += l1 + '\r\n';
+			if (ch != ' ') {
+				parsing = false;
+				//duplicate funcs anzeigen!!!!!!!!!!!!!!!!!!!
+				if (isdef(dicode[key])) { console.log('==>DUPLICATE FUNC:', fname, regionName, key); }
+
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+
+				//preserveRegionName???
+				//ich hab regionName und fname und regionOrig
+				let regKey = preserveRegionNames ? regionOrig : `${regionName} (${fname})`;
+				lookupSetOverride(diregion, [regKey, key], { name: key, code: code, sig: stringBefore(code, ') {'), region: regKey, filename: fname });
+				addIf(firstletters, l[0]);
+			}
+		}
+		if (classes_started && startsWith(l, '//#end')) continue;
+		assertion(!startsWith(l, '//#endregion') || !classes_started, 'ASSERTION!!!');
+		if (parsing) continue;
+		if (startsWith(l, '//#region')) {
+			regionOrig = stringAfter(l, 'region').trim();
+			let region = regionName = firstWordAfter(l, 'region');
+			if (!classes_started || startsWith(l, '//#region vars')) text += '\r\n' + (preserveRegionNames ? l : `//#region ${region} (${fname})`) + '\r\n';
+			continue;
+		} else if (startsWith(l, 'var')) {
+			//if (classes_started) console.log('line', l)
+			classes_started = false;
+			let vs = stringAfter(l, 'var').trim().split(',');
+			vs.map(x => firstWord(x)).map(y => lookupAddToList(di, ['var'], y));
+		} else if (startsWith(l, 'const')) {
+			lookupAddToList(di, ['const'], toWords(l)[1]);
+		} else if (startsWith(l, 'class')) {
+			classes_started = true;
+			parsing = true;
+			code = l + '\r\n';
+			type = 'cla';
+			key = firstWordAfter(l, 'class');
+		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			classes_started = true;
+			parsing = true;
+			code = l + '\r\n';
+			type = 'func';
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+		}
+		if (!classes_started) text += l + '\r\n';
 	}
-	return res;
+	//console.log('first letters', firstletters)
+	for (const k in di) {
+		di[k].sort();
+	}
+	if (isdef(di.cla)) {
+		//text += `\n//#region classes \n`;
+		for (const k of di.cla) {
+			text += dicode[k];
+		}
+		text += `//#endregion classes\n`;
+	}
+	for (const r in diregion) {
+		if (r.includes('classes')) continue; // need to skip because already hav classes from di.cla!
+		text += `\n//#region ${r}\n`;
+		let sorted_keys = get_keys(diregion[r]);
+		sorted_keys.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+		for (const funcname of sorted_keys) {
+			text += dicode[funcname];
+		}
+		text += `//#endregion ${r}\n`;
+	}
+	return { di: di, dicode: dicode, diregion: diregion, text: text };
 }
 
 
-
-
-
-
-
-
-function mDivC(dParent, styles, closable = true,) {
-	let d = mDiv(dParent, styles);
-	if (closable) mButtonX(d, ev => iClear(ev.target), 'tr')
-	return d;
+if (this && typeof module == "object" && module.exports && this === module.exports) {
+	module.exports = {
+		parseCodefile,
+	};
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -264,8 +264,7 @@ function printMatrix(arr2d, title = 'result') {
 //#endregion
 
 //#region board utilities
-var StateDict = {};
-var empty_func = x => nundef(x) || x == ' ';
+function empty_func(x) { nundef(x) || x == ' '; }
 
 function bGetCol(arr, icol, rows, cols) {
 	let iStart = icol;

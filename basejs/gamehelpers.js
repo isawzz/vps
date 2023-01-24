@@ -315,7 +315,7 @@ function get_present_order() {
 	let show_first = uname_plays && Z.mode == 'multi' ? Z.uname : uplayer;
 	return arrCycle(Z.fen.plorder, Z.fen.plorder.indexOf(show_first));
 }
-function get_waiting_html() { return `<img src="../base/assets/icons/active_player.gif" height="30" style="margin:0px 10px" />`; }
+//function get_waiting_html() { return `<img src="../base/assets/icons/active_player.gif" height="30" style="margin:0px 10px" />`; }
 function get_waiting_html(sz = 30) { return `<img src="../base/assets/icons/active_player.gif" height="${sz}" style="margin:0px ${sz / 3}px" />`; }
 function get_default_options(gamename) {
 	let options = {};

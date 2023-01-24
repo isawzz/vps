@@ -11,6 +11,8 @@
 	"editor.wordBasedSuggestionsMode": "allDocuments",
 	"files.exclude": {
 		"keys": true,
+		"basejs": false,
+		"*vps*": true,
 		"node_modules": true,
 		"package-lock*": true,
 		"jsconfig.json": false,

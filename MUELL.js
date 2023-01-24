@@ -1,3 +1,486 @@
+
+
+
+function parseCodefile(content, fname, preserveRegionNames = true) {
+	let di = {}, text = '';
+	let dicode = {};
+	let diregion = {};
+	let lines = content.split('\r\n');
+	let classes_started = true;
+	let parsing = false, code, type, key, regionName, regionOrig;
+	let firstletters = [];
+	for (const line of lines) {
+		let l = line;
+		if (!l.includes("'//") && !l.includes("//'")) {
+			l = replaceAllFast(line, '://', '://');
+			l = replaceAllFast(l, '//#', '@@#');
+			l = stringBefore(l, '//');
+			l = replaceAllFast(l, '@@#', '//#');
+			l = replaceAllFast(l, '://', '://');
+		}
+		if (isEmptyOrWhiteSpace(l.trim())) continue;
+		if (parsing) {
+			if (!classes_started) console.log('line', l)
+			assertion(classes_started, 'parsing but NOT classes_started!!!!');
+			let l1 = replaceAllSpecialChars(l, '\t', '  ');
+			let ch = l1[0];
+			if (' }'.includes(ch)) code += l1 + '\r\n';
+			if (ch != ' ') {
+				parsing = false;
+				//duplicate funcs anzeigen!!!!!!!!!!!!!!!!!!!
+				if (isdef(dicode[key])) { console.log('==>DUPLICATE FUNC:', fname, regionName, key); }
+
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+
+				//preserveRegionName???
+				//ich hab regionName und fname und regionOrig
+				let regKey = preserveRegionNames ? regionOrig : `${regionName} (${fname})`;
+				lookupSetOverride(diregion, [regKey, key], { name: key, code: code, sig: stringBefore(code, ') {'), region: regKey, filename: fname });
+				addIf(firstletters, l[0]);
+			}
+		}
+		if (classes_started && startsWith(l, '//#end')) continue;
+		assertion(!startsWith(l, '//#endregion') || !classes_started, 'ASSERTION!!!');
+		if (parsing) continue;
+		if (startsWith(l, '//#region')) {
+			regionOrig = stringAfter(l, 'region').trim();
+			let region = regionName = firstWordAfter(l, 'region');
+			if (!classes_started || startsWith(l, '//#region vars')) text += '\r\n' + (preserveRegionNames ? l : `//#region ${region} (${fname})`) + '\r\n';
+			continue;
+		} else if (startsWith(l, 'var')) {
+			//if (classes_started) console.log('line', l)
+			classes_started = false;
+			let vs = stringAfter(l, 'var').trim().split(',');
+			vs.map(x => firstWord(x)).map(y => lookupAddToList(di, ['var'], y));
+		} else if (startsWith(l, 'const')) {
+			lookupAddToList(di, ['const'], toWords(l)[1]);
+		} else if (startsWith(l, 'class')) {
+			classes_started = true;
+			parsing = true;
+			code = l + '\r\n';
+			type = 'cla';
+			key = firstWordAfter(l, 'class');
+		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			classes_started = true;
+			parsing = true;
+			code = l + '\r\n';
+			type = 'func';
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+		}
+		if (!classes_started) text += l + '\r\n';
+	}
+	//console.log('first letters', firstletters)
+	for (const k in di) {
+		di[k].sort();
+	}
+	if (isdef(di.cla)) {
+		//text += `\n//#region classes \n`;
+		for (const k of di.cla) {
+			text += dicode[k];
+		}
+		text += `//#endregion classes\n`;
+	}
+	for (const r in diregion) {
+		if (r.includes('classes')) continue; // need to skip because already hav classes from di.cla!
+		text += `\n//#region ${r}\n`;
+		let sorted_keys = get_keys(diregion[r]);
+		sorted_keys.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+		for (const funcname of sorted_keys) {
+			text += dicode[funcname];
+		}
+		text += `//#endregion ${r}\n`;
+	}
+	return { di: di, dicode: dicode, diregion: diregion, text: text };
+}
+
+
+function parseCodefile(content, fname, preserveRegionNames = true) {
+	let di = {}, text = '';
+	let dicode = {};
+	let diregion = {};
+	let lines = content.split('\r\n');
+	let classes_started = true;
+	let parsing = false, code, type, key, regionName, regionOrig;
+	let firstletters = [];
+	for (const line of lines) {
+		let l = line;
+		if (!l.includes("'//") && !l.includes("//'")) {
+			l = replaceAllFast(line, '://', '://');
+			l = replaceAllFast(l, '//#', '@@#');
+			l = stringBefore(l, '//');
+			l = replaceAllFast(l, '@@#', '//#');
+			l = replaceAllFast(l, '://', '://');
+		}
+		if (isEmptyOrWhiteSpace(l.trim())) continue;
+		if (parsing) {
+			if (!classes_started) console.log('line', l)
+			assertion(classes_started, 'parsing but NOT classes_started!!!!');
+			let l1 = replaceAllSpecialChars(l, '\t', '  ');
+			let ch = l1[0];
+			if (' }'.includes(ch)) code += l1 + '\n';
+			if (ch != ' ') {
+				parsing = false;
+				//duplicate funcs anzeigen!!!!!!!!!!!!!!!!!!!
+				if (isdef(dicode[key])) { console.log('==>DUPLICATE FUNC:', fname, regionName, key); }
+
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+
+				//preserveRegionName???
+				//ich hab regionName und fname und regionOrig
+				let regKey = preserveRegionNames?regionOrig:`${regionName} (${fname})`;
+				lookupSetOverride(diregion, [regKey, key], { name: key, code: code, sig: stringBefore(code, ') {'), region: regKey, filename: fname });
+				addIf(firstletters, l[0]);
+			}
+		}
+		if (classes_started && startsWith(l, '//#end')) continue;
+		assertion(!startsWith(l, '//#endregion') || !classes_started, 'ASSERTION!!!');
+		if (parsing) continue;
+		if (startsWith(l, '//#region')) {
+			regionOrig = stringAfter(l, 'region').trim();
+			let region = regionName = firstWordAfter(l, 'region');
+			if (!classes_started || startsWith(l, '//#region vars')) text += `\n//#region ${region} (${fname})\n`;
+			continue;
+		} else if (startsWith(l, 'var')) {
+			//if (classes_started) console.log('line', l)
+			classes_started = false;
+			let vs = stringAfter(l, 'var').trim().split(',');
+			vs.map(x => firstWord(x)).map(y => lookupAddToList(di, ['var'], y));
+		} else if (startsWith(l, 'const')) {
+			lookupAddToList(di, ['const'], toWords(l)[1]);
+		} else if (startsWith(l, 'class')) {
+			classes_started = true;
+			parsing = true;
+			code = l + '\n';
+			type = 'cla';
+			key = firstWordAfter(l, 'class');
+		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			classes_started = true;
+			parsing = true;
+			code = l + '\n';
+			type = 'func';
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+		}
+		if (!classes_started) text += l + '\n';
+	}
+	//console.log('first letters', firstletters)
+	for (const k in di) {
+		di[k].sort();
+	}
+	if (isdef(di.cla)) {
+		text += `\n//#region ${fname} classes\n`;
+		for (const k of di.cla) {
+			text += dicode[k];
+		}
+		text += `//#endregion ${fname} classes\n`;
+	}
+	for (const r in diregion[fname]) {
+		if (r == 'classes') continue;
+		text += `\n//#region ${fname} ${r}\n`;
+		let sorted_keys = get_keys(diregion[fname][r]);
+		sorted_keys.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+		for (const funcname of sorted_keys) {
+			text += dicode[funcname];
+		}
+		text += `//#endregion ${fname} ${r}\n`;
+	}
+	return { di: di, dicode: dicode, diregion: diregion, text: text };
+}
+
+async function load_codebase(paths) {
+	if (nundef(paths)) {
+		paths = ['basemin', 'board', 'cards', 'gamehelpers', 'select']; //.map(f => `../basejs/${f}.js`);
+		paths = paths.map(f => `../basejs/${f}.js`);
+		//paths.push(`../game/done.js`);
+		// let paths = [`../game/aaa.js`];
+	}
+	CODE.paths = paths;
+	CODE.di = { var: [], const: [], cla: [], func: [] }; CODE.diregion = {}; CODE.dicode = {}; CODE.text = '';
+	for (const f of paths) {
+		CODE.current_file = stringBefore(stringAfterLast(f, '/'), '.'); 
+		let base = await route_path_text(f);
+		let res = parseCodefile(base, CODE.current_file);
+		show_code(res);
+	}
+}
+
+function restmuell() {
+	//console.log('res',res);
+
+
+
+	CODE.text += res.text + '\n';
+
+	for (const type in res.di) {
+		res.di[type].map(x => lookupAddIfToList(CODE.di, [type], x));
+	}
+
+	copyKeys(res.dicode, CODE.dicode);
+	copyKeys(res.diregion, CODE.diregion);
+
+
+
+
+}
+
+function parseCodefile(content, fname) {
+
+	let di = {}, text = '';
+	let dicode = {};
+	let diregion = {};
+	let lines = content.split('\r\n');
+	let di_started = false;
+	let classes_started = true;
+	let parsing = false, code, ending, type, key;
+
+	for (const line of lines) {
+		let l = line.includes('//#region') || line.includes('http')|| line.includes("'//") ? line : stringBefore(line, '//');
+		if (isEmptyOrWhiteSpace(l.trim())) continue;
+
+		if (startsWith(l, '//#region')) {
+			let region = CODE.region = firstWordAfter(l, 'region');
+			if (startsWith(l, '//#region classes')) classes_started = true;
+			if (!classes_started || startsWith(l, '//#region vars')) text += `//#region ${fname} ${region}\n`;
+			//console.log('file',fname,'#region',region);
+
+			if (parsing){
+				parsing = false;
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+				lookupSetOverride(diregion, [fname, CODE.region, key], { name: key, code: code, sig: stringBefore(code, ') {'), region: CODE.region, filename: fname });
+			}
+
+			continue;
+		} else if (startsWith(l, 'var')) {
+			if (parsing){
+				parsing = false;
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+				lookupSetOverride(diregion, [fname, CODE.region, key], { name: key, code: code, sig: stringBefore(code, ') {'), region: CODE.region, filename: fname });
+			}
+			//define all vars in this line
+			classes_started = false; //fuer basemin!!!
+			let vs = stringAfter(l, 'var').trim().split(',');
+			vs.map(x => firstWord(x)).map(y => lookupAddToList(di, ['var'], y));
+			//return;
+		} else if (startsWith(l, 'const')) {
+			if (parsing){
+				parsing = false;
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+				lookupSetOverride(diregion, [fname, CODE.region, key], { name: key, code: code, sig: stringBefore(code, ') {'), region: CODE.region, filename: fname });
+			}
+			lookupAddToList(di, ['const'], toWords(l)[1]);
+		} else if (startsWith(l, 'class')) {
+			//diese line bis line starting with '}'
+
+			if (parsing){
+				parsing = false;
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+				lookupSetOverride(diregion, [fname, CODE.region, key], { name: key, code: code, sig: stringBefore(code, ') {'), region: CODE.region, filename: fname });
+			}
+
+			parsing = true;
+			code = l + '\n';
+			ending = l => startsWith(l, '}');
+			type = 'cla';
+			key = firstWordAfter(l, 'class'); //stringBefore(stringAfter(l, 'class').trim(), '{');
+		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+
+			if (parsing){
+				parsing = false;
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+				lookupSetOverride(diregion, [fname, CODE.region, key], { name: key, code: code, sig: stringBefore(code, ') {'), region: CODE.region, filename: fname });
+			}
+
+			//diese line bis line starting with '}'
+			parsing = true;
+			code = l + '\n';
+			ending = l => startsWith(l, '}');
+			type = 'func';
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+		}else	if (parsing) {
+			let bp1 = replaceAllSpecialChars(l, '\t', '  ')
+			code += bp1 + '\n';
+			if (ending(l)) {
+				parsing = false;
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+				lookupSetOverride(diregion, [fname, CODE.region, key], { name: key, code: code, sig: stringBefore(code, ') {'), region: CODE.region, filename: fname });
+			}
+		} 
+		if (!classes_started) text += l + '\n';
+	}
+
+	for (const k in di) {
+		di[k].sort();
+	}
+
+	//jetzt kommen classes und functions zum text dazu!
+	//nehmen wir mal nur die functions
+	//zuerst sollen alle classes kommen!!!!
+	if (isdef(di.cla)) {
+
+		text += `//#region ${fname} classes\n`;
+		for (const k of di.cla) {
+
+			//console.log('code', k, dicode[k])
+			text += dicode[k];
+
+		}
+		text += `//#endregion ${fname} classes\n`;
+
+	}
+
+	//jetzt kommen die functions
+	for (const r in diregion[fname]) {
+		if (r == 'classes') continue;
+		text += `\n//#region ${fname} ${r}\n`;
+		let sorted_keys = get_keys(diregion[fname][r]);
+		sorted_keys.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+		for (const funcname of sorted_keys) { //in diregion[fname][r]) {
+			text += dicode[funcname];
+		}
+		text += `//#endregion ${fname} ${r}\n`;
+	}
+
+
+	//console.log('di', di);
+	//console.log('di', dicode);
+	return { di: di, dicode: dicode, diregion: diregion, text: text };
+}
+
+function parse_funcs_muell(code) {
+	let cfunctions = '\r\nfunction ' + stringAfter(code, 'function '); //jump to first function def
+	let asyncnames = cfunctions.split('\r\nasync function');
+	let asyncs = {};
+	for (const x of asyncnames) {
+		let name = stringBefore(x, '(').trim();
+		//console.log('async', name);
+		asyncs[name] = true;
+	}
+	cfunctions = asyncnames.join('\r\nfunction');
+	let fbodies = cfunctions.split('\r\nfunction').map(x => x.trim());
+	//console.log('fbodies!!!!!!!!!!!'); //,fbodies)
+
+	//console.log('fbodies',fbodies);
+	for (const f of fbodies) {
+		if ("'\"_!".includes(f[0])) continue;
+		let name = stringBefore(f, '(');
+		if (isEmpty(name)) continue;
+		let params = stringBefore(stringAfter(f, '('), ') {');
+
+		let lines = (stringAfter(f, ') {')).split('\r\n');
+		let body = '';
+		for (const line of lines) {
+			let ws = toWords(line);
+			if (isEmpty(ws[0]) || startsWith(ws[0], '//')) continue;
+			//if (startsWith(line,'class')) {} //TODO
+			//console.log('===>ws',ws)
+			//console.log('bp',bp)
+			let bp1 = replaceAllSpecialChars(line, '\t', '  ')
+			if (!bp1.includes('http')) bp1 = stringBefore(bp1, '//');//achtung http://
+			body += bp1 + '\n';
+		}
+		// let sig = `${prev_async?'async ':''}function ${name}(${params})`;
+		// body=sig+'{\n'+body;
+		// res[name.trim()] = { name: name, params: params, sig:sig, body: body, async: prev_async };
+		let isasync = isdef(asyncs[name]);
+		let sig = `${isasync ? 'async ' : ''}function ${name}(${params})`;
+		body = sig + '{\n' + body;
+		res[name.trim()] = { name: name, params: params, sig: sig, body: body, async: isasync };
+	}
+
+	//console.log('functions', res); //get_keys(res));
+	return res;
+
+}
+function parse_funcs(code) {
+	let res = {};
+	let cfunctions = '\r\nfunction ' + stringAfter(code, 'function '); //jump to first function def
+	let asyncnames = cfunctions.split('\r\nasync function');
+	let asyncs = {};
+	for (const x of asyncnames) {
+		let name = stringBefore(x, '(').trim();
+		//console.log('async', name);
+		asyncs[name] = true;
+	}
+	cfunctions = asyncnames.join('\r\nfunction');
+	let fbodies = cfunctions.split('\r\nfunction').map(x => x.trim());
+	//console.log('fbodies!!!!!!!!!!!'); //,fbodies)
+
+	//console.log('fbodies',fbodies);
+	for (const f of fbodies) {
+		if ("'\"_!".includes(f[0])) continue;
+		let name = stringBefore(f, '(');
+		if (isEmpty(name)) continue;
+		let params = stringBefore(stringAfter(f, '('), ') {');
+
+		let lines = (stringAfter(f, ') {')).split('\r\n');
+		let body = '';
+		for (const line of lines) {
+			let ws = toWords(line);
+			if (isEmpty(ws[0]) || startsWith(ws[0], '//')) continue;
+			let bp1 = replaceAllSpecialChars(line, '\t', '  ')
+			if (!bp1.includes('http')) bp1 = stringBefore(bp1, '//');//achtung http://
+			body += bp1 + '\n';
+		}
+		// let sig = `${prev_async?'async ':''}function ${name}(${params})`;
+		// body=sig+'{\n'+body;
+		// res[name.trim()] = { name: name, params: params, sig:sig, body: body, async: prev_async };
+		let isasync = isdef(asyncs[name]);
+		let sig = `${isasync ? 'async ' : ''}function ${name}(${params})`;
+		body = sig + '{\n' + body;
+		res[name.trim()] = { name: name, params: params, sig: sig, body: body, async: isasync };
+	}
+
+	//console.log('functions', res); //get_keys(res));
+	return res;
+
+}
+function parse_consts(code) {
+	let res = {};
+	//split code into lines
+	let lines = code.split('\n');
+	//console.log('lines',lines);
+	for (const line of lines) {
+		if (startsWith(line, 'const')) {
+			//console.log('line',line);
+			let c = stringBefore(stringAfter(line, 'const'), '=').trim();
+			res[c] = c;
+		}
+	}
+	return res;
+}
+function mDivC(dParent, styles, closable = true,) {
+	let d = mDiv(dParent, styles);
+	if (closable) mButtonX(d, ev => iClear(ev.target), 'tr')
+	return d;
+}
+async function load_codebase_orig() {
+	let dif = {}, dic = {};
+	let paths = ['basemin', 'board', 'cards', 'gamehelpers', 'select']; //.map(f => `../basejs/${f}.js`);
+	paths = paths.map(f => `../basejs/${f}.js`);
+	paths.push(`../game/done.js`);
+	// let paths = [`../game/aaa.js`];
+	CODE.paths = paths;
+	for (const f of paths) {
+		CODE.current_file = stringBefore(stringAfterLast(f,'/'),'.'); console.log('current file',CODE.current_file)
+		let base = await route_path_text(f);
+		let dinew = parse_funcs(base);
+		addKeys(dinew, dif);
+		let dicnew = parse_consts(base);
+		addKeys(dicnew, dic);
+	}
+	CODE.funcs = dif;
+	CODE.consts = dic;
+	CODE.index = get_keys(dif);
+	CODE.index.sort();
+
+}
 function create_fiddle(dParent, code, rows = 10, cols = 120) {
 	let [ta, buttons, tacon] = create_fiddle_ui(dParent, code, rows, cols);
 	ta.onkeydown = ev => {

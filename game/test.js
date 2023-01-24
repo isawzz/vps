@@ -1,3 +1,24 @@
+function test10(){
+	
+	
+	console.log('codebase list',list);
+	let text=list.map(x=>x.text).join('\n');
+	//downloadAsText(text,'hallo','js');
+	//console.log('DB.appdata.simple:', DB.appdata.simple);	console.log('current url',document.URL);
+
+	let funcnames = list[0].di.func;
+	let txt=
+		`if (this && typeof module == "object" && module.exports && this === module.exports) {\r\n`
+		+ `  module.exports = {\r\n`;
+	for(const fname of funcnames){
+		txt+=`    ${fname},\r\n`
+	};
+	txt+='  }\r\n}';
+	DA.text=txt;
+	//downloadAsText(txt,'hallo.js');
+
+
+}
 function test9_dbSave() { DB.appdata.simple = [1, 2, 3, 4, 5]; } //dbSave(); }
 function test8_simple_intellisense() {
 	dTable = mBy('dTable');

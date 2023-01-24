@@ -5,7 +5,7 @@ var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NO
 var uiActivated = false, Selected, Turn, Prevturn;
 var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
 var dBottom, dButtons, dCenter, dCode, dContent, dFiddle, dFooter, dHeader, dLeft, dMap, dMain, dMenu, dMessage, dPage, dPuppet;
-var dRight, dSidebar, dTable, dTitle, dTop; 
+var dRight, dSidebar, dTable, dTitle, dTop;
 var Config, Syms, SymKeys, ByGroupSubgroup, KeySets, C52, Cinno, C52Cards;
 var FORCE_REDRAW = false, TESTING = false;
 var ColorThiefObject, SelectedItem, SelectedColor;
@@ -21,6 +21,8 @@ const MyEasing = 'cubic-bezier(1,-0.03,.86,.68)';
 //#region STYLE_PARAMS
 const STYLE_PARAMS = {
 	align: 'text-align',
+	acontent: 'align-content',
+	aitems: 'align-items',
 	aspectRatio: 'aspect-ratio',
 	bg: 'background-color',
 	dir: 'flex-direction',
@@ -31,8 +33,6 @@ const STYLE_PARAMS = {
 	jcontent: 'justify-content',
 	jitems: 'justify-items',
 	justify: 'justify-content',
-	acontent: 'align-content',
-	aitems: 'align-items',
 	matop: 'margin-top',
 	maleft: 'margin-left',
 	mabottom: 'margin-bottom',
@@ -50,6 +50,7 @@ const STYLE_PARAMS = {
 	h: 'height',
 	wmin: 'min-width',
 	hmin: 'min-height',
+	hline: 'line-height',
 	wmax: 'max-width',
 	hmax: 'max-height',
 	fontSize: 'font-size',
@@ -2094,53 +2095,156 @@ class SimpleTimer {
 }
 //#endregion classes
 
-//#region m prefix (DOM)
-function mAnimate(elem, prop, valist, callback, msDuration = 1000, easing = 'cubic-bezier(1,-0.03,.86,.68)', delay = 0, forwards = 'none') {
-	//usage: mAnimate(elem, 'opacity', [0, 0, 1], funcNull, 2000, 'ease-in', 6000, 'both');
-	let kflist = [];
-	for (const perc in valist) {
-		let o = {};
-		let val = valist[perc];
-		o[prop] = isString(val) || prop == 'opacity' ? val : '' + val + 'px';
-		kflist.push(o);
+//#region CLEANUP! edit inputs
+function _unfocusOnEnter(ev) { if (ev.key === 'Enter') { ev.preventDefault(); mBy('dummy').focus(); } }
+function _selectText(el) {
+	var sel, range;
+	if (window.getSelection && document.createRange) { //Browser compatibility
+		sel = window.getSelection();
+		if (sel.toString() == '') { //no text selection
+			window.setTimeout(function () {
+				range = document.createRange(); //range object
+				range.selectNodeContents(el); //sets Range
+				sel.removeAllRanges(); //remove all ranges from selection
+				sel.addRange(range);//add Range to a Selection.
+			}, 1);
+		}
+	} else if (document.selection) { //older ie
+		sel = document.selection.createRange();
+		if (sel.text == '') { //no text selection
+			range = document.body.createTextRange();//Creates TextRange object
+			range.moveToElementText(el);//sets Range
+			range.select(); //make selection.
+		}
 	}
-	let opts = { duration: msDuration, fill: forwards, easing: easing, delay: delay };
-	let a = toElem(elem).animate(kflist, opts);
-
-	if (isdef(callback)) { a.onfinish = callback; }
-	return a;
-
-	// if (isdef(callback)) a.onfinish = ()=>{delete DA.anim;callback()}; else a.onfinish = ()=>delete DA.anim;
-	// DA.anim = a; return a;
 }
-function mAnimateTo(elem, prop, val, callback, msDuration = 1000, easing = 'cubic-bezier(1,-0.03,.86,.68)', delay = 0) {
-	//usage: mAnimateTo(elem, 'opacity', 1, somefunc, 2000, 'ease-in', 1000);
-	let o = {};
-	o[prop] = isString(val) || prop == 'opacity' ? val : '' + val + 'px';
-	let kflist = [o];
-	let opts = { duration: msDuration, fill: 'forwards', easing: easing, delay: delay };
-	let a = toElem(elem).animate(kflist, opts);
-
-	if (isdef(callback)) { a.onfinish = callback; }
-	return a;
-	// if (isdef(callback)) a.onfinish = ()=>{delete DA.anim;callback()}; else a.onfinish = ()=>delete DA.anim;
-	// DA.anim = a; return a;
+function incInput(inp, n = 1) {
+	let val = Number(inp.innerHTML);
+	val += n;
+	inp.innerHTML = val;
 }
-function mAnimateList(elem, ogoal, callback, msDuration = 1000, easing = 'cubic-bezier(1,-0.03,.86,.68)', delay = 0) {
-	//usage: mAnimateTo(elem, 'opacity', 1, somefunc, 2000, 'ease-in', 1000);
-	for (const k in ogoal) {
-		ogoal[k] = isString(ogoal[k]) || k == 'opacity' ? ogoal[k] : '' + ogoal[k] + 'px';
+function mEditRange(label, value, min, max, step, dParent, handler, styles, classes, id, triggerOnChange = true) {
+	let d = mDiv(dParent, styles);
+	let hpad = valf(styles.hpadding, 4);
+	let dLabel = mDiv(d, { w: '30%', align: 'right', hpadding: hpad, display: 'inline-block' }, null, label); //mCreateFrom(`<label>${label}</label>`);
+	let inpText = mCreateFrom(`<input type='number'  step=${step} min="${min}" max="${max}" value="${value}" ></input>`);
+	let inp = mCreateFrom(`<input type="range" step=${step} min="${min}" max="${max}" value="${value}" ></input>`);
+	// let inp = mCreateFrom(`<div contenteditable="true" spellcheck="false">${value}</div>	`)
+	mAppend(d, inpText);
+	mAppend(d, inp);
+	// let button = mButton('+', triggerOnChange ? ev => { incInput(inp); handler(inp.innerHTML, ev); } : ev => { incInput(inp); }, d);
+	mStyle(inpText, { display: 'inline', w: '20%', align: 'left', hpadding: hpad });
+	mStyle(inp, { display: 'inline', w: '40%', hpadding: hpad });
+
+	inpText.onchange = (ev) => { inp.value = inpText.value; handler(inpText.value, ev); };
+	// inpText.addEventListener('keydown', unfocusOnEnter);
+	// inpText.addEventListener('focusout', ev => { inp.value = inpText.value;handler(inp.innerHTML, ev); });
+	inpText.onclick = ev => selectText(ev.target);
+	inp.onchange = (ev) => { inpText.value = inp.value; handler(inpText.value, ev); };
+	if (isdef(classes)) mClass(inp, classes);
+	if (isdef(id)) inp.id = id;
+	return inpText;
+}
+function mEditNumber(label, value, dParent, handler, styles, classes, id, triggerOnChange = false) {
+	let d = mDiv(dParent, styles);
+	let hpad = valf(styles.hpadding, 4);
+	let dLabel = mDiv(d, { w: '50%', align: 'right', hpadding: hpad, display: 'inline-block' }, null, label); //mCreateFrom(`<label>${label}</label>`);
+
+	if (nundef(handler)) handler = x => console.log(x);
+
+	let inp = mCreateFrom(`<div contenteditable="true" spellcheck="false">${value}</div>	`)
+	mAppend(d, inp);
+	//let button = mButton('+', triggerOnChange ? ev => { incInput(inp); handler(inp.innerHTML, ev); } : ev => { incInput(inp); }, d);
+	mStyle(inp, { display: 'inline-block', w: '40%', align: 'left', hpadding: hpad });
+	inp.addEventListener('keydown', unfocusOnEnter);
+	inp.addEventListener('focusout', ev => { handler(inp.innerHTML, ev); });
+	inp.onclick = ev => selectText(ev.target);
+
+	if (isdef(classes)) mClass(inp, classes);
+	if (isdef(id)) inp.id = id;
+	return inp;
+}
+function mEdit(label, value, dParent, handler, styles, classes, id) {
+
+	let d = mDiv(dParent, styles);
+	let hpad = valf(styles.hpadding, 4);
+	let dLabel = mDiv(d, { w: '50%', align: 'right', hpadding: hpad, display: 'inline-block' }, null, label); //mCreateFrom(`<label>${label}</label>`);
+
+	let inp = mCreateFrom(`<div contenteditable="true" spellcheck="false">${value}</div>	`)
+	mAppend(d, inp);
+	mStyle(inp, { display: 'inline-block', w: '50%', align: 'left', hpadding: hpad });
+	inp.addEventListener('keydown', unfocusOnEnter);
+	inp.addEventListener('focusout', ev => { handler(inp.innerHTML, ev); });
+	inp.onclick = ev => selectText(ev.target);
+
+	if (isdef(classes)) mClass(inp, classes);
+	if (isdef(id)) inp.id = id;
+	return inp;
+}
+function mEditX(label, val, dParent, styles, classes, handler, id, opt = {}) {
+	let defOptions = {
+		alignLabel: 'right',
+		fgLabel: 'silver',
+		wminLabel: 120,
+		alignInput: 'left',
+		fgInput: 'white',
+		wminInput: 50,
+		wminRight: 120,
+		align: 'center',
+
 	}
-	let kflist = [ogoal];
-	let opts = { duration: msDuration, fill: 'forwards', easing: easing, delay: delay };
-	let a = toElem(elem).animate(kflist, opts);
-
-	if (isdef(callback)) { a.onfinish = callback; }
-	return a;
-	// if (isdef(callback)) a.onfinish = ()=>{delete DA.anim;callback()}; else a.onfinish = ()=>delete DA.anim;
-	// DA.anim = a; return a;
+	addKeys(defOptions, opt);
+	let wminTotal = wminLabel + wminRight;
+	if (nundef(styles)) styles = {};
+	if (nundef(styles.wmin)) styles.wmin = 0;
+	styles.wmin = Math.max(styles.wmin, wminTotal);
+	styles.align = opt.align;
+	let dOuter = mDiv(dParent, styles, id, null, classes);
+	let dLabel = mDiv(dOuter, { fg: opt.fgLabel, wmin: opt.wminLabel, align: opt.alignLabel }, null, label);
+	let dInput = mDiv(dOuter, { contenteditable: true, spellcheck: false, fg: opt.fgInput, wmin: opt.wminInput, align: opt.alignInput }, null, val);
+	dInput.onfocusout = ev => handler(dInput.innerHTML, ev);
+	dInput.onkeydown = (ev) => {
+		if (ev.key === 'Enter') {
+			ev.preventDefault();
+			mBy('dummy').focus();
+		}
+	}
+	return dInput;
 }
-function mAppend(d, child) { toElem(d).appendChild(child); return child; }
+function mEditableOnEdited(id, dParent, label, initialVal, onEdited, onOpening, styles, classes) {
+	let inp = mEditableInput(dParent, label, initialVal, styles, classes);
+	inp.id = id;
+	if (isdef(onOpening)) { inp.addEventListener('focus', ev => onOpening(ev)); }
+	inp.addEventListener('focusout', ev => {
+		window.getSelection().removeAllRanges();
+		if (isdef(onEdited)) onEdited(inp.innerHTML, ev);
+	});
+	return inp;
+}
+function mEditableInput(dParent, label, val, styles, classes, id) {
+	let labelElem = mCreateFrom(`<span>${label}</span>	`)
+	let elem = mCreateFrom(`<span contenteditable="true" spellcheck="false">${val}</span>	`)
+	elem.addEventListener('keydown', (ev) => {
+		if (ev.key === 'Enter') {
+			ev.preventDefault();
+			mBy('dummy').focus();
+			//if (isdef(handler)) handler(elem.innerHTML, ev); //das ist schon bei mEditableInputOnEdited!!!
+		}
+	});
+	let dui = mDiv(dParent, { margin: 2 });
+	mAppend(dui, labelElem);
+	mAppend(dui, elem);
+	if (isdef(styles)) {
+		if (isdef(styles.wInput)) mStyle(elem, { wmin: styles.wInput });
+		mStyle(elem, styles);
+	}
+	if (isdef(classes)) mStyle(elem, classes);
+	if (isdef(id)) elem.id = id;
+
+	return elem;
+}
+//#endregion
+
 //#region autocomplete
 function autocomplete(inp, arr) {
 	/* inp...input element, arr...array of possible autocompleted values:*/
@@ -2213,6 +2317,54 @@ function autocomplete_closeAllLists(elmnt) {
 	}
 }
 //#endregion
+
+//#region m prefix (DOM)
+function mAnimate(elem, prop, valist, callback, msDuration = 1000, easing = 'cubic-bezier(1,-0.03,.86,.68)', delay = 0, forwards = 'none') {
+	//usage: mAnimate(elem, 'opacity', [0, 0, 1], funcNull, 2000, 'ease-in', 6000, 'both');
+	let kflist = [];
+	for (const perc in valist) {
+		let o = {};
+		let val = valist[perc];
+		o[prop] = isString(val) || prop == 'opacity' ? val : '' + val + 'px';
+		kflist.push(o);
+	}
+	let opts = { duration: msDuration, fill: forwards, easing: easing, delay: delay };
+	let a = toElem(elem).animate(kflist, opts);
+
+	if (isdef(callback)) { a.onfinish = callback; }
+	return a;
+
+	// if (isdef(callback)) a.onfinish = ()=>{delete DA.anim;callback()}; else a.onfinish = ()=>delete DA.anim;
+	// DA.anim = a; return a;
+}
+function mAnimateTo(elem, prop, val, callback, msDuration = 1000, easing = 'cubic-bezier(1,-0.03,.86,.68)', delay = 0) {
+	//usage: mAnimateTo(elem, 'opacity', 1, somefunc, 2000, 'ease-in', 1000);
+	let o = {};
+	o[prop] = isString(val) || prop == 'opacity' ? val : '' + val + 'px';
+	let kflist = [o];
+	let opts = { duration: msDuration, fill: 'forwards', easing: easing, delay: delay };
+	let a = toElem(elem).animate(kflist, opts);
+
+	if (isdef(callback)) { a.onfinish = callback; }
+	return a;
+	// if (isdef(callback)) a.onfinish = ()=>{delete DA.anim;callback()}; else a.onfinish = ()=>delete DA.anim;
+	// DA.anim = a; return a;
+}
+function mAnimateList(elem, ogoal, callback, msDuration = 1000, easing = 'cubic-bezier(1,-0.03,.86,.68)', delay = 0) {
+	//usage: mAnimateTo(elem, 'opacity', 1, somefunc, 2000, 'ease-in', 1000);
+	for (const k in ogoal) {
+		ogoal[k] = isString(ogoal[k]) || k == 'opacity' ? ogoal[k] : '' + ogoal[k] + 'px';
+	}
+	let kflist = [ogoal];
+	let opts = { duration: msDuration, fill: 'forwards', easing: easing, delay: delay };
+	let a = toElem(elem).animate(kflist, opts);
+
+	if (isdef(callback)) { a.onfinish = callback; }
+	return a;
+	// if (isdef(callback)) a.onfinish = ()=>{delete DA.anim;callback()}; else a.onfinish = ()=>delete DA.anim;
+	// DA.anim = a; return a;
+}
+function mAppend(d, child) { toElem(d).appendChild(child); return child; }
 function mAutocomplete(dParent) {
 	let form = mCreateFrom(`
 		<form class='form' autocomplete="off" action="javascript:void(0);">
@@ -2451,162 +2603,13 @@ function mDroppable(item, handler, dragoverhandler) {
 	//if (isdef(dragEnterHandler)) d.ondragenter = dragEnterHandler;
 	d.ondrop = handler;
 }
-//#region CLEANUP! edit inputs
-function _unfocusOnEnter(ev) { if (ev.key === 'Enter') { ev.preventDefault(); mBy('dummy').focus(); } }
-function _selectText(el) {
-	var sel, range;
-	if (window.getSelection && document.createRange) { //Browser compatibility
-		sel = window.getSelection();
-		if (sel.toString() == '') { //no text selection
-			window.setTimeout(function () {
-				range = document.createRange(); //range object
-				range.selectNodeContents(el); //sets Range
-				sel.removeAllRanges(); //remove all ranges from selection
-				sel.addRange(range);//add Range to a Selection.
-			}, 1);
-		}
-	} else if (document.selection) { //older ie
-		sel = document.selection.createRange();
-		if (sel.text == '') { //no text selection
-			range = document.body.createTextRange();//Creates TextRange object
-			range.moveToElementText(el);//sets Range
-			range.select(); //make selection.
-		}
-	}
-}
-function incInput(inp, n = 1) {
-	let val = Number(inp.innerHTML);
-	val += n;
-	inp.innerHTML = val;
-}
-function mEditRange(label, value, min, max, step, dParent, handler, styles, classes, id, triggerOnChange = true) {
-	let d = mDiv(dParent, styles);
-	let hpad = valf(styles.hpadding, 4);
-	let dLabel = mDiv(d, { w: '30%', align: 'right', hpadding: hpad, display: 'inline-block' }, null, label); //mCreateFrom(`<label>${label}</label>`);
-	let inpText = mCreateFrom(`<input type='number'  step=${step} min="${min}" max="${max}" value="${value}" ></input>`);
-	let inp = mCreateFrom(`<input type="range" step=${step} min="${min}" max="${max}" value="${value}" ></input>`);
-	// let inp = mCreateFrom(`<div contenteditable="true" spellcheck="false">${value}</div>	`)
-	mAppend(d, inpText);
-	mAppend(d, inp);
-	// let button = mButton('+', triggerOnChange ? ev => { incInput(inp); handler(inp.innerHTML, ev); } : ev => { incInput(inp); }, d);
-	mStyle(inpText, { display: 'inline', w: '20%', align: 'left', hpadding: hpad });
-	mStyle(inp, { display: 'inline', w: '40%', hpadding: hpad });
-
-	inpText.onchange = (ev) => { inp.value = inpText.value; handler(inpText.value, ev); };
-	// inpText.addEventListener('keydown', unfocusOnEnter);
-	// inpText.addEventListener('focusout', ev => { inp.value = inpText.value;handler(inp.innerHTML, ev); });
-	inpText.onclick = ev => selectText(ev.target);
-	inp.onchange = (ev) => { inpText.value = inp.value; handler(inpText.value, ev); };
-	if (isdef(classes)) mClass(inp, classes);
-	if (isdef(id)) inp.id = id;
-	return inpText;
-}
-function mEditNumber(label, value, dParent, handler, styles, classes, id, triggerOnChange = false) {
-	let d = mDiv(dParent, styles);
-	let hpad = valf(styles.hpadding, 4);
-	let dLabel = mDiv(d, { w: '50%', align: 'right', hpadding: hpad, display: 'inline-block' }, null, label); //mCreateFrom(`<label>${label}</label>`);
-
-	if (nundef(handler)) handler = x => console.log(x);
-
-	let inp = mCreateFrom(`<div contenteditable="true" spellcheck="false">${value}</div>	`)
-	mAppend(d, inp);
-	//let button = mButton('+', triggerOnChange ? ev => { incInput(inp); handler(inp.innerHTML, ev); } : ev => { incInput(inp); }, d);
-	mStyle(inp, { display: 'inline-block', w: '40%', align: 'left', hpadding: hpad });
-	inp.addEventListener('keydown', unfocusOnEnter);
-	inp.addEventListener('focusout', ev => { handler(inp.innerHTML, ev); });
-	inp.onclick = ev => selectText(ev.target);
-
-	if (isdef(classes)) mClass(inp, classes);
-	if (isdef(id)) inp.id = id;
-	return inp;
-}
-function mEdit(label, value, dParent, handler, styles, classes, id) {
-
-	let d = mDiv(dParent, styles);
-	let hpad = valf(styles.hpadding, 4);
-	let dLabel = mDiv(d, { w: '50%', align: 'right', hpadding: hpad, display: 'inline-block' }, null, label); //mCreateFrom(`<label>${label}</label>`);
-
-	let inp = mCreateFrom(`<div contenteditable="true" spellcheck="false">${value}</div>	`)
-	mAppend(d, inp);
-	mStyle(inp, { display: 'inline-block', w: '50%', align: 'left', hpadding: hpad });
-	inp.addEventListener('keydown', unfocusOnEnter);
-	inp.addEventListener('focusout', ev => { handler(inp.innerHTML, ev); });
-	inp.onclick = ev => selectText(ev.target);
-
-	if (isdef(classes)) mClass(inp, classes);
-	if (isdef(id)) inp.id = id;
-	return inp;
-}
-function mEditX(label, val, dParent, styles, classes, handler, id, opt = {}) {
-	let defOptions = {
-		alignLabel: 'right',
-		fgLabel: 'silver',
-		wminLabel: 120,
-		alignInput: 'left',
-		fgInput: 'white',
-		wminInput: 50,
-		wminRight: 120,
-		align: 'center',
-
-	}
-	addKeys(defOptions, opt);
-	let wminTotal = wminLabel + wminRight;
-	if (nundef(styles)) styles = {};
-	if (nundef(styles.wmin)) styles.wmin = 0;
-	styles.wmin = Math.max(styles.wmin, wminTotal);
-	styles.align = opt.align;
-	let dOuter = mDiv(dParent, styles, id, null, classes);
-	let dLabel = mDiv(dOuter, { fg: opt.fgLabel, wmin: opt.wminLabel, align: opt.alignLabel }, null, label);
-	let dInput = mDiv(dOuter, { contenteditable: true, spellcheck: false, fg: opt.fgInput, wmin: opt.wminInput, align: opt.alignInput }, null, val);
-	dInput.onfocusout = ev => handler(dInput.innerHTML, ev);
-	dInput.onkeydown = (ev) => {
-		if (ev.key === 'Enter') {
-			ev.preventDefault();
-			mBy('dummy').focus();
-		}
-	}
-	return dInput;
-}
-function mEditableOnEdited(id, dParent, label, initialVal, onEdited, onOpening, styles, classes) {
-	let inp = mEditableInput(dParent, label, initialVal, styles, classes);
-	inp.id = id;
-	if (isdef(onOpening)) { inp.addEventListener('focus', ev => onOpening(ev)); }
-	inp.addEventListener('focusout', ev => {
-		window.getSelection().removeAllRanges();
-		if (isdef(onEdited)) onEdited(inp.innerHTML, ev);
-	});
-	return inp;
-}
-function mEditableInput(dParent, label, val, styles, classes, id) {
-	let labelElem = mCreateFrom(`<span>${label}</span>	`)
-	let elem = mCreateFrom(`<span contenteditable="true" spellcheck="false">${val}</span>	`)
-	elem.addEventListener('keydown', (ev) => {
-		if (ev.key === 'Enter') {
-			ev.preventDefault();
-			mBy('dummy').focus();
-			//if (isdef(handler)) handler(elem.innerHTML, ev); //das ist schon bei mEditableInputOnEdited!!!
-		}
-	});
-	let dui = mDiv(dParent, { margin: 2 });
-	mAppend(dui, labelElem);
-	mAppend(dui, elem);
-	if (isdef(styles)) {
-		if (isdef(styles.wInput)) mStyle(elem, { wmin: styles.wInput });
-		mStyle(elem, styles);
-	}
-	if (isdef(classes)) mStyle(elem, classes);
-	if (isdef(id)) elem.id = id;
-
-	return elem;
-}
-//#endregion
-function mFleeting(inner,d,ms=3000,styles={},classes=null){
+function mFleeting(inner, d, ms = 3000, styles = {}, classes = null) {
 	d = toElem(d);
-	addKeys({transition: 'all .5s ease',padding:10,box:true,fg:'red'},styles)
-	if (isdef(styles)) mStyle(d,styles);
-	if (isdef(classes)) mClass(d,classes);
+	addKeys({ transition: 'all .5s ease', padding: 10, box: true, fg: 'red' }, styles)
+	if (isdef(styles)) mStyle(d, styles);
+	if (isdef(classes)) mClass(d, classes);
 	d.innerHTML = inner;
-	TO.fleeting = setTimeout(()=>mClear(d),ms);
+	TO.fleeting = setTimeout(() => mClear(d), ms);
 }
 function mFlexEvenly(d) {
 	let styles = { display: 'flex' };
@@ -3628,7 +3631,7 @@ function aJumpby(elem, h = 40, ms = 1000) {
 		//loop: 2,
 	});
 }
-function aRestore(elem){elem.style.transform = '';}
+function aRestore(elem) { elem.style.transform = ''; }
 //#endregion
 
 //#region canvas c prefix
@@ -5952,6 +5955,7 @@ function is_key_down(key) {
 // 	window.addEventListener('keydown', (e) => { state[e.key] = true; });
 // 	return (key) => state.hasOwnProperty(key) && state[key] || false;
 // })();
+function download_all_functions() { downloadAsText(CODE.text, 'hallo', 'js'); }
 
 function downloadAsYaml(o, filename) {
 	let y = jsyaml.dump(o);
@@ -6636,6 +6640,14 @@ function rWheel(n = 1, hue = null, sat = 100, bri = 50) {
 //#endregion
 
 //#region string funcs
+function firstWordAfter(s, sub) {
+	let s1 = stringAfter(s, sub);
+	//console.log(s1);
+	let s2 = toWords(s1)[0]
+	return s2;
+}
+function firstWord(s) { return toWords(s)[0]; }
+
 function allNumbers(s) {
 	//returns array of all numbers within string s
 	let m = s.match(/\-.\d+|\-\d+|\.\d+|\d+\.\d+|\d+\b|\d+(?=\w)/g);
@@ -7458,6 +7470,15 @@ function set_run_state(singleclient = true, sockets = false, port = 3000, localh
 	console.log('SERVER:' + SERVERURL, 'LIVE:' + LIVE_SERVER, 'Socket:' + Socket, TESTING ? 'TESTING' : '', SINGLECLIENT ? 'SINGLE' : '');
 
 }
+function set_run_state_no_server(){
+	set_run_state(true, false, 3000, true, true, true, false);
+}
+function set_run_state_local(){
+	set_run_state(true, false, 3000, true, false, true, true);
+}
+function set_run_state_vps(){
+	set_run_state(false, false, 3000, false, false, false, true);
+}
 function show(elem, isInline = false) {
 	if (isString(elem)) elem = document.getElementById(elem);
 	if (isSvg(elem)) {
@@ -7666,6 +7687,305 @@ function load_assets_direct(obj) {
 }
 
 //#region new from start
+function arrAverage(arr, prop) {
+	let n = arr.length; if (!n) return 0;
+	let sum = arrSum(arr, prop);
+	return sum / n;
+}
+function getCaretCoordinates(element, position, options) {
+	var properties = [
+		'direction',  // RTL support
+		'boxSizing',
+		'width',  // on Chrome and IE, exclude the scrollbar, so the mirror div wraps exactly as the textarea does
+		'height',
+		'overflowX',
+		'overflowY',  // copy the scrollbar for IE
+
+		'borderTopWidth',
+		'borderRightWidth',
+		'borderBottomWidth',
+		'borderLeftWidth',
+		'borderStyle',
+
+		'paddingTop',
+		'paddingRight',
+		'paddingBottom',
+		'paddingLeft',
+
+		// https://developer.mozilla.org/en-US/docs/Web/CSS/font
+		'fontStyle',
+		'fontVariant',
+		'fontWeight',
+		'fontStretch',
+		'fontSize',
+		'fontSizeAdjust',
+		'lineHeight',
+		'fontFamily',
+
+		'textAlign',
+		'textTransform',
+		'textIndent',
+		'textDecoration',  // might not make a difference, but better be safe
+
+		'letterSpacing',
+		'wordSpacing',
+
+		'tabSize',
+		'MozTabSize'
+
+	];
+
+	var isBrowser = (typeof window !== 'undefined');
+	var isFirefox = (isBrowser && window.mozInnerScreenX != null);
+	if (!isBrowser) {
+		throw new Error('textarea-caret-position#getCaretCoordinates should only be called in a browser');
+	}
+
+	var debug = options && options.debug || false;
+	if (debug) {
+		var el = document.querySelector('#input-textarea-caret-position-mirror-div');
+		if (el) el.parentNode.removeChild(el);
+	}
+
+	// The mirror div will replicate the textarea's style
+	var div = document.createElement('div');
+	div.id = 'input-textarea-caret-position-mirror-div';
+	document.body.appendChild(div);
+
+	var style = div.style;
+	var computed = window.getComputedStyle ? window.getComputedStyle(element) : element.currentStyle;  // currentStyle for IE < 9
+	var isInput = element.nodeName === 'INPUT';
+
+	// Default textarea styles
+	style.whiteSpace = 'pre-wrap';
+	if (!isInput) style.wordWrap = 'break-word';  // only for textarea-s
+
+	// Position off-screen
+	style.position = 'absolute';  // required to return coordinates properly
+	if (!debug) style.visibility = 'hidden';  // not 'display: none' because we want rendering
+
+	// Transfer the element's properties to the div
+	properties.forEach(prop => {
+		if (isInput && prop === 'lineHeight') {
+			// Special case for <input>s because text is rendered centered and line height may be != height
+			if (computed.boxSizing === "border-box") {
+				var height = parseInt(computed.height);
+				var outerHeight =
+					parseInt(computed.paddingTop) +
+					parseInt(computed.paddingBottom) +
+					parseInt(computed.borderTopWidth) +
+					parseInt(computed.borderBottomWidth);
+				var targetHeight = outerHeight + parseInt(computed.lineHeight);
+				if (height > targetHeight) {
+					style.lineHeight = height - outerHeight + "px";
+				} else if (height === targetHeight) {
+					style.lineHeight = computed.lineHeight;
+				} else {
+					style.lineHeight = 0;
+				}
+			} else {
+				style.lineHeight = computed.height;
+			}
+		} else {
+			style[prop] = computed[prop];
+		}
+	});
+
+	if (isFirefox) {
+		// Firefox lies about the overflow property for textareas: https://bugzilla.mozilla.org/show_bug.cgi?id=984275
+		if (element.scrollHeight > parseInt(computed.height))
+			style.overflowY = 'scroll';
+	} else {
+		style.overflow = 'hidden';  // for Chrome to not render a scrollbar; IE keeps overflowY = 'scroll'
+	}
+
+	div.textContent = element.value.substring(0, position);
+	// The second special handling for input type="text" vs textarea:
+	// spaces need to be replaced with non-breaking spaces - http://stackoverflow.com/a/13402035/1269037
+	if (isInput)
+		div.textContent = div.textContent.replace(/\s/g, '\u00a0');
+
+	var span = document.createElement('span');
+	// Wrapping must be replicated *exactly*, including when a long word gets
+	// onto the next line, with whitespace at the end of the line before (#7).
+	// The  *only* reliable way to do that is to copy the *entire* rest of the
+	// textarea's content into the <span> created at the caret position.
+	// For inputs, just '.' would be enough, but no need to bother.
+	span.textContent = element.value.substring(position) || '.';  // || because a completely empty faux span doesn't render at all
+	div.appendChild(span);
+
+	var coordinates = {
+		top: span.offsetTop + parseInt(computed['borderTopWidth']),
+		left: span.offsetLeft + parseInt(computed['borderLeftWidth']),
+		height: parseInt(computed['lineHeight'])
+	};
+
+	if (debug) {
+		span.style.backgroundColor = '#aaa';
+	} else {
+		document.body.removeChild(div);
+	}
+
+	return coordinates;
+}
+function getGlobals() {
+	let di = {};
+	let keys = get_keys(window); keys.sort();
+
+	for (const k of keys) {
+		let o = window[k];
+		let type = typeof o;
+		lookupAddToList(di, [type], { key: k, o: o, value: k, type: type });
+	}
+	Globals = di;
+	return di;
+}
+function getTextAreaCurrentLine(el) {
+	let line = '';
+	if (el instanceof HTMLTextAreaElement) {
+		// unlike substring, slice gives empty string when (1,0)
+		line = el.value.slice(el.value.lastIndexOf('\n', el.selectionStart - 1) + 1,
+			((end = el.value.indexOf('\n', el.selectionStart)) => end > -1 ? end : undefined)());
+	}
+	//document.getElementById('result').innerHTML = '"'+line+'"';
+	return line;
+}
+function getTextAreaCurrentWord(el) {
+	let line = '', w = '', prefix = '';
+	if (el instanceof HTMLTextAreaElement) {
+		let s = el.value;
+		let i_caret = el.selectionEnd;
+		let i_last_break_before_caret = s.lastIndexOf('\n', i_caret - 1); if (i_last_break_before_caret < 0) i_last_break_before_caret = 0;
+		let i_next_break = s.indexOf('\n', i_caret); if (i_next_break < 0) i_next_break = s.length - 1;
+		let i_caret_within_line = i_caret - i_last_break_before_caret;
+		line = s.slice(i_last_break_before_caret + 1, i_next_break);
+
+		let pos = i_caret_within_line - 2;
+		console.log('_________\nline:', line, '\ni_caret=' + i_caret, 'i_in_line=' + pos);
+		for (let i = pos; i >= 0; i--) {
+			let ch = line[i];
+			if (isAlphaNum(ch)) w = ch + w; else break;
+		}
+		prefix = w;
+
+		for (let i = pos + 1; i < line.length; i++) {
+			let ch = line[i];
+			if (isAlphaNum(ch)) w = w + ch; else break;
+		}
+	}
+	return [w, prefix];
+}
+function rName(n = 1) { let arr = MyNames; return rChoose(arr, n); }
+function stringLast(s, n) { return s.substring(s.length - n, s.length); }
+function parseCodefile(content, fname) {
+
+	let di = {}, text = '';
+	let dicode = {};
+	let diregion = {};
+	let lines = content.split('\r\n');
+	let classes_started = true;
+	let parsing = false, code, ending, type, key;
+	let firstletters = [];
+
+	for (const line of lines) {
+
+		let l = line;
+		if (!l.includes("'//")){
+			l = replaceAllFast(line, '://', ':@@');
+			l = replaceAllFast(l, '//#', '@@#');
+			l = stringBefore(l, '//');
+			l = replaceAllFast(l, '@@#', '//#');
+			l = replaceAllFast(l, ':@@', '://');
+		}
+		if (isEmptyOrWhiteSpace(l.trim())) continue;
+
+		if (parsing) { //bin mitten in func or class code
+			assertion(classes_started, 'parsing but NOT classes_started!!!!');
+			let l1 = replaceAllSpecialChars(l, '\t', '  ');
+			let ch = l1[0];
+			if (' }'.includes(ch)) code += l1 + '\n';
+			if (ch != ' ') {
+				parsing = false;
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+				lookupSetOverride(diregion, [fname, CODE.region, key], { name: key, code: code, sig: stringBefore(code, ') {'), region: CODE.region, filename: fname });
+				addIf(firstletters, l[0]);
+			}
+		}
+
+		if (classes_started && startsWith(l, '//#end')) continue;
+		assertion(!startsWith(l, '//#endregion') || !classes_started, 'ASSERTION!!!');
+		if (parsing) continue;
+
+		if (startsWith(l, '//#region')) {
+			let region = CODE.region = firstWordAfter(l, 'region');
+			if (startsWith(l, '//#region classes')) classes_started = true;
+			if (!classes_started || startsWith(l, '//#region vars')) text += `\n//#region ${fname} ${region}\n`;
+			//console.log('file',fname,'#region',region);
+			continue;
+		} else if (startsWith(l, 'var')) {
+			if (classes_started) console.log('line', l)
+			classes_started = false; //fuer basemin!!!
+
+			let vs = stringAfter(l, 'var').trim().split(',');
+			vs.map(x => firstWord(x)).map(y => lookupAddToList(di, ['var'], y));
+		} else if (startsWith(l, 'const')) {
+			lookupAddToList(di, ['const'], toWords(l)[1]);
+		} else if (startsWith(l, 'class')) {
+			parsing = true;
+			code = l + '\n';
+			type = 'cla';
+			key = firstWordAfter(l, 'class'); //stringBefore(stringAfter(l, 'class').trim(), '{');
+		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			parsing = true;
+			code = l + '\n';
+			type = 'func';
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+		}
+		if (!classes_started) text += l + '\n';
+	}
+
+
+	console.log('first letters', firstletters)
+
+	for (const k in di) {
+		di[k].sort();
+	}
+
+	//jetzt kommen classes und functions zum text dazu!
+	//nehmen wir mal nur die functions
+	//zuerst sollen alle classes kommen!!!!
+	if (isdef(di.cla)) {
+
+		text += `\n//#region ${fname} classes\n`;
+		for (const k of di.cla) {
+
+			//console.log('code', k, dicode[k])
+			text += dicode[k];
+
+		}
+		text += `//#endregion ${fname} classes\n`;
+
+	}
+
+	//jetzt kommen die functions
+	for (const r in diregion[fname]) {
+		if (r == 'classes') continue;
+		text += `\n//#region ${fname} ${r}\n`;
+		let sorted_keys = get_keys(diregion[fname][r]);
+		sorted_keys.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+		for (const funcname of sorted_keys) { //in diregion[fname][r]) {
+			text += dicode[funcname];
+		}
+		text += `//#endregion ${fname} ${r}\n`;
+	}
+
+
+	//console.log('di', di);
+	//console.log('di', dicode);
+	return { di: di, dicode: dicode, diregion: diregion, text: text };
+}
+
 function aggregate_elements(list_of_object, propname) {
 	let result = [];
 	for (let i = 0; i < list_of_object.length; i++) {
@@ -7844,10 +8164,10 @@ function dbSave() {
 		let route = `/post/json`;
 		let o = { filename: 'db', data: DB }
 		let callback = () => console.log('saved db');
-		post_json(route,o,callback);
-		console.log('full route',route);
+		post_json(route, o, callback);
+		console.log('full route', route);
 		//post_json(SERVERURL + `/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
-	}	else console.log('not saved - no app running!')
+	} else console.log('not saved - no app running!')
 	//post_json(`http:/` + `/${IP}:${port}/post/json`, { filename: 'db', data: DB }, () => console.log('saved db'));
 }
 
