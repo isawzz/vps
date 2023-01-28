@@ -372,7 +372,6 @@ var c = canvas.getContext("2d");
 var c52 = null;
 var C52, Syms, SymKeys, KeySets, Categories, ByGroupSubgroup, Dictionary, WordP; 
 var c52C = null;
-var CACHE_CODE = false;
 var campus = {
   "type": "Feature",
   "properties": {
@@ -430,7 +429,6 @@ var campus = {
     ]
   }
 };
-var canvas = document.getElementById("canvas");
 var card1 = cards1['c1'];
 var cards1 = {
   'c1':
@@ -495,7 +493,6 @@ var circle = {
   vx: 0, 
   vy: 0
 };
-var CLEAR_LOCAL_STORAGE = false;
 var CLICK_TO_SELECT = true; 
 var cnt=0;
 var ColBrd = new Array(BRD_SQ_NUM);
@@ -504,7 +501,6 @@ var collections = {};
 var ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = {}, Socket = null;
 var colorDict = null; 
 var ColorNames; 
-var colorPalette;
 var ColorThiefObject, SelectedItem, SelectedColor;
 var COLOURS = { WHITE: 0, BLACK: 1, BOTH: 2 };
 var COLUMNS =  { COL_A:0, COL_B:1, COL_C:2, COL_D:3, COL_E:4, COL_F:5, COL_G:6, COL_H:7, COL_NONE:8 };
@@ -796,753 +792,6 @@ var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tab
 var dBottom, dButtons, dCenter, dCode, dConsole, dContent, dFiddle, dFooter, dHeader, dLeft, dMap, dMain, dMenu, dMessage, dPage, dPuppet;
 var dCurrent = null;
 var DDInfo = null;
-var Deck = (function () {
-  'use strict';
-  var ticking;
-  var animations = [];
-  function animationFrames(delay, duration) {
-    var now = Date.now();
-    var start = now + delay;
-    var end = start + duration;
-    var animation = {
-      start: start,
-      end: end
-    };
-    animations.push(animation);
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(tick);
-    }
-    var self = {
-      start: function start(cb) {
-        animation.startcb = cb;
-        return self;
-      },
-      progress: function progress(cb) {
-        animation.progresscb = cb;
-        return self;
-      },
-      end: function end(cb) {
-        animation.endcb = cb;
-        return self;
-      }
-    };
-    return self;
-  }
-  function tick() {
-    var now = Date.now();
-    if (!animations.length) {
-      ticking = false;
-      return;
-    }
-    for (var i = 0, animation; i < animations.length; i++) {
-      animation = animations[i];
-      if (now < animation.start) {
-        continue;
-      }
-      if (!animation.started) {
-        animation.started = true;
-        animation.startcb && animation.startcb();
-      }
-      var t = (now - animation.start) / (animation.end - animation.start);
-      animation.progresscb && animation.progresscb(t < 1 ? t : 1);
-      if (now > animation.end) {
-        animation.endcb && animation.endcb();
-        animations.splice(i--, 1);
-        continue;
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-  window.requestAnimationFrame || (window.requestAnimationFrame = function (cb) {
-    setTimeout(cb, 0);
-  });
-  var style = document.createElement('p').style;
-  var memoized = {};
-  function prefix(param) {
-    if (typeof memoized[param] !== 'undefined') {
-      return memoized[param];
-    }
-    if (typeof style[param] !== 'undefined') {
-      memoized[param] = param;
-      return param;
-    }
-    var camelCase = param[0].toUpperCase() + param.slice(1);
-    var prefixes = ['webkit', 'moz', 'Moz', 'ms', 'o'];
-    var test;
-    for (var i = 0, len = prefixes.length; i < len; i++) {
-      test = prefixes[i] + camelCase;
-      if (typeof style[test] !== 'undefined') {
-        memoized[param] = test;
-        return test;
-      }
-    }
-  }
-  var has3d;
-  function translate(a, b, c) {
-    typeof has3d !== 'undefined' || (has3d = check3d());
-    c = c || 0;
-    if (has3d) {
-      return 'translate3d(' + a + ', ' + b + ', ' + c + ')';
-    } else {
-      return 'translate(' + a + ', ' + b + ')';
-    }
-  }
-  function check3d() {
-    // http://julian.com/research/velocity/
-    var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (!isMobile) {
-      return false;
-    }
-    var transform = prefix('transform');
-    var $p = document.createElement('p');
-    document.body.appendChild($p);
-    $p.style[transform] = 'translate3d(1px,1px,1px)';
-    has3d = $p.style[transform];
-    has3d = has3d != null && has3d.length && has3d !== 'none';
-    document.body.removeChild($p);
-    return has3d;
-  }
-  function createElement(type) {
-    return document.createElement(type);
-  }
-  var maxZ = 52;
-  function _card(i) {
-    var transform = prefix('transform');
-    var rank = i % 13 + 1;
-    var suit = i / 13 | 0;
-    var z = (52 - i) / 4;
-    var $el = createElement('div');
-    var $face = createElement('div');
-    var $back = createElement('div');
-    var isDraggable = false;
-    var isFlippable = false;
-    var self = { i: i, rank: rank, suit: suit, pos: i, $el: $el, mount: mount, unmount: unmount, setSide: setSide };
-    var modules = Deck.modules;
-    var module;
-    $face.classList.add('face');
-    $back.classList.add('back');
-    $el.style[transform] = translate(-z + 'px', -z + 'px');
-    self.x = -z;
-    self.y = -z;
-    self.z = z;
-    self.rot = 0;
-    self.setSide('back');
-    addListener($el, 'mousedown', onMousedown);
-    addListener($el, 'touchstart', onMousedown);
-    for (module in modules) {
-      addModule(modules[module]);
-    }
-    self.animateTo = function (params) {
-      var delay = params.delay;
-      var duration = params.duration;
-      var _params$x = params.x;
-      var x = _params$x === undefined ? self.x : _params$x;
-      var _params$y = params.y;
-      var y = _params$y === undefined ? self.y : _params$y;
-      var _params$rot = params.rot;
-      var rot = _params$rot === undefined ? self.rot : _params$rot;
-      var ease$$ = params.ease;
-      var onStart = params.onStart;
-      var onProgress = params.onProgress;
-      var onComplete = params.onComplete;
-      var startX, startY, startRot;
-      var diffX, diffY, diffRot;
-      animationFrames(delay, duration).start(function () {
-        startX = self.x || 0;
-        startY = self.y || 0;
-        startRot = self.rot || 0;
-        onStart && onStart();
-      }).progress(function (t) {
-        var et = ease[ease$$ || 'cubicInOut'](t);
-        diffX = x - startX;
-        diffY = y - startY;
-        diffRot = rot - startRot;
-        onProgress && onProgress(t, et);
-        self.x = startX + diffX * et;
-        self.y = startY + diffY * et;
-        self.rot = startRot + diffRot * et;
-        $el.style[transform] = translate(self.x + 'px', self.y + 'px') + (diffRot ? 'rotate(' + self.rot + 'deg)' : '');
-      }).end(function () {
-        onComplete && onComplete();
-      });
-    };
-    self.setRankSuit = function (rank, suit) {
-      var suitName = SuitName(suit);
-      $el.setAttribute('class', 'card ' + suitName + ' rank' + rank);
-    };
-    self.setRankSuit(rank, suit);
-    self.enableDragging = function () {
-      if (isDraggable) {
-        return;
-      }
-      isDraggable = true;
-      $el.style.cursor = 'move';
-    };
-    self.enableFlipping = function () {
-      if (isFlippable) {
-        return;
-      }
-      isFlippable = true;
-    };
-    self.disableFlipping = function () {
-      if (!isFlippable) {
-        return;
-      }
-      isFlippable = false;
-    };
-    self.disableDragging = function () {
-      if (!isDraggable) {
-        return;
-      }
-      isDraggable = false;
-      $el.style.cursor = '';
-    };
-    return self;
-    function addModule(module) {
-      module.card && module.card(self);
-    }
-    function onMousedown(e) {
-      var startPos = {};
-      var pos = {};
-      var starttime = Date.now();
-      e.preventDefault();
-      if (e.type === 'mousedown') {
-        startPos.x = pos.x = e.clientX;
-        startPos.y = pos.y = e.clientY;
-        addListener(window, 'mousemove', onMousemove);
-        addListener(window, 'mouseup', onMouseup);
-      } else {
-        startPos.x = pos.x = e.touches[0].clientX;
-        startPos.y = pos.y = e.touches[0].clientY;
-        addListener(window, 'touchmove', onMousemove);
-        addListener(window, 'touchend', onMouseup);
-      }
-      if (!isDraggable) {
-        return;
-      }
-      $el.style[transform] = translate(self.x + 'px', self.y + 'px') + (self.rot ? ' rotate(' + self.rot + 'deg)' : '');
-      $el.style.zIndex = maxZ++;
-      function onMousemove(e) {
-        if (!isDraggable) {
-          return;
-        }
-        if (e.type === 'mousemove') {
-          pos.x = e.clientX;
-          pos.y = e.clientY;
-        } else {
-          pos.x = e.touches[0].clientX;
-          pos.y = e.touches[0].clientY;
-        }
-        $el.style[transform] = translate(Math.round(self.x + pos.x - startPos.x) + 'px', Math.round(self.y + pos.y - startPos.y) + 'px') + (self.rot ? ' rotate(' + self.rot + 'deg)' : '');
-      }
-      function onMouseup(e) {
-        if (isFlippable && Date.now() - starttime < 200) {
-          self.setSide(self.side === 'front' ? 'back' : 'front');
-        }
-        if (e.type === 'mouseup') {
-          removeListener(window, 'mousemove', onMousemove);
-          removeListener(window, 'mouseup', onMouseup);
-        } else {
-          removeListener(window, 'touchmove', onMousemove);
-          removeListener(window, 'touchend', onMouseup);
-        }
-        if (!isDraggable) {
-          return;
-        }
-        self.x = self.x + pos.x - startPos.x;
-        self.y = self.y + pos.y - startPos.y;
-      }
-    }
-    function mount(target) {
-      target.appendChild($el);
-      self.$root = target;
-    }
-    function unmount() {
-      self.$root && self.$root.removeChild($el);
-      self.$root = null;
-    }
-    function setSide(newSide) {
-      if (newSide === 'front') {
-        if (self.side === 'back') {
-          $el.removeChild($back);
-        }
-        self.side = 'front';
-        $el.appendChild($face);
-        self.setRankSuit(self.rank, self.suit);
-      } else {
-        if (self.side === 'front') {
-          $el.removeChild($face);
-        }
-        self.side = 'back';
-        $el.appendChild($back);
-        $el.setAttribute('class', 'card');
-      }
-    }
-  }
-  function SuitName(suit) {
-    return suit === 0 ? 'spades' : suit === 1 ? 'hearts' : suit === 2 ? 'clubs' : suit === 3 ? 'diamonds' : 'joker';
-  }
-  function addListener(target, name, listener) {
-    target.addEventListener(name, listener);
-  }
-  function removeListener(target, name, listener) {
-    target.removeEventListener(name, listener);
-  }
-  var ease = {
-    linear: function linear(t) {
-      return t;
-    },
-    quadIn: function quadIn(t) {
-      return t * t;
-    },
-    quadOut: function quadOut(t) {
-      return t * (2 - t);
-    },
-    quadInOut: function quadInOut(t) {
-      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-    },
-    cubicIn: function cubicIn(t) {
-      return t * t * t;
-    },
-    cubicOut: function cubicOut(t) {
-      return --t * t * t + 1;
-    },
-    cubicInOut: function cubicInOut(t) {
-      return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-    },
-    quartIn: function quartIn(t) {
-      return t * t * t * t;
-    },
-    quartOut: function quartOut(t) {
-      return 1 - --t * t * t * t;
-    },
-    quartInOut: function quartInOut(t) {
-      return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * --t * t * t * t;
-    },
-    quintIn: function quintIn(t) {
-      return t * t * t * t * t;
-    },
-    quintOut: function quintOut(t) {
-      return 1 + --t * t * t * t * t;
-    },
-    quintInOut: function quintInOut(t) {
-      return t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t;
-    }
-  };
-  var flip = {
-    deck: function deck(_deck) {
-      _deck.flip = _deck.queued(flip);
-      function flip(next, side) {
-        var flipped = _deck.cards.filter(function (card) {
-          return card.side === 'front';
-        }).length / _deck.cards.length;
-        _deck.cards.forEach(function (card, i) {
-          card.setSide(side ? side : flipped > 0.5 ? 'back' : 'front');
-        });
-        next();
-      }
-    }
-  };
-  var sort = {
-    deck: function deck(_deck2) {
-      _deck2.sort = _deck2.queued(sort);
-      function sort(next, reverse) {
-        var cards = _deck2.cards;
-        cards.sort(function (a, b) {
-          if (reverse) {
-            return a.i - b.i;
-          } else {
-            return b.i - a.i;
-          }
-        });
-        cards.forEach(function (card, i) {
-          card.sort(i, cards.length, function (i) {
-            if (i === cards.length - 1) {
-              next();
-            }
-          }, reverse);
-        });
-      }
-    },
-    card: function card(_card2) {
-      var $el = _card2.$el;
-      _card2.sort = function (i, len, cb, reverse) {
-        var z = i / 4;
-        var delay = i * 10;
-        _card2.animateTo({
-          delay: delay,
-          duration: 400,
-          x: -z,
-          y: -150,
-          rot: 0,
-          onComplete: function onComplete() {
-            $el.style.zIndex = i;
-          }
-        });
-        _card2.animateTo({
-          delay: delay + 500,
-          duration: 400,
-          x: -z,
-          y: -z,
-          rot: 0,
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  function plusminus(value) {
-    var plusminus = Math.round(Math.random()) ? -1 : 1;
-    return plusminus * value;
-  }
-  function fisherYates(array) {
-    var rnd, temp;
-    for (var i = array.length - 1; i; i--) {
-      rnd = Math.random() * i | 0;
-      temp = array[i];
-      array[i] = array[rnd];
-      array[rnd] = temp;
-    }
-    return array;
-  }
-  function fontSize() {
-    return window.getComputedStyle(document.body).getPropertyValue('font-size').slice(0, -2);
-  }
-  var ____fontSize;
-  var shuffle = {
-    deck: function deck(_deck3) {
-      _deck3.shuffle = _deck3.queued(shuffle);
-      function shuffle(next) {
-        var cards = _deck3.cards;
-        ____fontSize = fontSize();
-        fisherYates(cards);
-        cards.forEach(function (card, i) {
-          card.pos = i;
-          card.shuffle(function (i) {
-            if (i === cards.length - 1) {
-              next();
-            }
-          });
-        });
-        return;
-      }
-    },
-    card: function card(_card3) {
-      var $el = _card3.$el;
-      _card3.shuffle = function (cb) {
-        var i = _card3.pos;
-        var z = i / 4;
-        var delay = i * 2;
-        _card3.animateTo({
-          delay: delay,
-          duration: 200,
-          x: plusminus(Math.random() * 40 + 20) * ____fontSize / 16,
-          y: -z,
-          rot: 0
-        });
-        _card3.animateTo({
-          delay: 200 + delay,
-          duration: 200,
-          x: -z,
-          y: -z,
-          rot: 0,
-          onStart: function onStart() {
-            $el.style.zIndex = i;
-          },
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  var __fontSize;
-  var poker = {
-    deck: function deck(_deck4) {
-      _deck4.poker = _deck4.queued(poker);
-      function poker(next) {
-        var cards = _deck4.cards;
-        var len = cards.length;
-        __fontSize = fontSize();
-        cards.slice(-5).reverse().forEach(function (card, i) {
-          card.poker(i, len, function (i) {
-            card.setSide('front');
-            if (i === 4) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card4) {
-      var $el = _card4.$el;
-      _card4.poker = function (i, len, cb) {
-        var delay = i * 250;
-        _card4.animateTo({
-          delay: delay,
-          duration: 250,
-          x: Math.round((i - 2.05) * 70 * __fontSize / 16),
-          y: Math.round(-110 * __fontSize / 16),
-          rot: 0,
-          onStart: function onStart() {
-            $el.style.zIndex = len - 1 + i;
-          },
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  var intro = {
-    deck: function deck(_deck5) {
-      _deck5.intro = _deck5.queued(intro);
-      function intro(next) {
-        var cards = _deck5.cards;
-        cards.forEach(function (card, i) {
-          card.setSide('front');
-          card.intro(i, function (i) {
-            animationFrames(250, 0).start(function () {
-              card.setSide('back');
-            });
-            if (i === cards.length - 1) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card5) {
-      var transform = prefix('transform');
-      var $el = _card5.$el;
-      _card5.intro = function (i, cb) {
-        var delay = 500 + i * 10;
-        var z = i / 4;
-        $el.style[transform] = translate(-z + 'px', '-250px');
-        $el.style.opacity = 0;
-        _card5.x = -z;
-        _card5.y = -250 - z;
-        _card5.rot = 0;
-        _card5.animateTo({
-          delay: delay,
-          duration: 1000,
-          x: -z,
-          y: -z,
-          onStart: function onStart() {
-            $el.style.zIndex = i;
-          },
-          onProgress: function onProgress(t) {
-            $el.style.opacity = t;
-          },
-          onComplete: function onComplete() {
-            $el.style.opacity = '';
-            cb && cb(i);
-          }
-        });
-      };
-    }
-  };
-  var _fontSize;
-  var fan = {
-    deck: function deck(_deck6) {
-      _deck6.fan = _deck6.queued(fan);
-      function fan(next) {
-        var cards = _deck6.cards;
-        var len = cards.length;
-        _fontSize = fontSize();
-        cards.forEach(function (card, i) {
-          card.fan(i, len, function (i) {
-            if (i === cards.length - 1) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card6) {
-      var $el = _card6.$el;
-      _card6.fan = function (i, len, cb) {
-        var z = i / 4;
-        var delay = i * 10;
-        var rot = i / (len - 1) * 260 - 130;
-        _card6.animateTo({
-          delay: delay,
-          duration: 300,
-          x: -z,
-          y: -z,
-          rot: 0
-        });
-        _card6.animateTo({
-          delay: 300 + delay,
-          duration: 300,
-          x: Math.cos(deg2rad(rot - 90)) * 55 * _fontSize / 16,
-          y: Math.sin(deg2rad(rot - 90)) * 55 * _fontSize / 16,
-          rot: rot,
-          onStart: function onStart() {
-            $el.style.zIndex = i;
-          },
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  function deg2rad(degrees) {
-    return degrees * Math.PI / 180;
-  }
-  var ___fontSize;
-  var bysuit = {
-    deck: function deck(_deck7) {
-      _deck7.bysuit = _deck7.queued(bysuit);
-      function bysuit(next) {
-        var cards = _deck7.cards;
-        ___fontSize = fontSize();
-        cards.forEach(function (card) {
-          card.bysuit(function (i) {
-            if (i === cards.length - 1) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card7) {
-      var rank = _card7.rank;
-      var suit = _card7.suit;
-      _card7.bysuit = function (cb) {
-        var i = _card7.i;
-        var delay = i * 10;
-        _card7.animateTo({
-          delay: delay,
-          duration: 400,
-          x: -Math.round((6.75 - rank) * 8 * ___fontSize / 16),
-          y: -Math.round((1.5 - suit) * 92 * ___fontSize / 16),
-          rot: 0,
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  function queue(target) {
-    var array = Array.prototype;
-    var queueing = [];
-    target.queue = queue;
-    target.queued = queued;
-    return target;
-    function queued(action) {
-      return function () {
-        var self = this;
-        var args = arguments;
-        queue(function (next) {
-          action.apply(self, array.concat.apply(next, args));
-        });
-      };
-    }
-    function queue(action) {
-      if (!action) {
-        return;
-      }
-      queueing.push(action);
-      if (queueing.length === 1) {
-        next();
-      }
-    }
-    function next() {
-      queueing[0](function (err) {
-        if (err) {
-          throw err;
-        }
-        queueing = queueing.slice(1);
-        if (queueing.length) {
-          next();
-        }
-      });
-    }
-  }
-  function observable(target) {
-    target || (target = {});
-    var listeners = {};
-    target.on = on;
-    target.one = one;
-    target.off = off;
-    target.trigger = trigger;
-    return target;
-    function on(name, cb, ctx) {
-      listeners[name] || (listeners[name] = []);
-      listeners[name].push({ cb: cb, ctx: ctx });
-    }
-    function one(name, cb, ctx) {
-      listeners[name] || (listeners[name] = []);
-      listeners[name].push({
-        cb: cb, ctx: ctx, once: true
-      });
-    }
-    function trigger(name) {
-      var self = this;
-      var args = Array.prototype.slice(arguments, 1);
-      var currentListeners = listeners[name] || [];
-      currentListeners.filter(function (listener) {
-        listener.cb.apply(self, args);
-        return !listener.once;
-      });
-    }
-    function off(name, cb) {
-      if (!name) {
-        listeners = {};
-        return;
-      }
-      if (!cb) {
-        listeners[name] = [];
-        return;
-      }
-      listeners[name] = listeners[name].filter(function (listener) {
-        return listener.cb !== cb;
-      });
-    }
-  }
-  function Deck(jokers) {
-    var cards = new Array(jokers ? 55 : 52);
-    var $el = createElement('div');
-    var self = observable({ mount: mount, unmount: unmount, cards: cards, $el: $el });
-    var $root;
-    var modules = Deck.modules;
-    var module;
-    queue(self);
-    for (module in modules) {
-      addModule(modules[module]);
-    }
-    $el.classList.add('deck');
-    var card;
-    for (var i = cards.length; i; i--) {
-      card = cards[i - 1] = _card(i - 1);
-      card.setSide('back');
-      card.mount($el);
-    }
-    return self;
-    function mount(root) {
-      $root = root;
-      $root.appendChild($el);
-    }
-    function unmount() {
-      $root.removeChild($el);
-    }
-    function addModule(module) {
-      module.deck && module.deck(self);
-    }
-  }
-  Deck.animationFrames = animationFrames;
-  Deck.ease = ease;
-  Deck.modules = { bysuit: bysuit, fan: fan, intro: intro, poker: poker, shuffle: shuffle, sort: sort, flip: flip };
-  Deck.Card = _card;
-  Deck.prefix = prefix;
-  Deck.translate = translate;
-  return Deck;
-})();
 var deck = DeckA()
 var DeckA = (function () {
   //#region variables  
@@ -3111,7 +2360,6 @@ var DeckB = (function () {
 })();
 var DECKS = 'br';
 var DeDict,EdDict; 
-var DEF_DOM_TAG = 'div';
 var DEFAULT_PLAYER_AREA = 'area_players';
 var defaultFocusElement;
 var defaultSpec = null
@@ -3124,7 +2372,6 @@ var dg = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'
 var dHelp, counters, timit; 
 var dHint, dFeedback, dInstruction, dScore, dLevel;
 var DirNum = [0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8];
-var distance = 24;
 var divMain, divPlayer, divOpps, colors, iColor, timit;
 var dLeiste, dScore, dGameTitle, dTable, dTableShield, dTitle, dLinks, dRechts, dOben, dUnten, dPlayerStats, dMessage, dStatus;
 var dLineBottomOuter, dLineBottom, dLineBottomLeft, dLineBottomRight, dLineBottomMiddle;
@@ -3148,7 +2395,6 @@ var DropZoneItem = null;
 var DropZoneItems = [];
 var DropZones = []; 
 var dSettings = mBy('dSettings');
-var DSPEC_PATH = '/DATA/defaultSpec'; 
 var dTable, dPage, dMap, dHeader, dFooter, dMessage, dPuppet, dMenu, dLeft, dCenter, dRight, dTop, dBottom; 
 var dummyString = "translateX(-50%) scale(1.2)";
 var dynSpec;
@@ -3382,12 +2628,6 @@ var gcs = {
     ]
   }
 }
-var Geo = {
-  locations: {
-    Vienna: [48.238, 16.344],
-    Bellevue: [47.617, -122.17],
-  },
-}
 var globalSum = 0 
 var Goal, Selected;
 var grammar;
@@ -3483,7 +2723,6 @@ var initialDataC = {};
 var inputBox;
 var inputs = [];
 var interim_confidence, interim_confidence2, interim_confidence_sum, interim_num;
-var is_host, socket, settings, defaults, greenbar, redbar, in_game_screen, lastgreen = 0, lastred = 0, granularity, num_calls = 0, num_painted = 0;
 var IsAnswerCorrect;
 var IsCanvasActive = false;
 var isPlaying = false; 
@@ -3737,7 +2976,6 @@ var mappingsInitialized;
 var mappingTypes;
 var Markers = [];
 var MATE = 29000;
-var MAX_CYCLES = 500; 
 var MAXDEPTH = 64;
 var MAXGAMEMOVES = 2048;
 var MAXITER = 200, ITER = 0;
@@ -3789,11 +3027,9 @@ var mouse = {
 };
 var MouseMoveCounter = 0;
 var mousePullStrength = 0.005;
-var MSCATS = { rect: 'g', g: 'g', circle: 'g', text: 'g', polygon: 'g', line: 'g', body: 'd', svg: 'd', div: 'd', p: 'd', table: 'd', button: 'd', a: 'd', span: 'd', image: 'd', paragraph: 'd', anchor: 'd' };
 var MSTimeClock, MSTimeDiff, MSTimeStart, MSTimeCallback, MSTimeTO;
 var MvvLvaScores = new Array(14 * 14);
 var MvvLvaValue = [0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600];
-var MyEasing = 'cubic-bezier(1,-0.03,.86,.68)';
 var myGameArea = {
   canvas: document.createElement('canvas'),
   start: function () {
@@ -4573,66 +3809,6 @@ var PIECES = { EMPTY: 0, wP: 1, wN: 2, wB: 3, wR: 4, wQ: 5, wK: 6, bP: 7, bN: 8,
 var PieceSlides = [BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE];
 var PieceVal = [0, 100, 325, 325, 550, 1000, 50000, 100, 325, 325, 550, 1000, 50000];
 var player, ball, opponent, ai;
-var Player = function (elementName, side) {
-  var position = [0,0];
-  var aim = 0;
-  var tileSize = 128;
-  var element = $('#'+elementName);
-  var move = function(y) {
-    position[1] += y;
-    if (position[1] <= 0)  {
-      position[1] = 0;
-    }
-    if (position[1] >= innerHeight - tileSize) {
-      position[1] = innerHeight - tileSize;
-    }
-    if (side == 'right') {
-      position[0] = innerWidth - tileSize;
-    }
-    element.css('left', position[0] + 'px'); 
-    element.css('top', position[1] + 'px'); 
-  }
-  var fire = function() {
-    if (ball.getOwner() !== this) {
-      return;
-    }
-    var v = [0,0];
-    if (side == 'left') {
-      switch(aim) {
-      case -1:
-        v = [.707, -.707];
-        break;
-      case 0:
-        v = [1,0];
-        break;
-      case 1:
-        v = [.707, .707];
-      }
-    } else {
-      switch(aim) {
-      case -1:
-        v = [-.707, -.707];
-        break;
-      case 0:
-        v = [-1,0];
-        break;
-      case 1:
-        v = [-.707, .707];
-      }
-    }
-    ball.setVelocity(v);
-    ball.setOwner(undefined);
-  }
-  return {
-    move: move,
-    fire: fire,
-    getSide:      function()  { return side; },
-    setAim:       function(a) { aim = a; },
-    getPosition:  function()  { return position; },
-    getSize:      function()  { return tileSize; }
-  }
-};
-var PLAYER_CREATE = {};
 var playerConfig = null;
 var playerConfigC = null;
 var Players, PlayerOnTurn, GC, GameCounter;
@@ -4833,9 +4009,7 @@ var SEEN_STATUS = false;
 var selectedEmoSetNames = ['all', 'animal', 'body', 'drink', 'emotion', 'food', 'fruit', 'game', 'gesture', 'kitchen', 'object', 'person', 'place', 'plant', 'sports', 'time', 'transport', 'vegetable'];
 var SelectedMenuKey, MenuItems;
 var sent_audio = new Audio("../base/assets/sounds/message_sent.mp3");
-var SERVER = "http://localhost:8080/aroot/simple"; // oder telecave!
 var serverData = null;
-var SERVERDATA_PATH = '/DATA/' + TEST_DIR + '/server';
 var serverDataC = null;
 var serverDataUpdated;
 var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
@@ -4857,11 +4031,6 @@ var SettingTypesCommon = {
   trials: false,
   showHint: false,
 }
-var SHAPEFUNCS = {
-  'circle': agCircle,
-  'hex': agHex,
-  'rect': agRect,
-}
 var ShapeKeys = ['hex', 'hexF', 'tri', 'triDown', 'triLeft', 'triRight'];
 var sheet = (function () {
   var style = document.createElement('style');
@@ -4869,7 +4038,6 @@ var sheet = (function () {
   document.head.appendChild(style);
   return style.sheet;
 })();
-var SHOW_IDS_REFS = false; 
 var SICHERER = 100;
 var SideChar = "wb-";
 var SideKey;
@@ -4939,8 +4107,6 @@ var system = Complex, len = 100, angle;
 var t_avg = 0;
 var T;
 var TABLE_CREATE = {};
-var TEST_DIR = '01mini'; 
-var testCards = null
 var testCardsC = null
 var testCounter = 100;
 var testDict = {};
@@ -5001,14 +4167,12 @@ var userCode = null;
 var userCodeC = null;
 var Userdata, Username, Serverdata, Live;
 var UserMove = {};
-var USERNAME = 'felix';
 var Username,Gamename,Tablename;
 var Users,User,Tables,Table; 
 var userSpec = null;
 var userSpecC = null;
 var V = {};
 var verbose = false;
-var VERSION = '_02'; 
 var VictimScore = [0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600];
 var vidCache, allGames, playerConfig, c52, C52,  cinno, testCards; 
 var view = null;
@@ -5070,71 +4234,17 @@ const fieldSorter = fields => (a, b) =>
       return a[o] > b[o] ? dir : a[o] < b[o] ? -dir : 0;
     })
     .reduce((p, n) => (p ? p : n), 0);
-const pSBC = (p, c0, c1, l) => {
-  let r,
-    g,
-    b,
-    P,
-    f,
-    t,
-    h,
-    i = parseInt,
-    m = Math.round,
-    a = typeof c1 == 'string';
-  if (typeof p != 'number' || p < -1 || p > 1 || typeof c0 != 'string' || (c0[0] != 'r' && c0[0] != '#') || (c1 && !a)) return null;
-  if (!this.pSBCr)
-    this.pSBCr = d => {
-      let n = d.length,
-        x = {};
-      if (n > 9) {
-        ([r, g, b, a] = d = d.split(',')), (n = d.length);
-        if (n < 3 || n > 4) return null;
-        (x.r = i(r[3] == 'a' ? r.slice(5) : r.slice(4))), (x.g = i(g)), (x.b = i(b)), (x.a = a ? parseFloat(a) : -1);
-      } else {
-        if (n == 8 || n == 6 || n < 4) return null;
-        if (n < 6) d = '#' + d[1] + d[1] + d[2] + d[2] + d[3] + d[3] + (n > 4 ? d[4] + d[4] : '');
-        d = i(d.slice(1), 16);
-        if (n == 9 || n == 5) (x.r = (d >> 24) & 255), (x.g = (d >> 16) & 255), (x.b = (d >> 8) & 255), (x.a = m((d & 255) / 0.255) / 1000);
-        else (x.r = d >> 16), (x.g = (d >> 8) & 255), (x.b = d & 255), (x.a = -1);
-      }
-      return x;
-    };
-  (h = c0.length > 9),
-    (h = a ? (c1.length > 9 ? true : c1 == 'c' ? !h : false) : h),
-    (f = pSBCr(c0)),
-    (P = p < 0),
-    (t = c1 && c1 != 'c' ? pSBCr(c1) : P ? {r: 0, g: 0, b: 0, a: -1} : {r: 255, g: 255, b: 255, a: -1}),
-    (p = P ? p * -1 : p),
-    (P = 1 - p);
-  if (!f || !t) return null;
-  if (l) (r = m(P * f.r + p * t.r)), (g = m(P * f.g + p * t.g)), (b = m(P * f.b + p * t.b));
-  else (r = m((P * f.r ** 2 + p * t.r ** 2) ** 0.5)), (g = m((P * f.g ** 2 + p * t.g ** 2) ** 0.5)), (b = m((P * f.b ** 2 + p * t.b ** 2) ** 0.5));
-  (a = f.a), (t = t.a), (f = a >= 0 || t >= 0), (a = f ? (a < 0 ? t : t < 0 ? a : a * P + t * p) : 0);
-  if (h) return 'rgb' + (f ? 'a(' : '(') + r + ',' + g + ',' + b + (f ? ',' + m(a * 1000) / 1000 : '') + ')';
-  else return '#' + (4294967296 + r * 16777216 + g * 65536 + b * 256 + (f ? m(a * 255) : 0)).toString(16).slice(1, f ? undefined : -2);
-};
 const complementaryColor = color => {
   const hexColor = color.replace('#', '0x');
   return `#${('000000' + ('0xffffff' ^ hexColor).toString(16)).slice(-6)}`;
 };
 const MARGIN_XS = '2px 4px';
+const MSCATS = { rect: 'g', g: 'g', circle: 'g', text: 'g', polygon: 'g', line: 'g', body: 'd', svg: 'd', div: 'd', p: 'd', table: 'd', button: 'd', a: 'd', span: 'd', image: 'd', paragraph: 'd', anchor: 'd' };
 const DOMCATS = { rect: 'g', g: 'g', circle: 'g', text: 'g', polygon: 'g', line: 'g', body: 'd', svg: 'h', div: 'd', p: 'd', table: 'd', button: 'd', a: 'd', span: 'd', image: 'd', paragraph: 'd', anchor: 'd' };
-const AREAS = {
-  a_d_action_header: ['--wActions', '--hStatus'],
-  a_d_status: ['--wGame', '--hStatus'],
-  a_d_history_header: ['--wLog', '--hStatus'],
-  a_d_actions: ['--wActions', '--hGame'],
-  a_d_game: ['--wGame', '--hGame'],
-  a_d_log: ['--wLog', '--hGame'],
-  a_d_buttons: ['--wActions', '--hTesting'],
-  a_d_testing: ['--wGame', '--hTesting'],
-  a_d_options: ['--wLog', '--hTesting'],
-  a_d_player: ['--wPlayers', '--hGame'],
-}
+const AREAS={}; 
 const IS_MIRROR = false;
 const FLASK = true;
 const NGROK = false; //'http://849aec381695.ngrok.io/'; // MUSS / am ende!!! 
-const SERVER = 'http://localhost:5000'
 const playerColors = {
   red: '#D01013',
   blue: '#003399',
@@ -5167,7 +4277,6 @@ const PLAYER_CONFIG_FOR_MULTIPLAYER = ['me', 'human', 'human'];
 const USE_BACKEND_AI = true;
 const VERSION = '_ui'; 
 const CACHE_INITDATA = true;
-const TESTING = false; 
 const RUNTEST = false; 
 const DSPEC_VERSION = 3;
 const USPEC_VERSION = '2a';
@@ -5183,13 +4292,11 @@ const INIT_CLEAR_LOCALSTORAGE = true;
 const STARTING_TAB_OPEN = 'bPlayers'; 
 const TIMIT_SHOW = false; 
 const SHOW_SPEC = true; 
-const PORT = 2022;
 const names = ['felix', 'amanda', 'sabine', 'tom', 'taka', 'microbe', 'dwight', 'jim', 'michael', 'pam', 'kevin', 'darryl', 'lauren', 'anuj', 'david', 'holly'];
 const INCREMENTAL_UPDATE = true; 
 const VERBOSE = true; 
 const USER_SERVERDATA_STUB = false; 
 const DEF_ORIENTATION = 'v';
-const SPEC_PATH = '/work2/static2.yaml';
 const RUPDATE = {
   info: mNodeChangeContent,
 };
@@ -6275,15 +5382,12 @@ const HEROKU = false;
 const USERNAME_SELECTION = 'random'; 
 const UITEST = false;
 const JUST_PERLEN_GAME = true;
-const SERVERURL='http://localhost:2121';
 const CLEAR_LOCAL_STORAGE = false;
 const BRAUN = '#331606';
 const GermanToEnglish = {
   rot: 'red', blau: 'blue', grün: 'green', gelb: 'yellow', violett: 'violet', lila: 'purple',
   braun: 'brown', schwarz: 'black', weiss: 'white', grau: 'grey', rosa: 'pink', orange: 'orange'
 };
-const USELIVESERVER = true; 
-const DEFAULTUSERNAME = 'gul'; 
 const Simple = {
   axiom: 'A',
   rules: [
@@ -14200,156 +13304,6 @@ class GSpotit1 extends GameTimed1 {
   onTimeup() {
     Selected = { isCorrect: false, correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 2000 };
     this.controller.evaluate.bind(this.controller)();
-  }
-}
-class GSpotitMulti_mess extends GSpotit {
-  constructor(name, o) { super(name, o); }
-  static start_fen(players) { let fen = {}; for (const pl of players) { fen[pl] = 0; } return fen; }
-  fen_to_state(fen) {
-    console.log('fen', fen);
-    this.playerscores = isDict(fen) ? fen : JSON.parse(fen);
-    for (const plname in this.players) { let pl = this.players[plname]; pl.score = this.playerscores[plname]; }
-    console.log('players', this.players);
-  }
-  make_players(table) {
-    let players = this.players = {};
-    for (const plname of table.players) {
-      players[plname] = { name: plname, color: getColorDictColor(DB.users[plname].color), imgPath: `../base/assets/images/${plname}.jpg`, score: 0 };
-    }
-    this.player = Session.cur_user;
-    this.me = players[this.player];
-    this.others = Object.values(players).filter(x => x.name != this.player);
-  }
-  make_fen_vor_move(table, moves = []) { return table.fen; }
-  make_fen_after_move() {
-    this.me.score += IsAnswerCorrect ? 1 : 0;
-    let fen = {};
-    for (const plname in this.players) {
-      let pl = this.players[plname];
-      fen[plname] = pl.score;
-    }
-    return fen;
-  }
-  startGame(fen) {
-    resetState();
-    this.successFunc = successPictureGoal;
-    this.failFunc = failPictureGoal;
-    this.correctionFunc = showCorrectUis;
-    console.log(this.player);
-    Settings.updateGameValues(this.player, this);
-    super.start_level();
-    this.numCards = 2;
-    this.colarr = _calc_hex_col_array(this.rows, this.cols);
-    let perCard = arrSum(this.colarr);
-    this.nShared = (this.numCards * (this.numCards - 1)) / 2;
-    this.nUnique = perCard - this.numCards + 1;
-    this.numKeysNeeded = this.nShared + this.numCards * this.nUnique;
-    this.keys = setKeysG(this, (_, x) => !x.includes(' '), this.numKeysNeeded + 1);
-    this.fen_to_state(fen);
-    resetRound(); 
-    uiActivated = false;
-    TOMain = setTimeout(() => this.prompt(), 300);
-  }
-  update_status() {
-    let d = dTitle;
-    clearElement(d);
-    let d1 = mDiv(d, { display: 'flex', 'justify-content': 'center' });
-    for (const plname in this.players) {
-      let pl = this.players[plname];
-      let d2 = mDiv(d1, { vmargin: 10, hmargin: 20, align: 'center' }, null, `<img src='${pl.imgPath}' style="display:block" class='img_person' width=50 height=50>${pl.score}`);
-    }
-  }
-  prompt() {
-    QContextCounter += 1;
-    showStats(false);
-    this.update_status(); 
-    show_title(Session.table.friendly);
-    this.trialNumber = 0;
-    hide('sidebar');
-    this.trials = 1;
-    this.startTime = get_timestamp();
-    mLinebreak(dTable, 25);
-    let infos = this.deal(); 
-    let items = this.items = [];
-    for (const info of infos) {
-      let item = spotitCard(info, dTable, { margin: 10 }, this.interact.bind(this));
-      items.push(item);
-    }
-    this.activateUi.bind(this)();
-  }
-  activateUi() {
-    Selected = null;
-    uiActivated = true;
-    this.activate(); 
-  }
-  deal() {
-    let keys = choose(this.keys, this.numKeysNeeded);
-    let dupls = keys.slice(0, this.nShared); 
-    let uniqs = keys.slice(this.nShared);
-    let infos = [];
-    for (let i = 0; i < this.numCards; i++) {
-      let keylist = uniqs.slice(i * this.nUnique, (i + 1) * this.nUnique);
-      let info = { id: getUID(), shares: {}, keys: keylist, rows: this.rows, cols: this.cols, colarr: this.colarr };
-      infos.push(info);
-    }
-    let iShared = 0;
-    for (let i = 0; i < this.numCards; i++) {
-      for (let j = i + 1; j < this.numCards; j++) {
-        let c1 = infos[i];
-        let c2 = infos[j];
-        let dupl = dupls[iShared++];
-        c1.keys.push(dupl);
-        c1.shares[c2.id] = dupl;
-        c2.shares[c1.id] = dupl;
-        c2.keys.push(dupl);
-      }
-    }
-    for (const info of infos) { shuffle(info.keys); }
-    return infos;
-  }
-  interact(ev) {
-    ev.cancelBubble = true;
-    if (!canAct()) { console.log('no act'); return; }
-    let keyClicked = evToProp(ev, 'key');
-    let id = evToId(ev);
-    if (isdef(keyClicked) && isdef(Items[id])) {
-      this.pause();
-      let item = Items[id];
-      if (Object.values(item.shares).includes(keyClicked)) {
-        let otherCard = spotitFindCardSharingSymbol(item, keyClicked);
-        let cardSymbol = ev.target;
-        let otherSymbol = spotitFindSymbol(otherCard, keyClicked);
-        Selected = { isCorrect: true, feedbackUI: [cardSymbol, otherSymbol] };
-      } else {
-        let cardSymbol = ev.target;
-        Selected = { isCorrect: false, feedbackUI: [cardSymbol], correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 1500 };
-      }
-      this.evaluate.bind(this)();
-    }
-  }
-  evaluate() {
-    if (!canAct()) return;
-    uiActivated = false; clearTimeouts();
-    IsAnswerCorrect = Selected.isCorrect;
-    this.me.score += IsAnswerCorrect ? 1 : 0;
-    user_game_status();
-  }
-  getSharedSymbols() {
-    let result = [];
-    for (const item of this.items) {
-      for (const id in item.shares) {
-        let k = item.shares[id];
-        let ui = iGetl(item, k);
-        result.push(ui);
-      }
-    }
-    return result;
-  }
-  to_move(is_correct, ms_total) { return '' + (is_correct ? 1 : 0) + ' ' + ms_total; }
-  from_move(data) { return { is_correct: (data[0] == '1' ? true : false), ms_total: stringAfter(data, ' ') }; }
-  onTimeup() {
-    Selected = { isCorrect: false, correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 2000 };
-    this.evaluate.bind(this)();
   }
 }
 class GSteps extends Game {
@@ -25964,24 +24918,6 @@ function aMoveTo(d, dTarget, x, y, ms) {
     fill: 'forwards'
   });
 }
-function analyse_tables(user_tables) {
-  user_tables.map(x => console.log('table:', x));
-  let bygame = {}, bytid = {};
-  for (const t of user_tables) {
-    lookupAddToList(bygame, [t.game], t);
-    lookupSet(bytid, [t.id], t);
-  }
-  if (!isEmpty(user_tables)) {
-    Session.cur_table = user_tables[0];
-    Session.cur_tid = Session.cur_table.id;
-  } else {
-    Session.cur_table = null;
-    Session.cur_tid = undefined;
-  }
-  lookupSetOverride(DA, [Session.cur_user, 'tables_by_game'], bygame);
-  lookupSetOverride(DA, [Session.cur_user, 'tables_by_tid'], bytid);
-  return bygame;
-}
 function ani_say(d, fSpeak) {
   if (isdef(fSpeak)) fSpeak(); 
   mClass(d, 'onPulse');
@@ -26556,47 +25492,6 @@ function anyColorToStandardString(cAny, a, allowHsl = false) {
 function anyStartsWith(arr, prefix) {
   return any(arr, el => startsWith(el, prefix));
 }
-function anyString(x, indent = 0, ifDict = 'entries') {
-  if (isLiteral(x)) return x;
-  else if (isListOfLiterals(x)) return x.join(' '); 
-  else if (isEmpty(x)) return x;
-  else if (isList(x)) { return x.map(el => anyString(el, indent + 1, ifDict)).join(' '); }
-  else if (isDict(x)) {
-    let s = '';
-    for (const k in x) { s += '\n' + ' '.repeat(indent) + k + ': ' + anyString(x[k], indent + 1, ifDict); }
-    return s;
-  }
-}
-function anyString2(x, indent = 0, proplist, include = true, toplevelOnly = false) {
-  if (isLiteral(x)) return x;
-  else if (isListOfLiterals(x)) return x.join(' '); 
-  else if (isEmpty(x)) return x;
-  else if (isList(x)) {
-    if (toplevelOnly) proplist = null;
-    return x.map(el => anyString2(el, indent + 1, proplist, include)).join(' ');
-  }
-  else if (isDict(x)) {
-    let plist = proplist;
-    if (toplevelOnly) proplist = null;
-    let s = '';
-    if (isdef(plist)) {
-      if (include) {
-        for (const k of plist) {
-          if (nundef(x[k])) { console.log('continue', x, k); continue; }
-          s += '\n' + ' '.repeat(indent) + k + ': ' + anyString2(x[k], indent + 1, proplist, include);
-        }
-      } else {
-        for (const k of plist) {
-          if (isdef(x[k])) continue;
-          s += '\n' + ' '.repeat(indent) + k + ': ' + anyString2(x[k], indent + 1, proplist, include);
-        }
-      }
-    } else {
-      for (const k in x) { s += '\n' + ' '.repeat(indent) + k + ': ' + anyString2(x[k], indent + 1, proplist, include); }
-    }
-    return s;
-  }
-}
 function anyString3(x, indent = 0, proplist = null, include = true, guard = ['specKey', 'label', 'pool', 'el', 'sub', 'elm', 'cond', 'info', 'o', 'ui', 'source', 'bi']) {
   if (isLiteral(x)) return x;
   else if (isListOfLiterals(x)) return x.join(' '); 
@@ -26614,15 +25509,6 @@ function anyString3(x, indent = 0, proplist = null, include = true, guard = ['sp
     }
     return s;
   }
-}
-function anyToString1(x, indent = 0, ifDict = 'entries') {
-  if (isList(x) && !isEmpty(x)) { return x.join(' '); }
-  else if (isDict(x)) {
-    return ifDict == 'keys' ? Object.keys(x).join(' ')
-      : ifDict == 'entries' ? Object.entries(x).map(([k, v]) => k + ': ' + dictOrListToString(v, 'ifDict', indent + 2)).join('\n')
-        : Object.entries(x).join(' ');
-  }
-  else return x;
 }
 function anyWordContainedInKeys(dict, keywords) {
   let res = [];
@@ -32035,22 +30921,6 @@ function calcBoardDimensionsX(nuiBoard, R) {
   nuiBoard.gap = gap;
   nuiBoard.fSize = fSpacing - gap;
 }
-function calcContent_dep(oid, o, path) {
-  if (isString(path)) {
-    if (path[0] != '.') return path;
-    let props = path.split('.').slice(1);
-    let content = isEmpty(props) ? o.obj_type : lookup(o, props);
-    return content;
-  } else if (isDict(path)) {
-    let content = {};
-    for (const k in path) {
-      let c = calcContent_dep(oid, o, path[k]);
-      if (c) content[k] = c;
-    }
-    return content;
-  }
-  return null;
-}
 function calcContentFromData(oid, o, data, R, default_data) {
   if (!o) return data; 
   if (isLiteral(data)) {
@@ -33493,11 +32363,6 @@ function check_poll_bot_send_move(obj) {
   } else {
     BotTicker = setTimeout(poll, DA.poll.ms);
   }
-}
-function check_poll_orig() {
-  let p = DA.long_polling;
-  if (nundef(p)) { console.log('no polling is active!'); return; }
-  to_server(p.data, p.type);
 }
 function check_poll_table_seen(obj) {
   console.assert(isdef(obj.table), 'check_poll_table_seen NO TABLE!!!!');
@@ -35296,11 +34161,13 @@ function comp_2(id) {
 function comp_last(id) {
   return stringAfterLast(id, '_');
 }
-function compactObjectString(o) {
-  let s = '';
+function compactObjectString(o){
+  let s='';
   for (const k in o) {
     if (isSimple(o[k]) && !isComplexColor(o[k])) {
-      if (isDict(o[k])) { error('!!!!!!!!!!!!!!!!isDict', o[k]); }
+      if (isDict(o[k])) {
+        console.log('!!!!!!!!!!!!!!!!isDict',o[k]);
+      }
       s += k + ':' + o[k] + ' ';
     }
   }
@@ -35483,18 +34350,18 @@ function computePresentedKeys(o, isTableObject) {
   for (const k in o) { if (optout[k]) continue; keys.push(k); }
   return keys;
 }
-function consExpand(o, keys, indent = 0) {
-  console.log('.'.repeat(indent), o);
-  for (const k in o) {
+function consExpand(o,keys,indent=0){
+  console.log('.'.repeat(indent),o);
+  for(const k in o){
     if (!keys.includes(k)) continue;
-    let oNew = o[k];
-    console.log('.'.repeat(indent), k + ':')
-    if (isList(oNew)) {
-      for (const el of oNew) {
-        consExpand(el, keys, indent + 2);
+    let oNew=o[k];
+    console.log('.'.repeat(indent),k+':')
+    if (isList(oNew)){
+      for(const el of oNew){
+        consExpand(el,keys,indent+2);
       }
-    } else if (isDict(oNew)) {
-      consExpand(oNew, keys, indent + 2);
+    }else if (isDict(oNew)){
+      consExpand(oNew,keys,indent+2);
     }
   }
 }
@@ -36048,21 +34915,6 @@ function create_menu(dParent, dir = 'h') {
   mTogglebar({ jitter: false }, flag_toggle, { bg: 'lightgreen' }, { bg: '#eee' }, d);
   mLinebreak(dTable, 10);
 }
-function create_new_table(user, game) {
-  user = valf(user, Session.cur_user);
-  game = valf(game, Session.cur_game);
-  let opt = extract_game_options();
-  let t = {};
-  t.friendly = generate_friendly_table_name();
-  t.game = Session.cur_game;
-  t.host = user;
-  t.players = opt.players;
-  t.fen = GSpotitMulti.start_fen(t.players);
-  t.status = 'created';
-  t.player_init = '';
-  DA.next = get_games;
-  to_server(t, 'create_table');
-}
 function create_new_table_and_join_all(user, game) {
   Session.cut_tid = Session.cur_table = null;
   let t = {};
@@ -36578,40 +35430,6 @@ function createElementFromHTML(htmlString) {
   return div.firstChild;
 }
 function createElementFromHtml(s) { return createElementFromHTML(s); }
-function createEmoji({ key, w, h, unit = 'px', fg, bg, padding, cat, parent, border, rounding }) {
-  let emoji = emojiChars[emojiKeys[key]];
-  console.log('emoji', emoji);
-  if (nundef(key)) key = getRandomKey(emojiChars);
-  let ch = emoji.hexcode;
-  console.log('ch', ch)
-  let family = 'emoOpen';
-  let text = emoji.emoji;
-  if (isdef(parent) && isString(parent)) parent = mBy(parent);
-  console.log(parent);
-  console.log(typeof text, text)
-  cat = isdef(cat) ? cat : isdef(parent) ? getTypeOf(parent) == 'div' ? 'd' : 'g' : isdef(cat) ? cat : 'd';
-  let domel;
-  if (cat == 'd') {
-    let d = document.createElement('div');
-    d.style.textAlign = 'center';
-    if (isdef(bg)) {
-      console.log('bg', bg);
-      d.style.backgroundColor = bg;
-    }
-    d.innerHTML = text;
-    domel = d;
-    if (isdef(padding)) d.style.padding = padding + unit;
-    d.style.display = 'inline-block';
-    d.style.height = h + 2 * padding + unit;
-    d.style.width = d.style.height;
-    if (isdef(border)) d.style.border = border;
-    if (isdef(rounding)) d.style.borderRadius = rounding + unit;
-  } else {
-  }
-  domel.key = key;
-  if (parent) parent.appendChild(domel);
-  return domel;
-}
 function createFakeState() {
   let settings = DB.games.gPerlen2;
   let fakeServer = new FakeServerClass(Socket, PerlenDict, settings, null);
@@ -37157,13 +35975,6 @@ function createMultipleChoiceElements(correctAnswer, wrongAnswers, dParent, dFee
     }
   }
 }
-function createNode(sp, idParent, R) {
-  let n = jsCopy(sp);
-  n.idParent = idParent;
-  let id = n.nid = getUid();
-  n.fullPath = R.NODES[idParent].fullPath + '.' + id;
-  return n;
-}
 function createNumberSequence(n, min, max, step, op = 'plus') {
   let fBuild = x => { return op == 'plus' ? (x + step) : op == 'minus' ? (x - step) : x; };
   if (op == 'minus') min += step * (n - 1);
@@ -37293,46 +36104,6 @@ function createPicto({ key, w = 100, h = 100, unit = 'px', fg = 'blue', bg, padd
   if (parent) parent.appendChild(domel);
   return domel;
 }
-function createPictoSimple({ key, w, h, unit = 'px', fg, bg, padding, cat, parent, border, rounding }) {
-  if (nundef(key)) key = getRandomKey(iconChars);
-  let ch = iconChars[key];
-  let family = (ch[0] == 'f' || ch[0] == 'F') ? 'pictoFa' : 'pictoGame';
-  let text = String.fromCharCode('0x' + ch);
-  cat = isdef(cat) ? cat : isdef(parent) ? getTypeOf(parent) == 'div' ? 'd' : 'g' : isdef(cat) ? cat : 'd';
-  if (nundef(w)) w = 25;
-  if (nundef(h)) h = w;
-  let domel;
-  if (cat == 'd') {
-    let d = document.createElement('div');
-    d.style.textAlign = 'center';
-    d.style.fontFamily = family;
-    d.style.fontWeight = 900;
-    d.style.fontSize = h + unit;
-    if (isdef(bg)) d.style.backgroundColor = bg;
-    if (isdef(fg)) d.style.color = fg;
-    d.innerHTML = text;
-    domel = d;
-    if (isdef(padding)) d.style.padding = padding + unit;
-    d.style.display = 'inline-block';
-    d.style.height = h + 2 * padding + unit;
-    d.style.width = d.style.height;
-    if (isdef(border)) d.style.border = border;
-    if (isdef(rounding)) d.style.borderRadius = rounding + unit;
-  } else {
-  }
-  domel.key = key;
-  if (parent) parent.appendChild(domel);
-  return domel;
-}
-function createPictoX(parent, style, classes, titleOptions, pictoOptions, captionOptions) {
-  let d = mDiv(parent);
-  if (isdef(style)) mStyle(d, style);
-  if (isdef(classes)) mClass(d, ...classes);
-  if (isdef(titleOptions)) { titleOptions.parent = d; createText(titleOptions); }
-  if (isdef(pictoOptions)) { pictoOptions.parent = d; createPicto(pictoOptions); }
-  if (isdef(captionOptions)) { captionOptions.parent = d; createText(captionOptions); }
-  return d;
-}
 function createPlayerZone(pl, namePos = 'top', showColor = false) {
   let id = pl.id;
   let z = createCardZone(id, id, namePos);
@@ -37443,12 +36214,6 @@ function createStaticUi(area, R) {
   let n = R.tree;
   recUi(n, R, area);
 }
-function createSTree(n, idParent, R) {
-  n = createNode(n, idParent, R);
-  if (isContainerType(n.type)) {
-    let prop = RCONTAINERPROP[n.type];
-  }
-}
 function createSubtitledPage(bg = 'silver', title = 'Aristocracy', subtitle = '', footer = 'a game by F. Ludos') {
   setPageBackground(bg);
   createPageDivsFullVisibleArea({
@@ -37484,11 +36249,6 @@ function createTableZone(showColor = false) {
   let z = createCardZone('table');
   if (showColor) mStyleX(z.div, { bg: 'white' });
   return z;
-}
-function createText({ s, parent, style, classes }) {
-  let d = mText(s, parent);
-  if (isdef(style)) mStyle(d, style);
-  if (isdef(classes)) mClass(d, ...classes);
 }
 function createTooltip(oid) {
   $('#' + oid).unbind('mouseover mouseout');
@@ -43612,10 +42372,6 @@ function gaussian_amp(canvas, stdev) {
   f = x => formula(x, v, amp);
   return f;
 }
-function gaussian1(x, m = 0, stdev = 2, amp = 1) {
-  let v = stdev * stdev;
-  return amp * Math.E ** (-((x - m) ** 2) / (2 * v)) / Math.sqrt(v * 2 * Math.PI);
-}
 function gaussianRand() {
   var rand = 0;
   for (var i = 0; i < 6; i += 1) { rand += Math.random(); }
@@ -45519,12 +44275,6 @@ function get_play(e) {
 }
 function get_play_dep(e) {
   get_data({ username: Session.cur_user, gamename: Session.cur_game, assets: nundef(Syms) }, "play");
-}
-function get_play_NOP(step, move) {
-  Session.cur_menu = 'games';
-  let data = { uname: Session.cur_user, tid: Session.cur_tid };
-  if (isdef(step) && isdef(move)) { data.step = step; data.move = move; }
-  to_server(data, "play");
 }
 function get_play_start() { Session.cur_menu = 'play'; to_server({ uname: Session.cur_user, tid: Session.cur_tid }, 'play_start'); }
 function get_player_options(players, game) { return players.map(x => `${x}:${get_startlevel(x, game)}:${get_preferred_lang(x)}`).join(','); }
@@ -50550,11 +49300,6 @@ function has_at_most_n_jolly(j, n = 1) { return j.filter(x => is_jolly(x)).lengt
 function has_farm(uname) { return firstCond(UI.players[uname].buildinglist, x => x.type == 'farm'); }
 function has_jolly(j) { return firstCond(j, x => is_jolly(x)); }
 function has_schweine(fenbuilding) { return !isEmpty(fenbuilding.schweine); }
-function hasChildren(n) {
-  let ch = RCONTAINERPROP[n.type];
-  if (nundef(ch)) ch = 'ch';
-  return isdef(n[ch]);
-}
 function hasClickedUI() { uiPaused |= hasClickedMask; }
 function hasDuplicate(arr, efunc) {
   let di = {};
@@ -55298,7 +54043,6 @@ function iTrim(item, serialize = true) {
 }
 function iUnhigh(item) { let d = iDiv(item); mStyle(d, { bg: 'transparent' }); }
 function iZMax(n) { if (isdef(n)) ZMax = n; ZMax += 1; return ZMax; }
-function join_table(user, tid) { to_server({ uname: user, tid: tid }, 'join_table'); }
 function joinMultiplayerGame(){
 }
 function jolly_matches(key, j, rankstr = 'A23456789TJQKA') {
@@ -56908,13 +55652,6 @@ function logVals(title, o) {
   let s = title + ':  ';
   for (const k in o) { s += k + ':' + o[k] + ' '; }
   console.log(s);
-}
-function long_polling_shield_on() {
-  DA.long_polling = { type: 'table_status', data: Session.cur_tid, tid: Session.cur_tid, table: Session.cur_table, polling: true, waiting_for_prop: 'status', waiting_for_val: 'started' };
-  polling_shield_on('waiting for host to start game...');
-  TOMain = setTimeout(() => {
-    check_poll_orig();
-  }, 5000);
 }
 function longest_array(arr) {
   let max = 0;
@@ -59680,14 +58417,6 @@ function MakeMove(move) {
   }
   return BOOL.TRUE;
 }
-function makemove(t) {
-  let myMoves = t.moves[Session.cur_user];
-  Session.cur_step = myMoves.length + 1;
-  myMoves.push(randomNumber(1000, 2000)); 
-  Session.cur_move = arrLast(myMoves);
-  DA.next = get_play_dep(Session.cur_step, Session.cur_move);
-  save_tables();
-}
 function makeNewLayout(g1) {
   let nodes = g1.getNodes();
   let x = 10; let y = 10;
@@ -62155,7 +60884,6 @@ function mFlexEvenly(d) {
   styles['justify-content'] = 'space-evenly';
   mStyle(d, styles);
 }
-function mFlexLinebreak(d) { if (isString(d)) d = mBy(d); let lb = mDiv(d); mClass(lb, 'linebreak'); return lb; }
 function mFlexLR(d) { mStyle(d, { display: 'flex', 'justify-content': 'space-between', 'align-items': 'center' }); }
 function mFlexSpacebetween(d) { mFlexLR(d); }
 function mFlexWrap(d) { mFlex(d, 'w'); }
@@ -63012,21 +61740,6 @@ function modLabel(item,newLabel,styles){
   item.label = newLabel;
   return dLabel;
 }
-function more() {
-  let sz = measureText(text, styles, cx);
-  console.log('sz', sz)
-  let [v, h] = [pos[0], pos[1]];
-  let offy = v == 't' ? -sz.h : 'c' ? -sz.h / 2 : 0;
-  let offx = h == 'l' ? -sz.w : 'c' ? -sz.w / 2 : 0;
-  let [x, y] = [styles.x + offx, styles.y + offy];
-  console.log('pos', pos, styles.x, styles.y, x, y)
-  cx.fillText(text, x, y);
-  return;
-  if (pos[1] == 'c') cx.textAlign = 'center';
-  cx.font = `16px Arial`;
-  cx.fillStyle = color;
-  cx.fillText(`${label}`, x, y + (pos[0] == 'b' ? 20 : -10));
-}
 function MOVE(from, to, captured, promoted, flag) { return (from | (to << 7) | (captured << 14) | (promoted << 20) | flag); }
 function move_down(canvas, item) { item.y += 1; canvas.clamp(item); return true; }
 function move_probs(canvas, item) {
@@ -63294,56 +62007,6 @@ function mPic(kItem, dParent, styles, classes) {
   if (isdef(classes)) mClass(dOuter, classes);
   iAdd(item, { div: dOuter, dPic: d });
   return item;
-}
-function mPicButton(key, handler, dParent, styles, classes) {
-  let x = createPicto({
-    key: key, w: 20, h: 20, unit: 'px', fg: 'yellow', bg: 'violet',
-    padding: 2, margin: 0, cat: 'd', parent: dParent, rounding: 4
-  });
-  if (isdef(handler)) x.onclick = handler;
-  if (isdef(styles)) {
-    mStyle(x, styles);
-  }
-  if (isdef(classes)) { mClass(x, ...classes); }
-  else mClass(x, 'picButton');
-  return x;
-}
-function mPicButtonSimple(key, handler, dParent, styles, classes) {
-  let x = createPictoSimple({ key: key, cat: 'd', parent: dParent });
-  if (isdef(handler)) x.onclick = handler;
-  if (isdef(styles)) { mStyle(x, styles); }
-  if (isdef(classes)) { mClass(x, ...classes); }
-  return x;
-}
-function mPicSimple(info, dParent, { w, h, unit = 'px', fg, bg, padding, border, rounding, shape }) {
-  if (nundef(w)) w = 25;
-  if (nundef(h)) h = w;
-  let d = document.createElement('div');
-  if (dParent) dParent.appendChild(d);
-  d.style.textAlign = 'center';
-  d.style.fontFamily = info.family;
-  d.style.fontWeight = 900;
-  d.style.fontSize = h + unit;
-  [bg, fg] = getExtendedColors(bg, fg);
-  if (isdef(bg)) d.style.backgroundColor = bg;
-  if (isdef(fg)) d.style.color = fg;
-  d.innerHTML = info.text;
-  if (isdef(padding)) d.style.padding = padding + unit;
-  d.style.display = 'inline-block';
-  d.style.minHeight = h + padding + unit;
-  d.style.minWidth = w + 2 * padding + unit;
-  if (isdef(border)) d.style.border = border;
-  if (isdef(rounding)) d.style.borderRadius = rounding + unit;
-  else if (isdef(shape) && shape == 'ellipse') {
-    let b = getBounds(d);
-    let vertRadius = b.height / 2;
-    let horRadius = b.width / 2;
-    let r = Math.min(vertRadius, horRadius);
-    console.log(b, r)
-    d.style.borderRadius = `${r}${unit}`;
-  }
-  d.key = info.key;
-  return d;
 }
 function mPicto(n, R, uidParent) {
   let dParent = mBy(n.idUiParent);
@@ -64517,30 +63180,6 @@ function mTranslateByFade(elem, x, y, ms = 800, callback = null) {
   mAnimate(elem, 'transform', [`translateX(${x}px) translateY(${y}px)`], callback, ms, 'ease');
   let a = toElem(elem).animate([{ opacity: .25 }, { opacity: 1 },], { fill: 'both', duration: ms, easing: 'ease' });
 }
-function MUELL() {
-  let [mean, stdev] = [0, 1];
-  let f = x => gaussian_amp(x, mean, stdev);
-  let y = f(0);
-  console.log('y', y);
-  let amp = .9 * (-canvas.miny) / (40 * y);
-  f = x => gaussian_amp(x, mean, stdev, amp);
-  canvas.draw_axes();
-  canvas.plot(f, 'orange', 1);
-  let x = 40 * search_end_point(f, 0, canvas.maxx, .1, .01);
-  console.log('point x', x, canvas.minx, canvas.maxx);
-  y = -40 * f(x / 40)
-  console.log('point y', x, 0, canvas.maxy);
-  console.log('scale', canvas.scale)
-  let xreal = x / 40;
-  let yreal = f(xreal) / (40);
-  x = 0;
-  for (let i = canvas.minx; i < canvas.maxx; i += canvas.scale) {
-    let x1 = Math.round(convert_to_range(x, -4, 4, 50, 150));
-    let x2 = Math.round(convert_to_range(-x, -4, 4, 50, 150));
-    canvas.pp(x * 40, 0, 3, `${x1}`);
-    canvas.pp(-x * 40, 0, 3, `${x2}`); x += 2;
-  }
-}
 function muiCard(key,dParent,styles,classes){
 }
 function multiCartesi() {
@@ -65195,13 +63834,6 @@ function normalizeNode(o, num) {
 function normalizeRTree(R) { return normalizeTree(R.rNodes, R); }
 function normalizeSimpleUidProp(o, prop, num) {
   o[prop] = normalizeVal(o[prop], num);
-}
-function normalizeSpec(sp) {
-  let spNew = {};
-  for (const k in sp) {
-    spNew[k] = recNormalize(sp[k], sp);
-  }
-  return spNew;
 }
 function normalizeSpecKeyProp(o, prop, num) {
   let node1 = o[prop];
@@ -67511,21 +66143,6 @@ function onWhichGame(d) {
   if (currentGame == GAME) existingPlayers(onExistingPlayers);
   else restartHost(onHostStarted);
 }
-function open_game(uname, game, fen) {
-  U = {};
-  copyKeys(DB.users[uname], U);
-  U.session = {}; 
-  G = new (classByName(capitalize(game) + 'Multi'))(game, DB.games[game]);
-  Settings = new SettingsClass(G, dAux);
-  if (nundef(U.games[game])) {
-    if (G.controllerType == 'solitaire') { U.games[game] = { nTotal: 0, nCorrect: 0, nCorrect1: 0, startlevel: 0 }; }
-    else U.games[game] = {};
-  }
-  if (isdef(G.maxlevel)) G.level = Math.min(getUserStartLevel(game), G.maxlevel);
-  if (G.id != 'gAristo') Settings.updateGameValues(U, G); 
-  showGameTitle();
-  return G;
-}
 function open_game_options(gamename) { present_game_options(gamename); }
 function open_game_ui() {
   clear_table_all();
@@ -67604,11 +66221,6 @@ function open_prompt() {
 function open_sidebar() {
   DA.left_panel = 'open';
   mBy('left_panel').style.flex = 1;
-}
-function open_table_dep(tid) {
-  let t = DB.tables[tid];
-  Session.cur_tid = tid;
-  makemove();
 }
 function openAux(title, button) {
   resetActiveButton();
@@ -68134,16 +66746,6 @@ function parentHasThisChildAlready(uidParent, oid) {
   }
   return hasThisChild;
 }
-function parse_fen(fen) {
-  let parts = fen.split(':');
-  let opt = parts[0];
-  let glob = parts.length > 1 ? parts[1] : null;
-  let pls = [];
-  for (let i = 2; i < parts.length; i++) {
-    pls.push(parts[i]);
-  }
-  return { opt: opt, glob: glob, pls: pls };
-}
 function parse_table(t) {
   set_start_data_from_fen(t.fen, S.game);  
   if (isString(t.options)) t.options = JSON.parse(t.options); 
@@ -68218,25 +66820,32 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
       regionOrig = stringAfter(l, 'region').trim();
       regionName = firstWordAfter(l, 'region');
     } else if (startsWith(l, 'var')) {
+      key = firstWordAfter(l, 'var');
+      for(const t of ['const','func','cla']) if (lookup(superdi,[t,key])) continue;
       parsing = true;
       code = l + '\r\n';
       type = 'var';
-      key = firstWordAfter(l, 'var');
     } else if (startsWith(l, 'const')) {
+      key = firstWordAfter(l, 'const');
+      for(const t of ['func','cla']) if (lookup(superdi,[t,key])) continue;
+      if (isdef(superdi.var[key])) delete superdi.var[key];
       parsing = true;
       code = l + '\r\n';
       type = 'const';
-      key = firstWordAfter(l, 'const');
     } else if (startsWith(l, 'class')) {
+      key = firstWordAfter(l, 'class');
+      for(const t of ['func']) if (lookup(superdi,[t,key])) continue;
+      for(const t of ['var','const']) if (lookup(superdi,[t,key])) delete superdi[t][key];
       parsing = true;
       code = l + '\r\n';
       type = 'cla';
       key = firstWordAfter(l, 'class');
     } else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+      key = stringBefore(stringAfter(l, 'function').trim(), '(');
+      for(const t of ['var','const','cla']) if (lookup(superdi,[t,key])) delete superdi[t][key];
       parsing = true;
       code = l + '\r\n';
       type = 'func';
-      key = stringBefore(stringAfter(l, 'function').trim(), '(');
     }
   }
   return superdi;
@@ -70585,23 +69194,6 @@ function presentFor(me) {
   me.hand.showDeck(dTable, 'right', 0, false);
   showFleetingMessage('click to play a card!');
 }
-function presentGenerations_dep(indices, area, R, genKey = 'G') {
-  d = mBy(area);
-  let level = 0;
-  let depth = 10;
-  let dLevel = [];
-  for (let i = 0; i < depth; i++) {
-    let d1 = dLevel[i] = mDiv(d);
-    mSize(d1, '100%', 'auto');
-    mFlexWrap(d1)
-    mColor(d1, colorTrans('black', i * .1));
-  }
-  let di = 0;
-  for (const i of indices) {
-    let div = dLevel[di]; di++;
-    presentNodes(R.gens[genKey][i], div);
-  }
-}
 function presentInChatList(result, dParent) {
   let d2 = mDiv(dParent, { display: 'flex', gap: 10, margin: 10, padding: 10, bg: 'white', fg: 'dimgray' });
   d2.setAttribute('username', result.username);
@@ -70769,40 +69361,6 @@ function presentPlayers() {
 }
 function presentPlayersSimple() {
 }
-function presentRoot_dep(n, area, lf, ls, lo) {
-  d = mBy(area);
-  let depth = 10;
-  let dLevel = [];
-  for (let i = 0; i < depth; i++) {
-    let d1 = dLevel[i] = mDiv(d);
-    mColor(d1, colorTrans('black', i * .1));
-  }
-  addIf(lo, 'act');
-  addIf(lo, 'ui');
-  maxLevel = 1 + recPresentFilter(n, 0, dLevel, { lstFlatten: lf, lstShow: ls, lstOmit: lo });
-}
-function presentRootPresetLists_dep(n, area) {
-  let lstFlatten = ['type', 'pool', 'source', 'data', 'content'];
-  let lstShow = ['type', 'oid', 'data', 'content', 'pool'];
-  let lstOmit = ['act', 'bi', 'sub', '_id', '_ref', 'children', 'source', 'specKey', 'params', 'cssParams', 'typParams', 'stdParams', 'uid', 'ui'];
-  d = mBy(area);
-  let level = 0;
-  let depth = 10;
-  let dLevel = [];
-  for (let i = 0; i < depth; i++) {
-    let d1 = dLevel[i] = mDiv(d);
-    mColor(d1, colorTrans('black', i * .1));
-  }
-  maxLevel = 1 + recPresentFilter(n, 0, dLevel, { lstFlatten: lstFlatten, lstShow: lstShow, lstOmit: lstOmit });
-  removeInPlace(lstOmit, 'children');
-}
-function presentServerData(sdata, area) {
-  let d = mBy(area);
-  clearElement(d);
-  for (const [k, v] of Object.entries(sdata)) {
-    mNode(v, { title: k, dParent: d, omitEmpty: true });
-  }
-}
 function presentSimpleVal(d, item) {
   let d1 = mDiv(d, { display: 'inline-block', bg: 'random', rounding: 10, margin: 10, padding: 10 });
   d1.innerHTML = item;
@@ -70921,17 +69479,6 @@ async function presentTree(uiRoot, R) {
   } else {
     trace('UNKNOWN presentationStrategy!!!!!!', R.presentationStrategy)
   }
-}
-function presentTree_dep(n, treeProperty, area, R, lf, ls, lo) {
-  d = mBy(area);
-  let depth = 10;
-  let dLevel = [];
-  for (let i = 0; i < depth; i++) {
-    let d1 = dLevel[i] = mDiv(d);
-    mColor(d1, colorTrans('black', i * .1));
-  }
-  let nDict = R.rNodes;
-  maxLevel = 1 + recPresent(n, 0, dLevel, nDict, treeProperty, { lstFlatten: lf, lstShow: ls, lstOmit: lo });
 }
 function presentVisible(id, ms, o_new, o_old, options) {
   let visPlayers = getVisibleList(o_new);
@@ -73159,21 +71706,6 @@ function recMergeSpecNode(n, sp, spNew) {
     for (const n1 of n.sub) recMergeSpecNode(n1, sp, spNew);
   }
 }
-function recNormalize(n, sp) {
-  let n1 = jsCopy(n);
-  let t = n1.type = nundef(n.type) ? inferType(n) : n.type;
-  let locProp = 'panel';
-  if (locProp != 'p') {
-    n1.p = n[locProp];
-    delete n1[locProp];
-  }
-  let contProp = 'sub';
-  if (contProp && isdef(n[contProp])) {
-    n1.ch = n[contProp].map(x => recNormalize(x, sp));
-    delete n1[contProp];
-  }
-  return n1;
-}
 function recomputeBestED() {
   for (const k in symbolDict) {
     let info = symbolDict[k];
@@ -73270,30 +71802,6 @@ function recPresent(n, level, dLevel, nDict, treeProp, { lstFlatten, lstShow, ls
   }
   return max;
 }
-function recPresent_dep(n, level, dLevel, { lstFlatten, lstShow, lstOmit } = {}) {
-  let n1 = jsCopy(n);
-  n1 = filterByNoKey(n, lstOmit);
-  mNode(n1, { dParent: dLevel[level], listOfProps: lstFlatten });
-  if (nundef(n.children)) return level;
-  let max = 0;
-  for (const x of n.children) {
-    let newMax = recPresent_dep(x, level + 1, dLevel, { lstFlatten: lstFlatten, lstShow: lstShow, lstOmit: lstOmit });
-    if (newMax > max) max = newMax;
-  }
-  return max;
-}
-function recPresent_dep1(n, level, dLevel, lstFlatten, lstShow) {
-  let n1 = jsCopy(n);
-  n1 = filterByNoKey(n, ['sub', '_id', '_ref', 'children', 'source', 'specKey', 'params', 'cssParams', 'typParams', 'stdParams', 'uid', 'ui'])
-  mNode(n1, { dParent: dLevel[level], listOfProps: lstFlatten });
-  if (nundef(n.children)) return level;
-  let max = 0;
-  for (const x of n.children) {
-    let newMax = recPresent_dep1(x, level + 1, dLevel, lstFlatten, lstShow);
-    if (newMax > max) max = newMax;
-  }
-  return max;
-}
 function recPresentFilter(n, level, dLevel, { lf, ls, lo } = {}) {
   mNodeFilter(n, { dParent: dLevel[level], lstFlatten: lf, lstShow: ls, lstOmit: lo });
   if (nundef(n.children)) return level;
@@ -73348,13 +71856,13 @@ function recShowHintsNext(i, ilist, rc, delay, fProgression) {
   showSayHint(i);
   if (QContextCounter == rc) recShowHints(ilist, rc, delay, fProgression);
 }
-function recShowTree(o, indent, childrenKeys, lstShow, lstOmit) {
-  showObject(o, indent, true, lstShow, lstOmit);
+function recShowTree(o, indent, childrenKeys, plus, minus) {
+  showObject(o, indent, true, plus, minus);
   let chkey = findFirstListKey(o, childrenKeys);
   if (chkey) {
-    console.log(' '.repeat(indent + 2) + chkey + ':');
+    console.log(' '.repeat(indent+2) + chkey + ':');
     for (const ch of o[chkey]) {
-      recShowTree(ch, indent + 4, childrenKeys, lstShow, lstOmit);
+      recShowTree(ch, indent + 4, childrenKeys, plus, minus);
     }
   }
 }
@@ -74075,12 +72583,6 @@ function replaceSol(sol, diop) {
   return [result, eq];
 }
 function replaceWhite(s, sby = '_') { let w = toWords(s); return w.join(sby); }
-function report_poll(obj) {
-  polling_shield_off();
-  update_cur_table(obj);
-  status_message_off();
-  get_games();
-}
 function repositionCards(msCollection) {
   if (msCollection.numCards == 0) return;
   let dTitle = msCollection.parts.title;
@@ -74268,19 +72770,6 @@ function resplay_container(targetgroup, ovpercent) {
   mContainerSplay(d, 2, card.w, card.h, arrChildren(d).length, ov * card.w);
   let items = arrChildren(d).map(x => Items[x.id]);
   ui_add_cards_to_hand_container(d, items);
-}
-function rest() {
-  styles.al = 'brv'; 
-  cx.textBaseline = "top";
-  cx.fillText("Top", 5, 100);
-  cx.textBaseline = "bottom";
-  cx.fillText("Bottom", 50, 100);
-  cx.textBaseline = "middle";
-  cx.fillText("Middle", 120, 100);
-  cx.textBaseline = "alphabetic";
-  cx.fillText("Alphabetic", 190, 100);
-  cx.textBaseline = "hanging";
-  cx.fillText("Hanging", 290, 100);
 }
 function restart_selection_process() {
   let [plorder, stage, A, fen, uplayer, pl] = [Z.plorder, Z.stage, Z.A, Z.fen, Z.uplayer, Z.fen.players[Z.uplayer]];
@@ -74785,7 +73274,7 @@ function roomAdjacency(house) {
 function root(areaName) {
   setTableSize(areaName, 400, 300);
   UIROOT = jsCopy(SPEC.staticSpec.root);
-  AREAS = {};
+  for(const k in AREAS) delete AREAS[k];
   PROTO = {};
   INFO = {};
   staticArea(areaName, UIROOT);
@@ -76084,11 +74573,6 @@ function send_move() {
   if (me.player_status == 'lamov') me.player_status = 'done';
   let o = { tid: Session.cur_tid, player_status: me.player_status, score: me.score, state: me.state, uname: me.name };
   to_server(o, 'send_move');
-}
-function send_move_dep(game, uname, tid, step, move) {
-  Session.cur_menu = 'games';
-  let data = { game: game, uname: uname, tid: tid, step: step, move: move };
-  to_server(data, "send_move");
 }
 function send_or_sim(o, cmd) {
   Counter.server += 1; 
@@ -79403,13 +77887,12 @@ function showFleetingMessage(msg, dParent, styles = {}, ms = 3000, msDelay = 0, 
     TOFleetingMessage = setTimeout(() => fleetingMessage(msg, dFleetingMessage, styles, ms, fade), 10);
   }
 }
-function showFullObject(o, indent = 0, onlySimple = false) {
-  for (const k in o) {
-    if (isSimple(o[k])) console.log(' '.repeat(indent), k, o[k]);
-    else if (!onlySimple) console.log(' '.repeat(indent), k, anyString3(o[k]));
+function showFullObject(o,indent=0){
+  for(const k in o){
+    if (isSimple(o[k])) console.log(' '.repeat(indent),k,o[k]);
     else {
-      console.log(' '.repeat(indent), k);
-      showFullObject(o[k], indent + 2);
+      console.log(' '.repeat(indent),k);
+      showFullObject(o[k],indent+2);
     }
   }
 }
@@ -79628,8 +78111,8 @@ function showNumberSequence(words, dParent, idForContainerDiv = 'seqContainer', 
   return { words: inputGroups, letters: charInputs };
   return [wi.words, wi.letters];
 }
-function showObject(o, indent = 0, simple = true, lstShow = null, lstOmit = null) {
-  let s = extendedObjectString(o, indent, simple, lstShow, lstOmit);
+function showObject(o, indent = 0, simple = true, plus = null, minus = null) {
+  let s=extendedObjectString(o,indent,simple,plus,minus);
   console.log(s);
 }
 function showPackages(data, domid = 'OLDCODE') {
@@ -79876,7 +78359,7 @@ function showTextHints(items, dParentProp, textProp, removeFirst = true) {
     let dHint = item.dHint = mText(hint, d1);
   }
 }
-function showTree(o, childrenKeys = ['sub', 'elm'], plus, minus) {
+function showTree(o, childrenKeys = ['panels', 'elm'], plus, minus) {
   recShowTree(o, 0, childrenKeys, plus, minus);
 }
 function showTrick() {
@@ -80072,15 +78555,6 @@ function simpleSizes_unused(wGame = 1000, hGame = 800, wSide = 200) {
   setCSSVariable('--wLog', wSide + 'px');
   setCSSVariable('--hStatus', 'auto');
   setCSSVariable('--hTesting', '100%');
-}
-function simplest_game_open_for_move_dep(obj) {
-  for (const k in obj) { if (isdef(Session[k])) copyKeys(obj[k], Session[k]); else Session[k] = obj[k]; }
-  Session.cur_table = Session.table;
-  console.assert(isdef(Session.cur_user) && Session.cur_game == Session.table.game && Session.cur_tid == Session.table.id, "SESSION MISMATCH IN GAME_OPEN_FOR_MOVE!!!!!!!!!!!!!!!!!!!!!");
-  open_game_ui();
-  G = open_game(Session.cur_user, Session.cur_game); 
-  G.make_players(Session.table);
-  G.startGame(Session.cur_fen);
 }
 function simplestPerlenGame() {
   hide('dMainContent');
@@ -81885,17 +80359,6 @@ function start_simple_timer(dtimer, msInterval, onTick, msTotal, onElapsed) {
   timer.start();
 }
 function start_sound(){
-}
-function start_table(uname, tid) {
-  to_server({ uname: uname, tid: tid }, 'start_table');
-}
-function start_table_dep(tid) {
-  let t = DB.tables[tid];
-  Session.cur_tid = tid;
-  t.status = 'started';
-  t.moves = {};
-  t.players.map(x => t.moves[x] = []);
-  makemove(t);
 }
 function start_tests() {
   fentest_wise();
@@ -89247,17 +87710,6 @@ function ui_get_trade_items(uplayer) {
   reindex_items(items);
   return items;
 }
-function ui_ground_zero() {
-  STOPAUS = true;
-  uiActivated = aiActivated = false;
-  clearTimeouts(); 
-  if (isdef(G) && isdef(G.clear)) G.clear();
-  if (isdef(GC) && isdef(GC.clear)) GC.clear();
-  TOMan.clear();
-  clearMarkers();
-  resetUIDs(); 
-  Items = {};
-}
 function ui_make_card_container(n, dParent, styles = { bg: 'random', padding: 10 }) {
   let id = getUID('u');
   let d = mDiv(dParent, styles, id);
@@ -90178,16 +88630,6 @@ function update_car(canvas, item) {
     }
   }
   return false;
-}
-function update_cur_table(obj, color) {
-  let t = Session.cur_table;
-  let tnew = obj.table;
-  if (isdef(obj.player_record)) copyKeys(obj.player_record, tnew);
-  copyKeys(tnew, t);
-  if (isdef(color)) {
-    let d = mBy(`rk_${obj.table.id}`);
-    if (isdef(d)) mStyle(d, { bg: color }); 
-  }
 }
 function update_current_table() {
   let o = Serverdata.table;
