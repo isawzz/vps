@@ -2,54 +2,42 @@ onload = _start;
 
 async function _start() {
 	set_run_state_local(); //set_run_state_no_server(); //set_run_state_vps();
-	onpagedeactivated(()=>{saveEnv();dbSave();});
+	onpagedeactivated(() => { saveEnv(); dbSave(); });
 	await load_syms(); // jetzt gibt es Syms SymKeys ByGroupSubgroup Info KeySets
 	await load_db(); //console.log("DB", DB); //jetzt gibt es DB
 	//let list=await load_codebase();//['../game/aaa.js']); 
-	let list=await load_codebase(['../game/aaa.js'],true); 
+	let superdi = await load_codebase(['../game/aaa.js'], true );
+
+	//create sigdi
+
+
+	console.log('superdi',superdi);
+	show_sidebar(sortCaseInsensitive(get_keys(superdi.const)));
+	//wie hab ich das 
+	dTable = mBy('dTable');
+	fiddleInit();
 }
 
-function add_code_to_collection(res){
-	CODE.paths = paths;
-	CODE.di = { var: [], const: [], cla: [], func: [] }; CODE.diregion = {}; CODE.dicode = {}; CODE.text = '';
-	//
-}
-function show_code(res){
+function show_code(res) {
 	dTable = mBy('dTable');
-	let ta=mTextarea(null,null,dTable,{w:'90vw',h:'90vh'});
+	let ta = mTextarea(null, null, dTable, { w: '90vw', h: '90vh' });
 	let text = res.text;
 	ta.value = text;
-	downloadAsText(text,'hallo','js');
-	console.log('res',res)
+	downloadAsText(text, 'hallo', 'js');
+	console.log('res', res)
 
 }
 
-function saveEnv(){
+function saveEnv() {
 	fiddleSave(); // fiddle
 }
 function show_sidebar(list, handler) {
 	dSidebar = mBy('dSidebar'); mStyle(dSidebar, { w: 300, h: window.innerHeight - 68, overy: 'auto' });
 	for (const k of list) {
 		let d = mDiv(dSidebar, { cursor: 'pointer', wmin: 100 }, null, k, 'hop1')
-		d.onclick = handler;
+		if (isdef(handler)) d.onclick = handler;
 	}
 }
-function _show_code(ev) {
-	let k = isdef(ev) ? isString(ev) ? ev : ev.target.innerHTML : rChoose(CODE.index);
-	let o = CODE.funcs[k];
-	let [w, h] = [window.innerWidth - 300, window.innerHeight - 150];
-	let [r, c] = [h / 18, w / 9];
-	show_fiddle(o.body, r, c, { bg: DB.apps.howto.color });
-}
-function add_code(ev) {
-	if (nundef(AU.ta)) show_code(ev);
-	else {
-		let k = isdef(ev) ? isString(ev) ? ev : ev.target.innerHTML : rChoose(CODE.index);
-		let o = CODE.funcs[k];
-		AU.ta.value += o.body + '\n';
-	}
-}
-
 
 
 

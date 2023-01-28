@@ -1,5 +1,5 @@
-function test10(){
-	
+
+function test10(list){
 	
 	console.log('codebase list',list);
 	let text=list.map(x=>x.text).join('\n');
@@ -35,10 +35,7 @@ function test7_card() {
 
 	animatedTitle();
 }
-function test6_sidebar() {
-	show_sidebar(CODE.funcs, 'name', 'body');	//CODE.consts);
 
-}
 function test5_prelim() { }
 //________________
 function test4_intelli() {

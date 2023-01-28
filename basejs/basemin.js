@@ -4165,6 +4165,17 @@ function arrMinMax(arr, func) {
 
 	return { min: min, imin: imin, max: max, imax: imax, elmin: arr[imin], elmax: arr[imax] };
 }
+function arrNext(list, el) {
+	let iturn = list.indexOf(el);
+	let res = list[(iturn + 1) % list.length];
+	return res;
+}
+function arrPrev(list, el) {
+	let iturn = list.indexOf(el);
+	if (iturn == 0) iturn = list.length;
+	let res = list[(iturn - 1) % list.length];
+	return res;
+}
 function arrNoDuplicates(arr) {
 	//only keeps unique literals in result! non-literals are removed!
 	let di = {};
@@ -7086,11 +7097,6 @@ function get_mouse_pos(ev) {
 	return ({ x: x, y: y });
 
 }
-function arrNext(el, list) {
-	let i = list.indexOf(el);
-	let nextplayer = list[(i + 1) % list.length];
-	return nextplayer;
-}
 function getTypeOf(param) {
 	//console.log('>>>>>getTypeOf',param)
 	let type = typeof param;
@@ -7470,13 +7476,13 @@ function set_run_state(singleclient = true, sockets = false, port = 3000, localh
 	console.log('SERVER:' + SERVERURL, 'LIVE:' + LIVE_SERVER, 'Socket:' + Socket, TESTING ? 'TESTING' : '', SINGLECLIENT ? 'SINGLE' : '');
 
 }
-function set_run_state_no_server(){
+function set_run_state_no_server() {
 	set_run_state(true, false, 3000, true, true, true, false);
 }
-function set_run_state_local(){
+function set_run_state_local() {
 	set_run_state(true, false, 3000, true, false, true, true);
 }
-function set_run_state_vps(){
+function set_run_state_vps() {
 	set_run_state(false, false, 3000, false, false, false, true);
 }
 function show(elem, isInline = false) {
@@ -7890,7 +7896,7 @@ function parseCodefile(content, fname) {
 	for (const line of lines) {
 
 		let l = line;
-		if (!l.includes("'//")){
+		if (!l.includes("'//")) {
 			l = replaceAllFast(line, '://', ':@@');
 			l = replaceAllFast(l, '//#', '@@#');
 			l = stringBefore(l, '//');

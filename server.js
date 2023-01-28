@@ -179,7 +179,7 @@ let dirlist = [
 	'C:\\D\\a03\\nodemaster\\all\\leaflet\\leafstreetview',
 	'C:\\D\\a03\\nodemaster\\all\\leaflet\\mapgame',
 	'C:\\D\\a03\\nodemaster\\all\\leaflet\\routing',
-	'C:\\D\\a03\\nodemaster\\all\\mapbox\\mapbox',
+	// 'C:\\D\\a03\\nodemaster\\all\\mapbox\\mapbox',
 	'C:\\D\\a03\\nodemaster\\all\\mybrary\\public\\javascripts',
 	'C:\\D\\a03\\nodemaster\\all\\openlayers\\map',
 	'C:\\D\\a03\\nodemaster\\all\\openlayers\\mapTEXT',
@@ -194,31 +194,42 @@ let dirlist = [
 ];
 //#endregion done
 
-const { parseCodefile, stringBeforeLast, startsWith } = require('./game/_bau1.js');
+const { parseCodefile, stringBeforeLast, get_keys, sortCaseInsensitive } = require('./game/_bau1.js');
 
 //#region funcs done
+
 function endsWith(s, sSub) { let i = s.indexOf(sSub); return i >= 0 && i == s.length - sSub.length; }
 function fromFile(filePath) { const data = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' }); return data; }
 function getCodeFilenames(dir) {
 	let files = fs.readdirSync(dir); //__dirname);
 	return files.filter(x => endsWith(x, '.js'));
 }
+function getCompactDatetime(str) {
+	var date = new Date(str),
+			mnth = ("0" + (date.getMonth()+1)).slice(-2),
+			day  = ("0" + date.getDate()).slice(-2);
+			hours  = ("0" + date.getHours()).slice(-2);
+			minutes = ("0" + date.getMinutes()).slice(-2);
+	return [ date.getFullYear(), mnth, day, hours, minutes ].join("-");
+}
 function getFilesWithout(dir, list) {
 	let files = getCodeFilenames(dir);
-	for (const s of list) files = files.filter(x => !x.includes(s));
+	//console.log('total files',files.length)
+	for (const s of list) files = files.filter(filename => !(filename.toLowerCase().includes(s.toLowerCase())));
+	//console.log('filtered files',files.length)
 	return files;
 }
 function getSortedCodefileList(dlist, prop = 'datetime') {
 	let res = [];
 	if (dlist === undefined) dlist = dirlist;
 	for (const dir of dlist) {
-		let files = getFilesWithout(dir, 'old', 'muell', '__', 'trash', 'copy', 'min.js');
+		let files = getFilesWithout(dir, ['jQuery','old', 'muell', '__', 'trash', 'copy', '.min.js']);
 		for (const fname of files) {
 			if (fname.startsWith('app') || fname.startsWith('server')) continue;
 			let path = dir + '\\' + fname;
 			var stats = fs.statSync(path);
 			//console.log('keys',Object.keys(stats),stats.mtime,); return;
-			var mtime = stats.mtime;
+			var mtime = getCompactDatetime(stats.mtime);
 			let ts = stats.mtimeMs; //toTimestamp(mtime);
 			//console.log(fname, ts);
 			res.push({ fname: fname, path: path, datetime: mtime, timestamp: ts, size: stats.size });
@@ -339,38 +350,45 @@ function test9() {
 		toFile(res.text, `C:\\D\\a03\\nodemaster\\z${i++}.js`);
 	}
 }
+function test10() {
+	let list = getSortedCodefileList(dirlist, 'datetime');
+	let file;
+	let i = 0;
+	let superdi={};
+	console.log('file count:',list.length); //return;
+	for (file of list) {
+		//if (file.size < 100) continue; else if (i > 1) break;
+		//console.log('...', file.path);
+		let text = fromFile(file.path);
+		let res = parseCodefile(text, file.fname, false, file, superdi);
+		let keys = Object.keys(res.dicode);
+		if (keys.length == 0) continue; //keine neuen funcs
+		//console.log('res.dicode',keys);
+		//console.log('res.text:\n', res.text);
+
+		res.text = '// ' + stringBeforeLast(file.path, '\\') + '\r\n' + res.text;
+		//toFile(res.text, `C:\\D\\a03\\nodemaster\\z${i++}.js`);
+	}
+
+	let supertext='',sigtext='';
+	for(const type of ['cla','func']){
+		let keys = get_keys(superdi[type]);
+		sortCaseInsensitive(keys);
+		for(const k of keys){
+			let o=superdi[type][k];
+			supertext += o.code + '\r\n';
+			sigtext += `//${o.path} ${o.datetime}\r\n${o.sig}\r\n`;
+		}
+	}
+	toFile(supertext,`C:\\D\\a03\\nodemaster\\z_all.js`);
+	toFile(sigtext,`C:\\D\\a03\\nodemaster\\z_sig.js`);
+	console.log('DONE!')
+}
 //#endregion done
 
-
-
-
-const CODE = { text: '' };
-test9(); //test6();
-
-
-
-
-//let arr = test6();
-
-
-//CODE.text=fromFile()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//test10(); //test6();//let arr = test6();//CODE.text=fromFile()
 
 //#endregion
-
 
 //#region unused
 // const { Server } = require("socket.io");

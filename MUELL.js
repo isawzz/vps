@@ -1,4 +1,502 @@
 
+function test6_sidebar() {
+	show_sidebar(CODE.funcs, 'name', 'body');	//CODE.consts);
+
+}
+function _show_code(ev) {
+	let k = isdef(ev) ? isString(ev) ? ev : ev.target.innerHTML : rChoose(CODE.index);
+	let o = CODE.funcs[k];
+	let [w, h] = [window.innerWidth - 300, window.innerHeight - 150];
+	let [r, c] = [h / 18, w / 9];
+	show_fiddle(o.body, r, c, { bg: DB.apps.howto.color });
+}
+function add_code(ev) {
+	if (nundef(AU.ta)) show_code(ev);
+	else {
+		let k = isdef(ev) ? isString(ev) ? ev : ev.target.innerHTML : rChoose(CODE.index);
+		let o = CODE.funcs[k];
+		AU.ta.value += o.body + '\n';
+	}
+}
+
+
+function add_code_to_collection(res) {
+	CODE.paths = paths;
+	CODE.di = { var: [], const: [], cla: [], func: [] }; CODE.diregion = {}; CODE.dicode = {}; CODE.text = '';
+	//
+}
+
+async function load_codebase(paths,preserveRegionNames=false) {
+	if (nundef(paths)) {
+		paths = ['basemin', 'board', 'cards', 'gamehelpers', 'select']; //.map(f => `../basejs/${f}.js`);
+		paths = paths.map(f => `../basejs/${f}.js`);
+		//paths.push(`../game/done.js`);
+		// let paths = [`../game/aaa.js`];
+	}
+	let reslist=[];
+	for (const f of paths) {
+		console.log('...processing file',f);
+		let current_file = stringBefore(stringAfterLast(f, '/'), '.'); 
+		let base = await route_path_text(f);
+		let res = parseCodefile(base, current_file, preserveRegionNames);
+		console.log('res',res, '\nnum functions:',get_keys(res.dicode).length)
+		reslist.push(res);
+	}
+	return reslist;
+}
+
+function parseCodefile(content, fname, preserveRegionNames = true, info = {}, superdi = {}) {
+	let defaultRegions = { cla: 'classes', func: 'funcs' };
+	// let di = {}, text = ''; let dicode = {}; let diregion = {};
+	let lines = content.split('\r\n');
+	let parsing = false, code, type, key, regionName, regionOrig; //, varline, varnames, constline, constnames;
+	let firstletters = [], firstWords = [], iline = 0;
+	for (const line of lines) {
+		let l = line; iline += 1;
+		if (!l.includes("'//") && !l.includes("//'") && !l.includes("http")) {
+			l = replaceAllFast(line, '://', '://');
+			l = replaceAllFast(l, '//#', '@@#');
+			l = stringBefore(l, '//');
+			l = replaceAllFast(l, '@@#', '//#');
+			l = replaceAllFast(l, '://', '://');
+		}
+		if (isEmptyOrWhiteSpace(l.trim())) continue;
+
+		if (parsing) {
+
+			let l1 = replaceAllSpecialChars(l, '\t', '  ');
+			let ch = l1[0];
+			if (' }'.includes(ch)) code += l1 + '\r\n';
+			if (ch != ' ') { //end of parsing!
+				parsing = false;
+
+				//duplicate funcs anzeigen!!!!!!!!!!!!!!!!!!!
+				//if (lookup(superdi,[type,key])) { console.log('==>DUPLICATE FUNC:', fname, regionName, key); }
+
+				//lookupSetOverride(dicode, [key], code);
+				//lookupAddIfToList(di, [type], key);
+
+				if (nundef(regionName)) { regionName = regionOrig = valf(regionNames[type], type); }
+				let regKey = preserveRegionNames ? regionOrig : `${regionName} (${fname})`;
+
+				let sig;
+				if (type == 'cla') {
+					sig = `class ${key}{}`;
+				} else if (type == 'func') {
+					let firstline = stringBefore(code, '\r\n');
+					if (firstline.includes(') {')) sig = stringBefore(firstline, ') {') + ')';
+					else if (firstline.includes('){')) sig = stringBefore(firstline, '){') + ')';
+					else sig = `function ${key}()`;
+					sig += '{}';
+				} else { sig = `${type} ${key}`; }
+
+				let othervars = [];
+				if (type == 'var' && !code.includes('\r\n') && code.includes(',')) {
+					othervars = stringAfter(l, 'var').trim().split(',');
+					othervars = othervars.map(x => firstWord(x)); //.map(y => lookupAddToList(di, ['var'], y));
+					othervars.shift();
+				}
+				console.log('othervars', othervars);
+
+				let o = { name: key, code: code, sig: sig, region: regKey, filename: fname, type: type };
+				addKeys(info, o);
+				lookupSetOverride(superdi, [type, key], o);
+				for (const v of othervars) {
+					let o = { name: v, code: code, sig: sig, region: regKey, filename: fname, type: type };
+					addKeys(info, o);
+					lookupSetOverride(superdi, [type, v], o);
+				}
+				// lookupSetOverride(diregion, [regKey, key], o);
+				addIf(firstletters, l[0]);
+			}
+		} else {
+			//if (nundef(regionOrig)) { regionOrig = regionName = 'funcs'; }
+			let w = l[0] != '/' ? firstWord(l) : l.substring(0, 3);
+			addIf(firstWords, w);
+			//if (!['onload', 'async', 'function', 'class', 'var', 'const', '//#'].includes(w)) { console.log('line', iline, w, l[0]); }
+
+		}
+		if (parsing) continue;
+
+		if (startsWith(l, '//#region')) {
+			regionOrig = stringAfter(l, 'region').trim();
+			regionName = firstWordAfter(l, 'region');
+		} else if (startsWith(l, 'var')) {
+			parsing = true;
+			code = l + '\r\n';
+			type = 'var';
+			key = firstWordAfter(l, 'var');
+			// varline = l;
+			// varnames = stringAfter(l, 'var').trim().split(',');
+			// varnames.map(x => firstWord(x)).map(y => lookupAddToList(di, ['var'], y));
+		} else if (startsWith(l, 'const')) {
+			parsing = true;
+			code = l + '\r\n';
+			type = 'const';
+			key = firstWordAfter(l, 'const');
+			// constline = l;
+			// constnames = stringAfter(l, 'const').trim().split(',');
+			// constnames.map(x => firstWord(x)).map(y => lookupAddToList(di, ['const'], y));
+		} else if (startsWith(l, 'class')) {
+			parsing = true;
+			code = l + '\r\n';
+			type = 'cla';
+			key = firstWordAfter(l, 'class');
+		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			parsing = true;
+			code = l + '\r\n';
+			type = 'func';
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+		}
+	}
+	//console.log('first letters', firstletters)
+	//console.log('first words', firstWords)
+	//for (const k in di) { di[k].sort(); }
+	// if (isdef(di.cla)) {
+	// 	//text += `\n//#region classes \n`;
+	// 	for (const k of di.cla) {
+	// 		text += dicode[k];
+	// 	}
+	// 	text += `//#endregion classes\n`;
+	// }
+	// for (const r in diregion) {
+	// 	if (r.includes('classes')) continue; // need to skip because already hav classes from di.cla!
+	// 	text += `\n//#region ${r}\n`;
+	// 	let sorted_keys = get_keys(diregion[r]);
+	// 	sorted_keys.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+	// 	for (const funcname of sorted_keys) {
+	// 		text += dicode[funcname];
+	// 	}
+	// 	text += `//#endregion ${r}\n`;
+	// }
+	// return { di: di, dicode: dicode, diregion: diregion, text: text };
+	return superdi;
+}
+
+
+function parseCodefile(content, fname) {
+	let di = {}, text = '';
+	let dicode = {};
+	let diregion = {};
+	let lines = content.split('\r\n');
+	let classes_started = true;
+	let parsing = false, code, ending, type, key;
+	let firstletters = [];
+	for (const line of lines) {
+		let l = line;
+		if (!l.includes("'//")) {
+			l = replaceAllFast(line, '://', ':@@');
+			l = replaceAllFast(l, '//#', '@@#');
+			l = stringBefore(l, '//');
+			l = replaceAllFast(l, '@@#', '//#');
+			l = replaceAllFast(l, ':@@', '://');
+		}
+		if (isEmptyOrWhiteSpace(l.trim())) continue;
+		if (parsing) {
+			assertion(classes_started, 'parsing but NOT classes_started!!!!');
+			let l1 = replaceAllSpecialChars(l, '\t', '  ');
+			let ch = l1[0];
+			if (' }'.includes(ch)) code += l1 + '\n';
+			if (ch != ' ') {
+				parsing = false;
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+				lookupSetOverride(diregion, [fname, CODE.region, key], { name: key, code: code, sig: stringBefore(code, ') {'), region: CODE.region, filename: fname });
+				addIf(firstletters, l[0]);
+			}
+		}
+		if (classes_started && startsWith(l, '//#end')) continue;
+		assertion(!startsWith(l, '//#endregion') || !classes_started, 'ASSERTION!!!');
+		if (parsing) continue;
+		if (startsWith(l, '//#region')) {
+			let region = CODE.region = firstWordAfter(l, 'region');
+			if (startsWith(l, '//#region classes')) classes_started = true;
+			if (!classes_started || startsWith(l, '//#region vars')) text += `\n//#region ${fname} ${region}\n`;
+			continue;
+		} else if (startsWith(l, 'var')) {
+			if (classes_started) console.log('line', l)
+			classes_started = false;
+			let vs = stringAfter(l, 'var').trim().split(',');
+			vs.map(x => firstWord(x)).map(y => lookupAddToList(di, ['var'], y));
+		} else if (startsWith(l, 'const')) {
+			lookupAddToList(di, ['const'], toWords(l)[1]);
+		} else if (startsWith(l, 'class')) {
+			parsing = true;
+			code = l + '\n';
+			type = 'cla';
+			key = firstWordAfter(l, 'class');
+		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			parsing = true;
+			code = l + '\n';
+			type = 'func';
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+		}
+		if (!classes_started) text += l + '\n';
+	}
+	console.log('first letters', firstletters)
+	for (const k in di) {
+		di[k].sort();
+	}
+	if (isdef(di.cla)) {
+		text += `\n//#region ${fname} classes\n`;
+		for (const k of di.cla) {
+			text += dicode[k];
+		}
+		text += `//#endregion ${fname} classes\n`;
+	}
+	for (const r in diregion[fname]) {
+		if (r == 'classes') continue;
+		text += `\n//#region ${fname} ${r}\n`;
+		let sorted_keys = get_keys(diregion[fname][r]);
+		sorted_keys.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+		for (const funcname of sorted_keys) {
+			text += dicode[funcname];
+		}
+		text += `//#endregion ${fname} ${r}\n`;
+	}
+	return { di: di, dicode: dicode, diregion: diregion, text: text };
+}
+
+function parseCodefile(content, fname, preserveRegionNames = true, info={}, superdi={}) {
+	let di = {}, text = '';
+	let dicode = {};
+	let diregion = {};
+	let lines = content.split('\r\n');
+	let classes_started = true, commented_out=false;
+	let parsing = false, code, type, key, regionName, regionOrig;
+	let firstletters = [], firstWords = [], iline = 0;
+	for (const line of lines) {
+		let l = line; iline += 1;
+		if (!l.includes("'//") && !l.includes("//'")  && !l.includes("http")) {
+			l = replaceAllFast(line, '://', '://');
+			l = replaceAllFast(l, '//#', '@@#');
+			l = stringBefore(l, '//');
+			l = replaceAllFast(l, '@@#', '//#');
+			l = replaceAllFast(l, '://', '://');
+		}
+		if (isEmptyOrWhiteSpace(l.trim())) continue;
+
+		if (parsing) {
+			if (!classes_started) console.log('!!!PARSE VOR class_started!!! line', l)
+			assertion(classes_started, 'parsing but NOT classes_started!!!!');
+
+			let l1 = replaceAllSpecialChars(l, '\t', '  ');
+			let ch = l1[0];
+			if (' }'.includes(ch)) code += l1 + '\r\n';
+			if (ch != ' ') {
+				parsing = false;
+				
+				//duplicate funcs anzeigen!!!!!!!!!!!!!!!!!!!
+				//if (lookup(superdi,[type,key])) { console.log('==>DUPLICATE FUNC:', fname, regionName, key); }
+
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+
+				let regKey = preserveRegionNames ? regionOrig : `${regionName} (${fname})`;
+
+				let sig = type == 'cla'?`class ${key}{}`:null;
+				if (type == 'func'){
+					let firstline = stringBefore(code,'\r\n');
+					if (firstline.includes(') {')) sig = stringBefore(firstline,') {') + ')';
+					else if (firstline.includes('){')) sig = stringBefore(firstline,'){') + ')';
+					else sig = `function ${key}()`;
+					sig+='{}';
+				}
+
+
+				let o={ name: key, code: code, sig: sig, region: regKey, filename: fname };
+				addKeys(info,o);
+				lookupSetOverride(diregion, [regKey, key], o);
+				lookupSetOverride(superdi,[type,key],o);
+				addIf(firstletters, l[0]);
+			}
+		} else {
+			let w = l[0] != '/' ? firstWord(l) : l.substring(0, 3);
+			addIf(firstWords, w);
+			if (!['onload', 'async', 'function', 'class', 'var', 'const', '//#'].includes(w)) {
+				//console.log('line', iline, w, l[0]);
+			}
+
+		}
+		if (classes_started && startsWith(l, '//#end')) continue;
+		assertion(!startsWith(l, '//#endregion') || !classes_started, 'ASSERTION!!!');
+		if (parsing) continue;
+		if (startsWith(l, '//#region')) {
+			regionOrig = stringAfter(l, 'region').trim();
+			let region = regionName = firstWordAfter(l, 'region');
+			if (!classes_started || startsWith(l, '//#region vars')) text += '\r\n' + (preserveRegionNames ? l : `//#region ${region} (${fname})`) + '\r\n';
+			continue;
+		} else if (startsWith(l, 'var')) {
+			//if (classes_started) console.log('line', l)
+			classes_started = false;
+			let vs = stringAfter(l, 'var').trim().split(',');
+			vs.map(x => firstWord(x)).map(y => lookupAddToList(di, ['var'], y));
+		} else if (startsWith(l, 'const')) {
+			lookupAddToList(di, ['const'], toWords(l)[1]);
+		} else if (startsWith(l, 'class')) {
+			if (nundef(regionOrig)) {
+				regionOrig = regionName = 'classes';
+				text += '\r\n' + `//#region ${regionName} (${fname})` + '\r\n';
+			}
+			//console.log('region', regionOrig);
+			classes_started = true;
+			parsing = true;
+			code = l + '\r\n';
+			type = 'cla';
+			key = firstWordAfter(l, 'class');
+		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			if (nundef(regionOrig)) { regionOrig = regionName = 'funcs'; }
+			classes_started = true;
+			parsing = true;
+			code = l + '\r\n';
+			type = 'func';
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+		}
+		if (!classes_started) text += l + '\r\n';
+	}
+	//console.log('first letters', firstletters)
+	//console.log('first words', firstWords)
+	for (const k in di) {
+		di[k].sort();
+	}
+	if (isdef(di.cla)) {
+		//text += `\n//#region classes \n`;
+		for (const k of di.cla) {
+			text += dicode[k];
+		}
+		text += `//#endregion classes\n`;
+	}
+	for (const r in diregion) {
+		if (r.includes('classes')) continue; // need to skip because already hav classes from di.cla!
+		text += `\n//#region ${r}\n`;
+		let sorted_keys = get_keys(diregion[r]);
+		sorted_keys.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+		for (const funcname of sorted_keys) {
+			text += dicode[funcname];
+		}
+		text += `//#endregion ${r}\n`;
+	}
+	return { di: di, dicode: dicode, diregion: diregion, text: text };
+}
+
+
+function parseCodefile(content, fname, preserveRegionNames = true, info={}) {
+	let di = {}, text = '';
+	let dicode = {};
+	let diregion = {};
+	let diall = {};
+	let lines = content.split('\r\n');
+	let classes_started = true, commented_out=false;
+	let parsing = false, code, type, key, regionName, regionOrig;
+	let firstletters = [], firstWords = [], iline = 0;
+	for (const line of lines) {
+		let l = line; iline += 1;
+		// if (commented_out){
+		// 	if (l.includes('*/'))commented_out=false;
+		// 	continue;
+		// } else if (l.includes('/*')) {commented_out = true; continue;}
+		//console.log('line',l)
+
+		if (!l.includes("'//") && !l.includes("//'")  && !l.includes("http")) {
+			l = replaceAllFast(line, '://', '://');
+			l = replaceAllFast(l, '//#', '@@#');
+			l = stringBefore(l, '//');
+			l = replaceAllFast(l, '@@#', '//#');
+			l = replaceAllFast(l, '://', '://');
+		}
+		if (isEmptyOrWhiteSpace(l.trim())) continue;
+
+		if (parsing) {
+			if (!classes_started) console.log('!!!PARSE VOR class_started!!! line', l)
+			assertion(classes_started, 'parsing but NOT classes_started!!!!');
+
+			let l1 = replaceAllSpecialChars(l, '\t', '  ');
+			let ch = l1[0];
+			if (' }'.includes(ch)) code += l1 + '\r\n';
+			if (ch != ' ') {
+				parsing = false;
+				//duplicate funcs anzeigen!!!!!!!!!!!!!!!!!!!
+				if (isdef(dicode[key])) { console.log('==>DUPLICATE FUNC:', fname, regionName, key); }
+
+				lookupSetOverride(dicode, [key], code);
+				lookupAddIfToList(di, [type], key);
+
+				//preserveRegionName???
+				//ich hab regionName und fname und regionOrig
+				let regKey = preserveRegionNames ? regionOrig : `${regionName} (${fname})`;
+
+				let o={ name: key, code: code, sig: stringBefore(code, ') {'), region: regKey, filename: fname };
+				lookupSetOverride(diregion, [regKey, key], o);
+				addIf(firstletters, l[0]);
+			}
+		} else {
+			let w = l[0] != '/' ? firstWord(l) : l.substring(0, 3);
+			addIf(firstWords, w);
+			if (!['onload', 'async', 'function', 'class', 'var', 'const', '//#'].includes(w)) {
+				console.log('line', iline, w, l[0]);
+			}
+
+		}
+		if (classes_started && startsWith(l, '//#end')) continue;
+		assertion(!startsWith(l, '//#endregion') || !classes_started, 'ASSERTION!!!');
+		if (parsing) continue;
+		if (startsWith(l, '//#region')) {
+			regionOrig = stringAfter(l, 'region').trim();
+			let region = regionName = firstWordAfter(l, 'region');
+			if (!classes_started || startsWith(l, '//#region vars')) text += '\r\n' + (preserveRegionNames ? l : `//#region ${region} (${fname})`) + '\r\n';
+			continue;
+		} else if (startsWith(l, 'var')) {
+			//if (classes_started) console.log('line', l)
+			classes_started = false;
+			let vs = stringAfter(l, 'var').trim().split(',');
+			vs.map(x => firstWord(x)).map(y => lookupAddToList(di, ['var'], y));
+		} else if (startsWith(l, 'const')) {
+			lookupAddToList(di, ['const'], toWords(l)[1]);
+		} else if (startsWith(l, 'class')) {
+			if (nundef(regionOrig)) {
+				regionOrig = regionName = 'classes';
+				text += '\r\n' + `//#region ${regionName} (${fname})` + '\r\n';
+			}
+			//console.log('region', regionOrig);
+			classes_started = true;
+			parsing = true;
+			code = l + '\r\n';
+			type = 'cla';
+			key = firstWordAfter(l, 'class');
+		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			if (nundef(regionOrig)) { regionOrig = regionName = 'funcs'; }
+			classes_started = true;
+			parsing = true;
+			code = l + '\r\n';
+			type = 'func';
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+		}
+		if (!classes_started) text += l + '\r\n';
+	}
+	//console.log('first letters', firstletters)
+	console.log('first words', firstWords)
+	for (const k in di) {
+		di[k].sort();
+	}
+	if (isdef(di.cla)) {
+		//text += `\n//#region classes \n`;
+		for (const k of di.cla) {
+			text += dicode[k];
+		}
+		text += `//#endregion classes\n`;
+	}
+	for (const r in diregion) {
+		if (r.includes('classes')) continue; // need to skip because already hav classes from di.cla!
+		text += `\n//#region ${r}\n`;
+		let sorted_keys = get_keys(diregion[r]);
+		sorted_keys.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+		for (const funcname of sorted_keys) {
+			text += dicode[funcname];
+		}
+		text += `//#endregion ${r}\n`;
+	}
+	return { di: di, dicode: dicode, diregion: diregion, text: text };
+}
 
 
 function parseCodefile(content, fname, preserveRegionNames = true) {

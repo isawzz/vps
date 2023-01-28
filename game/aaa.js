@@ -5,7 +5,7 @@ var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 
 var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
 var uiActivated = false, Selected, Turn, Prevturn;
 var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
-var dBottom, dButtons, dCenter, dCode, dContent, dFiddle, dFooter, dHeader, dLeft, dMap, dMain, dMenu, dMessage, dPage, dPuppet;
+var dBottom, dButtons, dCenter, dCode, dContent, dFiddle, dConsole, dFooter, dHeader, dLeft, dMap, dMain, dMenu, dMessage, dPage, dPuppet;
 var dRight, dSidebar, dTable, dTitle, dTop;
 var Config, Syms, SymKeys, ByGroupSubgroup, KeySets, C52, Cinno, C52Cards;
 var FORCE_REDRAW = false, TESTING = false;
@@ -6810,7 +6810,7 @@ function object2string(o, props = [], except_props = []) {
   }
   return s;
 }
-function parseCodefile(content, fname) {
+function _parseCodefile(content, fname) {
   let di = {}, text = '';
   let dicode = {};
   let diregion = {};

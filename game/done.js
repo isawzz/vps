@@ -82,12 +82,28 @@ function draw_perlin_xy(item) {
 function fiddleAdd(dParent, content, idx) {
 	let ta = AU.ta = mTextarea(3, null, dParent, { fz: 16, padding: 10, family: 'tahoma', w: '100%', box: true });
 	ta.addEventListener('keydown', fiddleControlHandler);
+	ta.addEventListener('keydown', fiddleEnterResize);
 	DA.tribute.attach(ta);
 	DA.tas.push(ta);
 	ta.addEventListener('tribute-replaced', fiddleMessageHandler);
-	if (isdef(content)) ta.value = content; 
-	if (isdef(idx)) mInsertAt(dParent,ta,idx); //TESTEN!!!!!!!!!!!!!
+	if (isdef(content)) ta.value = content;
+	if (isdef(idx)) mInsertAt(dParent, ta, idx); //TESTEN!!!!!!!!!!!!!
 	ta.focus();
+}
+function fiddleEnterResize(ev) {
+	if (ev.key == 'Enter') {
+		console.log('hallo!'); 
+		let ta = ev.target;
+		//if (DA.tribute.)
+		//ta.value+='\n';
+		return;
+		let x = ta.value;
+		let lines = x.split('\n');
+		let min = lines.length + 1;
+		let coords = getCaretCoordinates(ta, ta.selectionEnd);
+		console.log('coords', coords, 'window height', window.innerHeight)
+		if (coords.top + 60 < window.innerHeight && (nundef(ta.rows) || ta.rows < min)) ta.rows = min;
+	}
 }
 function fiddleControlHandler(ev) {
 	if (ev.ctrlKey) {
@@ -120,8 +136,8 @@ function fiddleControlHandler(ev) {
 		}
 	}
 }
-function fiddleInit(dParent) {
-	dFiddle = valf(dParent,dTable); 
+function fiddleInit(dParent, dParentConsole) {
+	dFiddle = valf(dParent, dTable);
 	dMessage = mDiv(dFiddle, { w: '100%', bg: 'dimgray', fg: 'yellow', box: true, hpadding: 10 }, 'dMessage', 'enter code:');
 	getGlobals();
 	let list = Globals.function.map(x => ({ key: x.key, value: x.key + '(' }));
@@ -150,6 +166,7 @@ function fiddleInit(dParent) {
 		},
 		replaceTextSuffix: '(',
 		menuShowMinLength: 1,
+		//fillAttr: '\n',
 	};
 	var trib = DA.tribute = new Tribute(Object.assign({ menuContainer: dParent, }, tributeAttributes));
 
@@ -179,20 +196,24 @@ function fiddleMessageHandler(ev) {
 }
 function fiddleSave() {
 	if (isdef(dFiddle)) {
-		let codelist=arrChildren(dFiddle).slice(1).filter(x=>!isEmptyOrWhiteSpace(x.value)).map(x => x.value);
+		let codelist = arrChildren(dFiddle).slice(1).filter(x => !isEmptyOrWhiteSpace(x.value)).map(x => x.value);
 		localStorage.setItem('codelist', JSON.stringify(codelist));
-		lookupSetOverride(DB,['env','fiddle'],codelist);
-	}else console.log('fiddle closed - not saved')
+		lookupSetOverride(DB, ['env', 'fiddle'], codelist);
+	} else console.log('fiddle closed - not saved')
 }
 function fiddleSearch(text, callback) {
-	//console.log('text', text)
+	console.log('text', text)
 	let list = Globals.function;
 	let list1 = list.filter(x => startsWith(x.key, text));
 	callback(list1);
 }
 function runcode(code, callback = null) {
 	let x = eval(code);
-	if (callback) callback(x); else console.log('result:', x);
+	if (callback) callback(x);
+	else {
+		console.log('===>result:', x);
+		if (isdef(dMessage)) dMessage.innerHTML = isDict(x) ? JSON.stringify(x) : x.toString();
+	}
 }
 
 
@@ -356,7 +377,7 @@ function show_games(ms = 500) {
 }
 function showGlobals() {
 	getGlobals();
-	console.log('Globals',Globals)
+	console.log('Globals', Globals)
 	dTable = mBy('dTable');
 	let d = mDiv(dTable);
 
