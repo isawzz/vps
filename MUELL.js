@@ -1,4 +1,124 @@
 
+
+function parseCodefile(content, fname, preserveRegionNames = true, info = {}, superdi = {}) {
+	let defaultRegions = { cla: 'classes', func: 'funcs' };
+	let lines = content.split('\r\n');
+	let parsing = false, code, type, key, regionName, regionOrig; 
+	let firstletters = [], firstWords = [], iline = 0;
+	for (const line of lines) {
+		let l = line; iline += 1;
+		if (!l.includes("'//") && !l.includes("//'") && !l.includes("http")) {
+			l = replaceAllFast(line, '://', '://');
+			l = replaceAllFast(l, '//#', '@@#');
+			l = stringBefore(l, '//');
+			l = replaceAllFast(l, '@@#', '//#');
+			l = replaceAllFast(l, '://', '://');
+		}
+		if (isEmptyOrWhiteSpace(l.trim())) continue;
+
+		if (parsing) {
+
+			let l1 = replaceAllSpecialChars(l, '\t', '  ');
+			let ch = l1[0];
+
+			let oneliner=(type == 'var' && !code.includes('\r\n'));
+
+			if (' }]'.includes(ch)) code += l1 + '\r\n';
+			if (ch != ' ') { //end of parsing!
+				parsing = false;
+
+				//duplicate funcs anzeigen!!!!!!!!!!!!!!!!!!!
+				//if (lookup(superdi,[type,key])) { console.log('==>DUPLICATE FUNC:', fname, regionName, key); }
+
+				if (nundef(regionName)) { regionName = regionOrig = valf(defaultRegions[type], type); }
+				let regKey = preserveRegionNames ? regionOrig : `${regionName} (${fname})`;
+
+				let sig;
+				if (type == 'cla') {
+					sig = `class ${key}{}`;
+				} else if (type == 'func') {
+					let firstline = stringBefore(code, '\r\n');
+					if (firstline.includes(') {')) sig = stringBefore(firstline, ') {') + ')';
+					else if (firstline.includes('){')) sig = stringBefore(firstline, '){') + ')';
+					else sig = `function ${key}()`;
+					sig += '{}';
+				} else { sig = `${type} ${key}`; }
+
+				let othervars = [];
+				//multiple declarations in 1 line!
+				//nur bei var (const?)
+				//cond: code is 1 liner
+				if (oneliner && code.includes(',') && !code.includes('[') && !code.includes('{')){
+					othervars = stringAfter(l, 'var').trim().split(',');
+					othervars = othervars.map(x => firstWord(x)); //.map(y => lookupAddToList(di, ['var'], y));
+					othervars.shift();
+				}
+
+				// if (type == 'var' && code.includes(',')) {
+				// 	othervars = stringAfter(l, 'var').trim().split(',');
+				// 	othervars = othervars.map(x => firstWord(x)); //.map(y => lookupAddToList(di, ['var'], y));
+				// 	othervars.shift();
+				// }
+				//if (type == 'var') console.log('othervars', othervars);
+
+				let o = { name: key, code: code, sig: sig, region: regKey, filename: fname, type: type };
+				addKeys(info, o);
+				lookupSetOverride(superdi, [type, key], o);
+				for (const v of othervars) {
+					let o = { lead: key, name: v, code: '', sig: sig, region: regKey, filename: fname, type: type };
+					addKeys(info, o);
+					lookupSetOverride(superdi, [type, v], o);
+				}
+				// lookupSetOverride(diregion, [regKey, key], o);
+				addIf(firstletters, l[0]);
+			}
+		} else {
+			//if (nundef(regionOrig)) { regionOrig = regionName = 'funcs'; }
+			let w = l[0] != '/' ? firstWord(l) : l.substring(0, 3);
+			addIf(firstWords, w);
+			//if (!['onload', 'async', 'function', 'class', 'var', 'const', '//#'].includes(w)) { console.log('line', iline, w, l[0]); }
+
+		}
+		if (parsing) continue;
+
+		if (startsWith(l, '//#region')) {
+			regionOrig = stringAfter(l, 'region').trim();
+			regionName = firstWordAfter(l, 'region');
+		} else if (startsWith(l, 'var')) {
+			parsing = true;
+			code = l + '\r\n';
+			type = 'var';
+			key = firstWordAfter(l, 'var');
+		} else if (startsWith(l, 'const')) {
+			parsing = true;
+			code = l + '\r\n';
+			type = 'const';
+			key = firstWordAfter(l, 'const');
+		} else if (startsWith(l, 'class')) {
+			parsing = true;
+			code = l + '\r\n';
+			type = 'cla';
+			key = firstWordAfter(l, 'class');
+		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			parsing = true;
+			code = l + '\r\n';
+			type = 'func';
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+		}
+	}
+	return superdi;
+}
+function addModuleExports(list){
+	let txt=
+		`if (this && typeof module == "object" && module.exports && this === module.exports) {\r\n`
+		+ `  module.exports = {\r\n`;
+	for(const s of list){
+		txt+=`    ${s},\r\n`
+	};
+	txt+='  }\r\n}';
+	return txt;
+}
+
 function test6_sidebar() {
 	show_sidebar(CODE.funcs, 'name', 'body');	//CODE.consts);
 

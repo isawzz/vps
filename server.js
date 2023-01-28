@@ -194,7 +194,7 @@ let dirlist = [
 ];
 //#endregion done
 
-const { parseCodefile, stringBeforeLast, get_keys, sortCaseInsensitive } = require('./game/_bau1.js');
+const { parseCodefile, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./game/_bau1.js');
 
 //#region funcs done
 
@@ -384,9 +384,38 @@ function test10() {
 	toFile(sigtext,`C:\\D\\a03\\nodemaster\\z_sig.js`);
 	console.log('DONE!')
 }
+function test11() {
+	let list = getSortedCodefileList(dirlist, 'datetime');
+	let file;
+	let i = 0;
+	let superdi={};
+	console.log('file count:',list.length); //return;
+	for (file of list) {
+		if (file.fname.startsWith('aaasuper') || file.fname.startsWith('z')) continue;
+		let text = fromFile(file.path);
+		let res = parseCodefile(text, file.fname, false, file, superdi);
+	}
+
+	let text = '';
+	for (const type of ['var', 'const', 'cla', 'func']) {
+		let keys = get_keys(superdi[type]);
+		if (type != 'const') sortCaseInsensitive(keys);
+		for (const k of keys) {
+			
+			let code = superdi[type][k].code;
+			if (!isEmptyOrWhiteSpace(code)) {
+				text += code;
+				if (code.trim() == '}') text += '\r\n';
+			}
+		}
+	}
+	toFile(text,`C:\\D\\a03\\nodemaster\\z_all.js`);
+	toYamlFile(superdi,`C:\\D\\a03\\nodemaster\\z_all.yaml`);
+	console.log('DONE!')
+}
 //#endregion done
 
-//test10(); //test6();//let arr = test6();//CODE.text=fromFile()
+test11(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
 
 //#endregion
 

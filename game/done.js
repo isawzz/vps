@@ -422,7 +422,7 @@ function show_game_options(dParent, gamename) {
 	}
 }
 function toggle_apps() { if (isEmpty(mBy('dApps').innerHTML)) show_apps(); else iClear('dApps'); }
-function toggle_fiddle() { if (nundef(dFiddle)) show_fiddle(); else { fiddleSave(); iClear(dFiddle); dFiddle = null; } }
+function toggle_fiddle() { if (nundef(dFiddle)) show_fiddle(); else { fiddleSave(); for(const d of [dConsole,dFiddle,dSearch,dSidebar]){iClear(d);} dFiddle = null; } }
 function toggle_games() { if (isEmpty(mBy('dGames').innerHTML)) show_games(); else iClear('dGames'); }
 //#endregion
 

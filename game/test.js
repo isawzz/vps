@@ -1,4 +1,5 @@
 
+
 function test10(list){
 	
 	console.log('codebase list',list);
@@ -6,15 +7,9 @@ function test10(list){
 	//downloadAsText(text,'hallo','js');
 	//console.log('DB.appdata.simple:', DB.appdata.simple);	console.log('current url',document.URL);
 
+
 	let funcnames = list[0].di.func;
-	let txt=
-		`if (this && typeof module == "object" && module.exports && this === module.exports) {\r\n`
-		+ `  module.exports = {\r\n`;
-	for(const fname of funcnames){
-		txt+=`    ${fname},\r\n`
-	};
-	txt+='  }\r\n}';
-	DA.text=txt;
+	addModuleExports(funcnames);
 	//downloadAsText(txt,'hallo.js');
 
 

@@ -168,10 +168,7 @@ function howto_open(item) {
 	mStyle(dSearch, { bg: item.color });
 	mInputLineWithButtons(dSearch,{Code:filter_codebase,Signatures:filter_sig})
 }
-function howto_close(item) {
-	iClear('dSearch');
-	iClear('dSearchResult');
-}
+function howto_close(item) { toggle_fiddle(); }
 
 function filter_codebase() {
 

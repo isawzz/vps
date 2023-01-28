@@ -6,7 +6,7 @@ var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 
 var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
 var uiActivated = false, Selected, Turn, Prevturn;
 var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
-var dBottom, dButtons, dCenter, dCode, dContent, dFiddle, dFooter, dHeader, dLeft, dMap, dMain, dMenu, dMessage, dPage, dPuppet;
+var dBottom, dButtons, dCenter, dCode, dConsole, dContent, dFiddle, dFooter, dHeader, dLeft, dMap, dMain, dMenu, dMessage, dPage, dPuppet;
 var dRight, dSidebar, dTable, dTitle, dTop;
 var Config, Syms, SymKeys, ByGroupSubgroup, KeySets, C52, Cinno, C52Cards;
 var FORCE_REDRAW = false, TESTING = false;
@@ -3194,6 +3194,7 @@ function iAdd(item, liveprops, addprops) {
 	return item;
 }
 function iClear(item) {
+	if (nundef(item)) return;
 	if (isString(item)) { let id = item; if (isdef(Items[id])) item = Items[id]; else item = toElem(id); }
 	let d = iDiv(item);
 	if (isdef(d)) {
@@ -9594,7 +9595,10 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
 
 			let l1 = replaceAllSpecialChars(l, '\t', '  ');
 			let ch = l1[0];
-			if (' }'.includes(ch)) code += l1 + '\r\n';
+
+			let oneliner=(type == 'var' && !code.includes('\r\n'));
+
+			if (' }]'.includes(ch)) code += l1 + '\r\n';
 			if (ch != ' ') { //end of parsing!
 				parsing = false;
 
@@ -9616,12 +9620,12 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
 				} else { sig = `${type} ${key}`; }
 
 				let othervars = [];
-				if (type == 'var' && code.includes(',')) {
+				//multiple declarations in 1 line!
+				if (oneliner && code.includes(',') && !code.includes('[') && !code.includes('{')){
 					othervars = stringAfter(l, 'var').trim().split(',');
-					othervars = othervars.map(x => firstWord(x)); //.map(y => lookupAddToList(di, ['var'], y));
+					othervars = othervars.map(x => firstWord(x)); 
 					othervars.shift();
 				}
-				if (type == 'var') console.log('othervars', othervars);
 
 				let o = { name: key, code: code, sig: sig, region: regKey, filename: fname, type: type };
 				addKeys(info, o);
@@ -9631,7 +9635,6 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
 					addKeys(info, o);
 					lookupSetOverride(superdi, [type, v], o);
 				}
-				// lookupSetOverride(diregion, [regKey, key], o);
 				addIf(firstletters, l[0]);
 			}
 		} else {
@@ -9647,30 +9650,52 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
 			regionOrig = stringAfter(l, 'region').trim();
 			regionName = firstWordAfter(l, 'region');
 		} else if (startsWith(l, 'var')) {
+			key = firstWordAfter(l, 'var');
+			//var wird nur genommen wenn es keine const,function, oder class mit dem namen gibt
+			for(const t of ['const','func','cla']) if (lookup(superdi,[t,key])) continue;
 			parsing = true;
 			code = l + '\r\n';
 			type = 'var';
-			key = firstWordAfter(l, 'var');
 		} else if (startsWith(l, 'const')) {
+			key = firstWordAfter(l, 'const');
+			//const wird nur genommen wenn es keine function, oder class mit dem namen gibt
+			for(const t of ['func','cla']) if (lookup(superdi,[t,key])) continue;
+			//wenn es var gibt, hau sie aus superrdi raus!!!
+			if (isdef(superdi.var[key])) delete superdi.var[key];
 			parsing = true;
 			code = l + '\r\n';
 			type = 'const';
-			key = firstWordAfter(l, 'const');
 		} else if (startsWith(l, 'class')) {
+			key = firstWordAfter(l, 'class');
+			//class wird nur genommen wenn es keine function, oder class mit dem namen gibt
+			for(const t of ['func']) if (lookup(superdi,[t,key])) continue;
+			//wenn es var oder const gibt, hau sie aus superrdi raus!!!
+			for(const t of ['var','const']) if (lookup(superdi,[t,key])) delete superdi[t][key];
 			parsing = true;
 			code = l + '\r\n';
 			type = 'cla';
 			key = firstWordAfter(l, 'class');
 		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+			//wenn es var oder const oder class gibt, hau sie aus superrdi raus!!!
+			for(const t of ['var','const','cla']) if (lookup(superdi,[t,key])) delete superdi[t][key];
 			parsing = true;
 			code = l + '\r\n';
 			type = 'func';
-			key = stringBefore(stringAfter(l, 'function').trim(), '(');
 		}
 	}
 	return superdi;
 }
-
+function addModuleExports(list){
+	let txt=
+		`if (this && typeof module == "object" && module.exports && this === module.exports) {\r\n`
+		+ `  module.exports = {\r\n`;
+	for(const s of list){
+		txt+=`    ${s},\r\n`
+	};
+	txt+='  }\r\n}';
+	return txt;
+}
 
 if (this && typeof module == "object" && module.exports && this === module.exports) {
 	module.exports = {

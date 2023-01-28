@@ -1,14 +1,14 @@
 onload = _start;
 
 async function _start() {
-	set_run_state_local(); //set_run_state_no_server(); //set_run_state_vps();
+	set_run_state_no_server(); // set_run_state_no_server | set_run_state_local | set_run_state_vps
 	onpagedeactivated(() => { saveEnv(); dbSave(); });
 	await load_syms(); // jetzt gibt es Syms SymKeys ByGroupSubgroup Info KeySets
 	await load_db(); //console.log("DB", DB); //jetzt gibt es DB
 	//let list=await load_codebase();//['../game/aaa.js']); 
-	let superdi = await load_codebase(['../game/aaa.js'], true );
+	let superdi = CODE.di = await load_codebase(['../game/aaa.js'], true );
 
-	//create sigdi
+	//downloadCodebase(superdi);
 
 
 	console.log('superdi',superdi);
