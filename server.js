@@ -12,7 +12,7 @@ app.use(express.json());
 //#endregion done
 
 //#region dirlist
-let dirlist = [
+let dirlegacy = [
 	//legacy (DATA):
 	'C:\\DATA\\dev\\js\\02harris\\_global',
 	'C:\\DATA\\dev\\js\\02harris\\manyCars',
@@ -57,13 +57,17 @@ let dirlist = [
 	'C:\\DATA\\dev_2020\\CODEBASE\\okt21\\static\\js',
 	'C:\\DATA\\dev_2020\\CODEBASE\\work\\nov08\\js',
 
-	//middle
+];
+let dironedrive = [
 	'C:\\Users\\tawzz\\OneDrive\\dev\\CODEBASE\\rsg93\\static\\js',
 	'C:\\Users\\tawzz\\OneDrive\\dev\\CODEBASE\\okt21\\static\\js',
 	'C:\\Users\\tawzz\\OneDrive\\dev\\CBII\\CODE_SAFE\\CODE\\js',
 	'C:\\Users\\tawzz\\OneDrive\\dev\\CODEBASE\\gsm2_tictactoe\\js',
 	'C:\\Users\\tawzz\\OneDrive\\dev\\CODEBASE\\tnt_code\\_front\\asimple\\js',
 	'C:\\Users\\tawzz\\OneDrive\\dev\\CODEBASE\\tntCode\\js',
+];
+let dirgit = [
+	//middle
 	'C:\\D\\a00\\git_archive\\testing\\BASE\\features',
 	'C:\\D\\a00\\git_archive\\testing\\BASE',
 	'C:\\D\\a00\\git_archive\\test01\\public\\BASE',
@@ -105,6 +109,10 @@ let dirlist = [
 	'C:\\D\\a00\\git_archive\\animaludos\\public\\BASE\\features',
 	'C:\\D\\a00\\git_archive\\abra',
 	'C:\\D\\a00\\hive\\hive',
+	'C:\\D\\a01\\chess',
+
+];
+let dirmiddle = [
 	'C:\\D\\a00\\TESTING\\base\\js',
 	'C:\\D\\a00\\TESTING\\cosensus',
 	'C:\\D\\a00\\TESTING\\easy',
@@ -127,7 +135,9 @@ let dirlist = [
 	'C:\\D\\a01\\chatApp\\public\\work',
 	'C:\\D\\a01\\chatApp\\public\\work\\done',
 	'C:\\D\\a01\\chatApp\\public',
-	'C:\\D\\a01\\chess',
+
+];
+let dirimportant = [
 	// more important:
 	'C:\\xampp\\htdocs\\aroot\\_other\\perlen\\work\\done',
 	'C:\\xampp\\htdocs\\aroot\\_other\\perlen\\work',
@@ -191,7 +201,11 @@ let dirlist = [
 	'C:\\D\\a04\\basejs',
 	'C:\\D\\a04\\game',
 
+
 ];
+
+//let dirlist = dirlegacy.concat(dironedrive).concat(dirgit).concat(dirmiddle).concat(dirimportant);
+let dirlist = dirimportant; //LG
 //#endregion done
 
 const { parseCodefile, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./game/_bau1.js');
@@ -409,13 +423,15 @@ function test11() {
 			}
 		}
 	}
-	toFile(text,`C:\\D\\a03\\nodemaster\\z_all.js`);
-	toYamlFile(superdi,`C:\\D\\a03\\nodemaster\\z_all.yaml`);
-	console.log('DONE!')
+	toFile(text,`C:\\D\\a03\\nodemaster\\z_allLG.js`);
+	toYamlFile(superdi,`C:\\D\\a03\\nodemaster\\z_allLG.yaml`);
+	// toFile(text,`C:\\D\\a03\\nodemaster\\z_all.js`);
+	// toYamlFile(superdi,`C:\\D\\a03\\nodemaster\\z_all.yaml`);
+	console.log('DONE!');
 }
 //#endregion done
 
-//test11(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
+test11(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
 
 //#endregion
 

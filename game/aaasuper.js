@@ -498,7 +498,7 @@ var cnt=0;
 var ColBrd = new Array(BRD_SQ_NUM);
 var ColChar = "abcdefgh";
 var collections = {};
-var ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = {}, Socket = null;
+var ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Socket = null;
 var colorDict = null; 
 var ColorNames; 
 var ColorThiefObject, SelectedItem, SelectedColor;
@@ -2718,7 +2718,7 @@ var inferno = [
 ];
 var INFINITE = 30000;
 var INFO={};
-var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 0 };
+var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {};
 var initialDataC = {}; 
 var inputBox;
 var inputs = [];
