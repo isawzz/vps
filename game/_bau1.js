@@ -2,7 +2,8 @@
 
 //#region vars (basemin)
 var Pollmode = 'auto', Globals;
-var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 0 };
+var Info, ColorDi,Items = {},DA = {},Card = {},TO = {};
+var Counter = { server: 0 };
 var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
 var uiActivated = false, Selected, Turn, Prevturn;
 var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
@@ -9573,12 +9574,24 @@ function make_string_selected(item) { let d = mBy(item.id); item.bg = mGetStyle(
 function make_string_unselectable(item) { let d = mBy(item.id); d.onclick = null; mClassRemove(d, 'selectable_button'); }
 function make_string_unselected(item) { let d = mBy(item.id); mStyle(d, { bg: item.bg, fg: item.fg }); }
 //#endregion making (select)
-
+function checkKey(superdi, key, type) {
+	let types = ['const', 'var', 'cla', 'func'];
+	let itype = types.indexOf(type);
+	for (const t in superdi) {
+		if (lookup(superdi, [t, key])) {
+			let it = types.indexOf(t);
+			if (itype > it) { delete superdi[t][key]; return type; }
+			else if (it > itype) { return type == 'const' ? t : false; }
+			else return type;
+		}
+	}
+	return type;
+}
 
 function parseCodefile(content, fname, preserveRegionNames = true, info = {}, superdi = {}) {
 	let defaultRegions = { cla: 'classes', func: 'funcs' };
 	let lines = content.split('\r\n');
-	let parsing = false, code, type, key, regionName, regionOrig; 
+	let parsing = false, code, type, key, regionName, regionOrig;
 	let firstletters = [], firstWords = [], iline = 0;
 	for (const line of lines) {
 		let l = line; iline += 1;
@@ -9596,7 +9609,12 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
 			let l1 = replaceAllSpecialChars(l, '\t', '  ');
 			let ch = l1[0];
 
-			let oneliner=(type == 'var' && !code.includes('\r\n'));
+
+			let crn = (code.match(/\r\n/g) || []).length;
+			//console.log('crn',crn);
+
+			let oneliner = (type == 'var' && crn == 1); //!code.includes('\r\n'));
+			//if (oneliner) console.log('oneliner',info.path,iline,type);
 
 			if (' }]'.includes(ch)) code += l1 + '\r\n';
 			if (ch != ' ') { //end of parsing!
@@ -9619,19 +9637,38 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
 					sig += '{}';
 				} else { sig = `${type} ${key}`; }
 
-				let othervars = [];
+				let addvars = [];
 				//multiple declarations in 1 line!
-				if (oneliner && code.includes(',') && !code.includes('[') && !code.includes('{')){
-					othervars = stringAfter(l, 'var').trim().split(',');
-					othervars = othervars.map(x => firstWord(x)); 
+
+				if (code.includes('PORT')) {
+					//console.log('PORT',info.path,iline,type);
+					let constsaved = null != lookup(superdi, ['const', 'PORT']);
+					let varsaved = null != lookup(superdi, ['var', 'PORT']);
+					//console.log('..const',constsaved,'var',varsaved);
+					//console.log('cond',oneliner); // && code.includes(',') && !code.includes('[') && !code.includes('{'))
+				}
+
+				if (oneliner && code.includes(',') && !code.includes('[') && !code.includes('{ ')) {
+					let thisisit=code.includes('PORT');
+					if (code.includes('PORT')) console.log('HERE',info.path)
+					let othervars = stringAfter(l, 'var').trim().split(',');
+					othervars = othervars.map(x => firstWord(x));
 					othervars.shift();
+
+					//hier muss noch type geaendert werden as perr other var!!!! falls const=>var aendern muss!!!
+					for (const v of othervars) {
+						let t = checkKey(superdi, key, type);
+						if (v == 'PORT') console.log('path', info.path, t, type)
+						if (t) addvars.push[{ name: v, type: t }];
+					}
 				}
 
 				let o = { name: key, code: code, sig: sig, region: regKey, filename: fname, type: type };
 				addKeys(info, o);
-				lookupSetOverride(superdi, [type, key], o);
-				for (const v of othervars) {
-					let o = { lead: key, name: v, code: '', sig: sig, region: regKey, filename: fname, type: type };
+				type = checkKey(superdi, key, type);
+				if (type) lookupSetOverride(superdi, [type, key], o);
+				for (const v of addvars) {
+					let o = { lead: key, name: v.name, code: '', sig: sig, region: regKey, filename: fname, type: v.type };
 					addKeys(info, o);
 					lookupSetOverride(superdi, [type, v], o);
 				}
@@ -9652,14 +9689,14 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
 		} else if (startsWith(l, 'var')) {
 			key = firstWordAfter(l, 'var');
 			//var wird nur genommen wenn es keine const,function, oder class mit dem namen gibt
-			for(const t of ['const','func','cla']) if (lookup(superdi,[t,key])) continue;
+			for (const t of ['const', 'func', 'cla']) if (lookup(superdi, [t, key])) continue;
 			parsing = true;
 			code = l + '\r\n';
 			type = 'var';
 		} else if (startsWith(l, 'const')) {
 			key = firstWordAfter(l, 'const');
 			//const wird nur genommen wenn es keine function, oder class mit dem namen gibt
-			for(const t of ['func','cla']) if (lookup(superdi,[t,key])) continue;
+			for (const t of ['func', 'cla']) if (lookup(superdi, [t, key])) continue;
 			//wenn es var gibt, hau sie aus superrdi raus!!!
 			if (isdef(superdi.var[key])) delete superdi.var[key];
 			parsing = true;
@@ -9668,9 +9705,9 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
 		} else if (startsWith(l, 'class')) {
 			key = firstWordAfter(l, 'class');
 			//class wird nur genommen wenn es keine function, oder class mit dem namen gibt
-			for(const t of ['func']) if (lookup(superdi,[t,key])) continue;
+			for (const t of ['func']) if (lookup(superdi, [t, key])) continue;
 			//wenn es var oder const gibt, hau sie aus superrdi raus!!!
-			for(const t of ['var','const']) if (lookup(superdi,[t,key])) delete superdi[t][key];
+			for (const t of ['var', 'const']) if (lookup(superdi, [t, key])) delete superdi[t][key];
 			parsing = true;
 			code = l + '\r\n';
 			type = 'cla';
@@ -9678,7 +9715,7 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
 		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
 			key = stringBefore(stringAfter(l, 'function').trim(), '(');
 			//wenn es var oder const oder class gibt, hau sie aus superrdi raus!!!
-			for(const t of ['var','const','cla']) if (lookup(superdi,[t,key])) delete superdi[t][key];
+			for (const t of ['var', 'const', 'cla']) if (lookup(superdi, [t, key])) delete superdi[t][key];
 			parsing = true;
 			code = l + '\r\n';
 			type = 'func';
@@ -9686,14 +9723,14 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
 	}
 	return superdi;
 }
-function addModuleExports(list){
-	let txt=
+function addModuleExports(list) {
+	let txt =
 		`if (this && typeof module == "object" && module.exports && this === module.exports) {\r\n`
 		+ `  module.exports = {\r\n`;
-	for(const s of list){
-		txt+=`    ${s},\r\n`
+	for (const s of list) {
+		txt += `    ${s},\r\n`
 	};
-	txt+='  }\r\n}';
+	txt += '  }\r\n}';
 	return txt;
 }
 

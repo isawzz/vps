@@ -1,4 +1,45 @@
 
+function checkKey(superdi, key, type) {
+
+	//check if already in superdi with a different type
+	let types = ['const', 'var', 'cla', 'func'];
+	let itype = types.indexOf(type);
+	// let ok = true;
+	for (const t in superdi) {
+		if (lookup(superdi, [t, key])) {
+			let it = types.indexOf(t);
+			if (itype > it) { delete superdi[t][key]; return type; }
+			else if (it > itype) { return type == 'const' ? t : false; }
+			else return type;
+		}
+		// if (lookup(superdi, [t, key])) {
+
+		// 	if (key == 'PORT') console.log('PORT',t,type);
+
+		// 	let it = types.indexOf(t);
+		// 	if (itype > it) { delete superdi[t][key]; console.log('del', key, t); return type; }
+		// 	else if (it > itype) { console.log('skip/var', key, type); return type == 'const' ? t : false; }
+		// 	else return type;
+		// }
+		// if (lookup(superdi, [t, key])) {
+		// 	if (t == type) break;
+		// 	else if (type == 'const' && t == 'var') {
+		// 		type = 'var';
+		// 	} else if (type == 'var' && t == 'const') {
+		// 		delete superdi.const[key];
+		// 		console.log('deleted:',key,t)
+		// 	} else if (it < itype) {
+		// 		delete superdi.const[key];
+		// 	} else ok = false;
+		// }
+	}
+	return type;
+	// if (!ok) {
+	// 	console.log('!!dup:', key, type);
+	// }
+	// return ok?type:ok;
+
+}
 
 function parseCodefile(content, fname, preserveRegionNames = true, info = {}, superdi = {}) {
 	let defaultRegions = { cla: 'classes', func: 'funcs' };

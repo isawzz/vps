@@ -11,6 +11,7 @@ app.use(express.static(__dirname + '')); //Serve root directory
 app.use(express.json());
 //#endregion done
 
+const LG = false;
 //#region dirlist
 let dirlegacy = [
 	//legacy (DATA):
@@ -204,8 +205,7 @@ let dirimportant = [
 
 ];
 
-//let dirlist = dirlegacy.concat(dironedrive).concat(dirgit).concat(dirmiddle).concat(dirimportant);
-let dirlist = dirimportant; //LG
+let dirlist = LG ? dirimportant : dirlegacy.concat(dironedrive).concat(dirgit).concat(dirmiddle).concat(dirimportant);
 //#endregion done
 
 const { parseCodefile, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./game/_bau1.js');
@@ -220,11 +220,11 @@ function getCodeFilenames(dir) {
 }
 function getCompactDatetime(str) {
 	var date = new Date(str),
-			mnth = ("0" + (date.getMonth()+1)).slice(-2),
-			day  = ("0" + date.getDate()).slice(-2);
-			hours  = ("0" + date.getHours()).slice(-2);
-			minutes = ("0" + date.getMinutes()).slice(-2);
-	return [ date.getFullYear(), mnth, day, hours, minutes ].join("-");
+		mnth = ("0" + (date.getMonth() + 1)).slice(-2),
+		day = ("0" + date.getDate()).slice(-2);
+	hours = ("0" + date.getHours()).slice(-2);
+	minutes = ("0" + date.getMinutes()).slice(-2);
+	return [date.getFullYear(), mnth, day, hours, minutes].join("-");
 }
 function getFilesWithout(dir, list) {
 	let files = getCodeFilenames(dir);
@@ -237,7 +237,7 @@ function getSortedCodefileList(dlist, prop = 'datetime') {
 	let res = [];
 	if (dlist === undefined) dlist = dirlist;
 	for (const dir of dlist) {
-		let files = getFilesWithout(dir, ['jQuery','old', 'muell', '__', 'trash', 'copy', '.min.js']);
+		let files = getFilesWithout(dir, ['jQuery', 'old', 'muell', '__', 'trash', 'copy', '.min.js']);
 		for (const fname of files) {
 			if (fname.startsWith('app') || fname.startsWith('server')) continue;
 			let path = dir + '\\' + fname;
@@ -358,7 +358,7 @@ function test9() {
 		let res = parseCodefile(text, file.fname, false);
 		let keys = Object.keys(res.dicode);
 		if (keys.length == 0) continue;
-		console.log('res.dicode',keys);
+		console.log('res.dicode', keys);
 		//console.log('res.text:\n', res.text);
 		res.text = '// ' + stringBeforeLast(file.path, '\\') + '\r\n' + res.text;
 		toFile(res.text, `C:\\D\\a03\\nodemaster\\z${i++}.js`);
@@ -368,8 +368,8 @@ function test10() {
 	let list = getSortedCodefileList(dirlist, 'datetime');
 	let file;
 	let i = 0;
-	let superdi={};
-	console.log('file count:',list.length); //return;
+	let superdi = {};
+	console.log('file count:', list.length); //return;
 	for (file of list) {
 		//if (file.size < 100) continue; else if (i > 1) break;
 		//console.log('...', file.path);
@@ -384,26 +384,26 @@ function test10() {
 		//toFile(res.text, `C:\\D\\a03\\nodemaster\\z${i++}.js`);
 	}
 
-	let supertext='',sigtext='';
-	for(const type of ['cla','func']){
+	let supertext = '', sigtext = '';
+	for (const type of ['cla', 'func']) {
 		let keys = get_keys(superdi[type]);
 		sortCaseInsensitive(keys);
-		for(const k of keys){
-			let o=superdi[type][k];
+		for (const k of keys) {
+			let o = superdi[type][k];
 			supertext += o.code + '\r\n';
 			sigtext += `//${o.path} ${o.datetime}\r\n${o.sig}\r\n`;
 		}
 	}
-	toFile(supertext,`C:\\D\\a03\\nodemaster\\z_all.js`);
-	toFile(sigtext,`C:\\D\\a03\\nodemaster\\z_sig.js`);
+	toFile(supertext, `C:\\D\\a03\\nodemaster\\z_all.js`);
+	toFile(sigtext, `C:\\D\\a03\\nodemaster\\z_sig.js`);
 	console.log('DONE!')
 }
 function test11() {
 	let list = getSortedCodefileList(dirlist, 'datetime');
 	let file;
 	let i = 0;
-	let superdi={};
-	console.log('file count:',list.length); //return;
+	let superdi = {};
+	console.log('file count:', list.length); //return;
 	for (file of list) {
 		if (file.fname.startsWith('aaasuper') || file.fname.startsWith('z')) continue;
 		let text = fromFile(file.path);
@@ -414,17 +414,18 @@ function test11() {
 	for (const type of ['var', 'const', 'cla', 'func']) {
 		let keys = get_keys(superdi[type]);
 		if (type != 'const') sortCaseInsensitive(keys);
+		console.log('1:', keys[0]);
 		for (const k of keys) {
-			
+
 			let code = superdi[type][k].code;
 			if (!isEmptyOrWhiteSpace(code)) {
 				text += code;
-				if (code.trim() == '}') text += '\r\n';
+				//if (code.trim() == '}') text += '\r\n';
 			}
 		}
 	}
-	toFile(text,`C:\\D\\a03\\nodemaster\\z_allLG.js`);
-	toYamlFile(superdi,`C:\\D\\a03\\nodemaster\\z_allLG.yaml`);
+	toFile(text, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.js`);
+	toYamlFile(superdi, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
 	// toFile(text,`C:\\D\\a03\\nodemaster\\z_all.js`);
 	// toYamlFile(superdi,`C:\\D\\a03\\nodemaster\\z_all.yaml`);
 	console.log('DONE!');

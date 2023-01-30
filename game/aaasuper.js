@@ -47,7 +47,6 @@ var allGames1 = {
   }
 };
 var allGamesC = null;
-var animate = false;
 var AnimTimer = function () {
   this.date = new Date();
   this.lastTime = 0;
@@ -498,7 +497,7 @@ var cnt=0;
 var ColBrd = new Array(BRD_SQ_NUM);
 var ColChar = "abcdefgh";
 var collections = {};
-var ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Socket = null;
+var ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = {}, Socket = null;
 var colorDict = null; 
 var ColorNames; 
 var ColorThiefObject, SelectedItem, SelectedColor;
@@ -2574,8 +2573,8 @@ var FUNCTIONS = {
   no_spec: (o, v) => false, 
 }
 var G, S, M, UIS, IdOwner, id2oids, id2uids, oid2ids;
-var game = new Game;
 var GAME = 'ttt'; 
+var game = new Game;
 var GameController = {};
 var GAMEPLID = null; 
 var gameSequence = IS_TESTING ? ['gSayPicAuto', 'gTouchPic', 'gTouchColors', 'gWritePic', 'gMissingLetter', 'gSayPic']
@@ -2718,14 +2717,13 @@ var inferno = [
 ];
 var INFINITE = 30000;
 var INFO={};
-var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {};
+var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 0 };
 var initialDataC = {}; 
 var inputBox;
 var inputs = [];
 var interim_confidence, interim_confidence2, interim_confidence_sum, interim_num;
 var IsAnswerCorrect;
 var IsCanvasActive = false;
-var isPlaying = false; 
 var isReallyMultiplayer = false;
 var isRunning = false;
 var isSpeakerRunning, isINTERRUPT;
@@ -4009,6 +4007,7 @@ var SEEN_STATUS = false;
 var selectedEmoSetNames = ['all', 'animal', 'body', 'drink', 'emotion', 'food', 'fruit', 'game', 'gesture', 'kitchen', 'object', 'person', 'place', 'plant', 'sports', 'time', 'transport', 'vegetable'];
 var SelectedMenuKey, MenuItems;
 var sent_audio = new Audio("../base/assets/sounds/message_sent.mp3");
+var SERVER = "http://localhost:8080/aroot/simple"; // oder telecave!
 var serverData = null;
 var serverDataC = null;
 var serverDataUpdated;
@@ -4115,22 +4114,6 @@ var TestNumber,TestList, TestRunning, TestSuiteRunning;
 var TESTVAR = 0;
 var th = ['', 'thousand', 'million', 'billion', 'trillion'];
 var timeout1, timeout2;
-var Timer = function () {
-  this.date = new Date();
-  this.lastTime = 0;
-  this.currentTime = 0;
-  this.start = function () {
-    this.currentTime = Date.now();
-  }
-  this.reset = function () {
-    this.currentTime = Date.now();
-  }
-  this.getTimeElapsed = function () {
-    this.lastTime = this.currentTime;
-    this.currentTime = Date.now();
-    return (this.currentTime - this.lastTime);
-  }
-}
 var TimestampStarted, TimeElapsed, OnTimeOver = null, TimeElem, TimeLeft;
 var timit;
 var tn = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
@@ -4241,7 +4224,6 @@ const complementaryColor = color => {
 const MARGIN_XS = '2px 4px';
 const MSCATS = { rect: 'g', g: 'g', circle: 'g', text: 'g', polygon: 'g', line: 'g', body: 'd', svg: 'd', div: 'd', p: 'd', table: 'd', button: 'd', a: 'd', span: 'd', image: 'd', paragraph: 'd', anchor: 'd' };
 const DOMCATS = { rect: 'g', g: 'g', circle: 'g', text: 'g', polygon: 'g', line: 'g', body: 'd', svg: 'h', div: 'd', p: 'd', table: 'd', button: 'd', a: 'd', span: 'd', image: 'd', paragraph: 'd', anchor: 'd' };
-const AREAS={}; 
 const IS_MIRROR = false;
 const FLASK = true;
 const NGROK = false; //'http://849aec381695.ngrok.io/'; // MUSS / am ende!!! 
@@ -4263,7 +4245,6 @@ const defaultGameplayerAreaName = 'gameplayerArea';
 const defaultTabletopCardsAreaName = 'tabletopCardsArea';
 const defaultDeckAreaName = 'deckArea';
 const MIN_CARD_HEIGHT = 60;
-const MAX_RECURSIONS = 200;
 const RSGTYPES = { board: 1, hand: 2, field: 101, edge: 102, corner: 103 };
 const CARD_SZ = 80;
 const LABEL_SZ = 40;
@@ -4273,12 +4254,7 @@ const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
 const INTERACTION = { none: 0, selected: 1, stop: 2, saveLoad: 3, route: 4 };
 const soloTypes = ['me', 'AI regular', 'AI random', 'AI pass'];
 const allPlayerTypes = ['me', 'human', 'AI regular', 'AI random', 'AI pass'];
-const PLAYER_CONFIG_FOR_MULTIPLAYER = ['me', 'human', 'human'];
-const USE_BACKEND_AI = true;
-const VERSION = '_ui'; 
-const CACHE_INITDATA = true;
 const RUNTEST = false; 
-const DSPEC_VERSION = 3;
 const USPEC_VERSION = '2a';
 const CODE = {
   paths: [],
@@ -4286,12 +4262,10 @@ const CODE = {
   consts: {},
   index: [],
 };
-const SERVERDATA_VERSION = 1;
-const TEST_PATH = '/zdata/';
 const INIT_CLEAR_LOCALSTORAGE = true; 
 const STARTING_TAB_OPEN = 'bPlayers'; 
 const TIMIT_SHOW = false; 
-const SHOW_SPEC = true; 
+const PORT = 2022;
 const names = ['felix', 'amanda', 'sabine', 'tom', 'taka', 'microbe', 'dwight', 'jim', 'michael', 'pam', 'kevin', 'darryl', 'lauren', 'anuj', 'david', 'holly'];
 const INCREMENTAL_UPDATE = true; 
 const VERBOSE = true; 
@@ -4300,7 +4274,6 @@ const DEF_ORIENTATION = 'v';
 const RUPDATE = {
   info: mNodeChangeContent,
 };
-const SHAPEFUNCS = { 'circle': agCircle, 'hex': agHex, 'rect': agRect, };
 const RCREATE = {
   card52: mCard52,
   card: mCard,
@@ -4334,6 +4307,9 @@ const PARAMRSG_T = {
   size: true,
   rounding: true,
 };
+const SHOW_SPEC = true; 
+const SERVERDATA_VERSION = 1;
+const CACHE_INITDATA = true;
 const MarkerText = ['✔️', '❌'];
 const MarkerId = { SUCCESS: 0, FAIL: 1 };
 const GENERATE_EMPTY_MESSAGES = true;
@@ -4345,6 +4321,9 @@ const germanNumbers = {
   sieben: 7, 7: 'sieben', 8: 'acht', acht: 8, 9: 'neun', neun: 9, zehn: 10, elf: 11, zwoelf: 12, zwanzig: 20, dreissig: 30,
   10: 'zehn', 11: 'elf', 12: 'zwoelf', 20: 'zwanzig', 30: 'dreissig', vierzig: 40, fuenfzig: 50, 40: 'vierzig', 50: 'fuenfzig'
 };
+const VERSION = '_ui'; 
+const DSPEC_VERSION = 3;
+const TEST_PATH = '/zdata/';
 const messageTypes = { LEFT: 'left', RIGHT: 'right', LOGIN: 'login' };
 const messages = []; 
 const VerboseSocket = false;
@@ -5070,6 +5049,8 @@ const BLUFF = {
   toword: { _: '_', '3': 'three', '4': 'four', '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine', T: 'ten', J: 'jack', Q: 'queen', K: 'king', A: 'ace' },
   rankstr: '3456789TJQKA',
 };
+const AREAS={}; 
+const MAX_RECURSIONS = 200;
 const DEFAULTPICTYPE = 'all'; 
 const EMOFONTLIST = ['emoOpen', 'openmoBlack', 'segoe ui emoji', 'segoe ui symbol'];
 const sleep = m => new Promise(r => setTimeout(r, m))
@@ -5379,15 +5360,16 @@ const KSKeys = ['action', 'actionPlus', 'all', 'best25', 'best50', 'best75', 'be
 const PERLEN_DATA_PATH = './public/PERLENDATA/';
 const PERLENPATH_FRONT = './PERLENDATA/';
 const HEROKU = false;
-const USERNAME_SELECTION = 'random'; 
 const UITEST = false;
 const JUST_PERLEN_GAME = true;
-const CLEAR_LOCAL_STORAGE = false;
 const BRAUN = '#331606';
 const GermanToEnglish = {
   rot: 'red', blau: 'blue', grün: 'green', gelb: 'yellow', violett: 'violet', lila: 'purple',
   braun: 'brown', schwarz: 'black', weiss: 'white', grau: 'grey', rosa: 'pink', orange: 'orange'
 };
+const PLAYER_CONFIG_FOR_MULTIPLAYER = ['me', 'human', 'human'];
+const USERNAME_SELECTION = 'random'; 
+const CLEAR_LOCAL_STORAGE = false;
 const Simple = {
   axiom: 'A',
   rules: [
@@ -5914,6 +5896,7 @@ const is_key_down = (() => {
   return (key) => state.hasOwnProperty(key) && state[key] || false;
 })();
 const MyNames = ['amanda', 'angela', 'erin', 'holly', 'jan', 'karen', 'kelly', 'pam', 'phyllis', 'andy', 'creed', 'darryl', 'david', 'dwight', 'felix', 'gul', 'jim', 'kevin', 'luis', 'michael', 'nil', 'oscar', 'ryan', 'stanley', 'toby', 'wolfgang'];
+const SHAPEFUNCS = { 'circle': agCircle, 'hex': agHex, 'rect': agRect, };
 const colorShadeX = (c, amt) => {
   let col = colorHex(c);
   col = col.replace(/^#/, '')
@@ -10196,40 +10179,6 @@ class CTimer_dep {
     this.paused = true;
   }
 }
-class Deck {
-  constructor(f) { this.data = []; if (isdef(f)) if (isString(f)) this['init' + f](); else if (isList(f)) this.init(f); }
-  init(arr) { this.data = arr; }
-  initEmpty() { this.data = []; }
-  initNumber(n, shuffled = true) { this.initTest(n, shuffled); }
-  initTest(n, shuffled = true) { this.data = range(0, n - 1); if (shuffled) this.shuffle(); }
-  init52(shuffled = true, jokers = 0) { this.data = range(0, 51 + jokers); if (shuffled) this.shuffle(); }
-  init52_double(shuffled = true, jokers = 0) { this.data = range(0, 103 + jokers); if (shuffled) this.shuffle(); }
-  init52_no_suits(n = 4, shuffled = true, jokers = 0) { this.data = range(0, 13 * n + jokers - 1); if (shuffled) this.shuffle(); }
-  initRandomHand52(n) { this.data = choose(range(0, 51), n); }
-  addTop(i) { this.data.push(i); return this; }
-  addBottom(i) { this.data.unshift(i); return this; }
-  bottom() { return this.data[0]; }
-  cards() { return this.data; }
-  count() { return this.data.length; }
-  clear() { this.data = []; }
-  deal(n) { return this.data.splice(0, n); }
-  dealDeck(n) { let d1 = new Deck(); d1.init(this.data.splice(0, n)); return d1; }
-  popTop() { return this.data.pop(); }
-  popBottom() { return this.data.shift(); }
-  remTop() { this.data.pop(); return this; }
-  remBottom() { this.data.shift(); return this; }
-  remove(i) { removeInPlace(this.data, i); return this; }
-  removeAtIndex(i) { return this.data.splice(i, 1)[0]; }
-  removeFromIndex(i, n) { return this.data.splice(i, n); }
-  setData(arr, shuffled = false) { this.data = arr; if (shuffled) this.shuffle(); }
-  sort() {
-    this.data.sort((a, b) => Number(a) - Number(b));
-    return this;
-  }
-  shuffle() { shuffle(this.data); return this; }
-  top() { return arrLast(this.data); }
-  toString() { return this.data.toString(); }
-}
 class Deck1 extends Array {
   initTest(n, shuffled = true) { range(0, n).map(x => this.push(Card52.getItem(x))); if (shuffled) this.shuffle(); }
   initEmpty() { }
@@ -10660,43 +10609,6 @@ class GAbacus extends Game {
     }
   }
   eval(isCorrect) { return isCorrect; }
-}
-class Game {
-  constructor(name, o) {
-    this.name = name;
-    copyKeys(o, this);
-    this.maxLevel = isdef(this.levels) ? Object.keys(this.levels).length - 1 : 0;
-    this.id = name;
-    this.color = getColorDictColor(this.color);
-  }
-  clear() { clearTimeout(this.TO); clearFleetingMessage(); }
-  startGame() { }
-  start_Level() {
-    this.keys = setKeysG(this, filterWordByLengthG, 25);
-    console.assert(nundef(this.numPics) || this.keys.length >= this.numPics, 'WAAAAAAAAAAAS? nMin in setKeys nicht richtig!!!!! ' + this.numPics + ' ' + this.keys.length)
-  }
-  startRound() { }
-  prompt() {
-    myShowPics(this.controller.evaluate.bind(this.controller));
-    setGoal();
-    show_instruction(`click <b>${Goal.label.toUpperCase()}</b>`, dTitle, `click ${Goal.label}`);
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    sayTryAgain();
-    if (this.showHint) shortHintPic();
-    return 10;
-  }
-  activate() { }
-  interact() { }
-  eval(ev) {
-    ev.cancelBubble = true;
-    let item = findItemFromEvent(Pictures, ev);
-    Selected = { pic: item, feedbackUI: iDiv(item), sz: getRect(iDiv(item)).h };
-    Selected.reqAnswer = Goal.label;
-    Selected.answer = item.label;
-    if (item.label == Goal.label) { return true; } else { return false; }
-  }
 }
 class GameTimed extends Game{
   constructor(name, o) { super(name, o); }
@@ -12639,53 +12551,6 @@ class GReversi extends GTTT {
     arrReplaceAtInPlace(state, move, player.sym);
     let iCapt = bCapturedPieces(player.sym, state, move, G.rows, G.cols);
     for (const i of iCapt) { state[i] = player.sym; }
-  }
-}
-class _grid {
-  constructor(o, pool, boardInfo, fieldInfo) {
-    this.boardInfo = boardInfo;
-    this.fieldInfo = fieldInfo;
-    let { board, fields, corners, edges } = this.skeleton = this.gridSkeleton(o, pool, this.boardInfo, this.fieldInfo);
-    board.oid = o.oid;
-  }
-  gridSkeleton(omap, pool, gridInfoFunc, fieldInfoFunc) {
-    let board = { o: omap, info: gridInfoFunc(omap.rows, omap.cols) };
-    let fields = {};
-    for (const fid of getElements(omap.fields)) {
-      let o = pool[fid];
-      fields[fid] = { oid: fid, o: pool[fid], info: fieldInfoFunc(board.info, o.row, o.col) };
-    }
-    board.info.vertices = correctPolys(Object.values(fields).map(x => x.info.poly), 1);
-    let dhelp = {}; 
-    let corners = {};
-    for (const fid in fields) {
-      let f = fields[fid];
-      let i = 0;
-      for (const cid of getElements(f.o.corners)) {
-        if (cid && nundef(dhelp[cid])) {
-          let pt = f.info.poly[i];
-          corners[cid] = { oid: cid, o: pool[cid], info: { shape: 'circle', memType: 'corner', x: pt.x, y: pt.y, w: 1, h: 1 } };
-          dhelp[cid] = true;
-        }
-        i += 1;
-      }
-    }
-    dhelp = {}; 
-    let edges = {};
-    for (const fid in fields) {
-      let f = fields[fid];
-      for (const eid of getElements(f.o.edges)) {
-        if (eid && nundef(dhelp[eid])) {
-          let el = pool[eid];
-          let n1 = corners[el.corners[0]._obj];
-          let n2 = corners[el.corners[1]._obj];
-          let [x1, y1, x2, y2] = [n1.info.x, n1.info.y, n2.info.x, n2.info.y];
-          edges[eid] = { oid: eid, o: el, info: { shape: 'line', memType: 'edge', x1: x1, y1: y1, x2: x2, y2: y2, x: (x1 + x2) / 2, y: (y1 + y2) / 2, thickness: 1, w: 1, h: 1 } };
-          dhelp[eid] = true;
-        }
-      }
-    }
-    return { board: board, fields: fields, corners: corners, edges: edges };
   }
 }
 class GRiddle extends Game {
@@ -21139,7 +21004,7 @@ async function _start() {
   onpagedeactivated(() => { saveEnv(); dbSave(); });
   await load_syms(); 
   await load_db(); 
-  let superdi = CODE.di = await load_codebase(['../game/aaa.js'], true );
+  let superdi = CODE.di = await load_codebase(['../game/aaasuper.js'], true );
   console.log('superdi',superdi);
   show_sidebar(sortCaseInsensitive(get_keys(superdi.const)));
   dTable = mBy('dTable');
@@ -23479,14 +23344,14 @@ function addMessage(msg) {
   setMessage(msg); 
   addListItem('events', msg); 
 }
-function addModuleExports(list){
-  let txt=
+function addModuleExports(list) {
+  let txt =
     `if (this && typeof module == "object" && module.exports && this === module.exports) {\r\n`
     + `  module.exports = {\r\n`;
-  for(const s of list){
-    txt+=`    ${s},\r\n`
+  for (const s of list) {
+    txt += `    ${s},\r\n`
   };
-  txt+='  }\r\n}';
+  txt += '  }\r\n}';
   return txt;
 }
 function addMonthToDate(date, months) {
@@ -29536,9 +29401,61 @@ function boamain_start() {
     i++;
   }
 }
-function Board() {
+function board_to_fen(board) {
+  let result = "";
+  for (let y = 0; y < board.length; y++) {
+    let empty = 0;
+    for (let x = 0; x < board[y].length; x++) {
+      let c = board[y][x][0];  
+      if (c == 'w' || c == 'b') {
+        if (empty > 0) {
+          result += empty.toString();
+          empty = 0;
+        }
+        if (c == 'w') {
+          result += board[y][x][1].toUpperCase();  
+        } else {
+          result += board[y][x][1].toLowerCase();  
+        }
+      } else {
+        empty += 1;
+      }
+    }
+    if (empty > 0)   
+    {
+      result += empty.toString();
+    }
+    if (y < board.length - 1)  
+    {
+      result += '/';
+    }
+  }
+  result += ' w KQkq - 0 1';
+  return result;
+}
+function boardArrOmitFirstRowCol(boardArr, rows, cols) {
+  let res = [];
+  for (let r = 1; r < rows; r++) {
+    for (let c = 1; c < cols; c++) {
+      let i = iFromRowCol(r, c, rows, cols);
+      res.push(boardArr[i]);
+    }
+  }
+  return res;
+}
+function boardArrReduced(boardArr, rows, cols) {
+  let res = [];
+  for (let r = 1; r < rows; r++) {
+    for (let c = 1; c < cols; c++) {
+      let i = iFromRowCol(r, c, rows, cols);
+      res.push(boardArr[i]);
+    }
+  }
+  return res;
+}
+function BoardCardGame() {
     var self = this;
-    this.div = document.getElementById("div-board");
+    this.div = document.getElementById("dTable");
     this.deck = new Deck();
     this.bunchs = new Array();
     this.drags = new Array();
@@ -29699,58 +29616,6 @@ function Board() {
             alert("Congratulations!!! You have solved the Solitarie.\r\nClose this message and press F5 to play a new game.");
         }
     }
-}
-function board_to_fen(board) {
-  let result = "";
-  for (let y = 0; y < board.length; y++) {
-    let empty = 0;
-    for (let x = 0; x < board[y].length; x++) {
-      let c = board[y][x][0];  
-      if (c == 'w' || c == 'b') {
-        if (empty > 0) {
-          result += empty.toString();
-          empty = 0;
-        }
-        if (c == 'w') {
-          result += board[y][x][1].toUpperCase();  
-        } else {
-          result += board[y][x][1].toLowerCase();  
-        }
-      } else {
-        empty += 1;
-      }
-    }
-    if (empty > 0)   
-    {
-      result += empty.toString();
-    }
-    if (y < board.length - 1)  
-    {
-      result += '/';
-    }
-  }
-  result += ' w KQkq - 0 1';
-  return result;
-}
-function boardArrOmitFirstRowCol(boardArr, rows, cols) {
-  let res = [];
-  for (let r = 1; r < rows; r++) {
-    for (let c = 1; c < cols; c++) {
-      let i = iFromRowCol(r, c, rows, cols);
-      res.push(boardArr[i]);
-    }
-  }
-  return res;
-}
-function boardArrReduced(boardArr, rows, cols) {
-  let res = [];
-  for (let r = 1; r < rows; r++) {
-    for (let c = 1; c < cols; c++) {
-      let i = iFromRowCol(r, c, rows, cols);
-      res.push(boardArr[i]);
-    }
-  }
-  return res;
 }
 function boardTestGetCol() {
   let arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -32525,6 +32390,28 @@ function checkGameConfigComplete() {
     if (isEmpty(pl.username)) return false;
   }
   return true;
+}
+function checkKey(superdi,key,type) {
+  let ok = true;
+  for (const t in superdi) {
+    let types = ['const', 'var', 'cla', 'func'];
+    let itype = types.indexOf(type);
+    let it = types.indexOf(t);
+    if (lookup(superdi, [t, key])) {
+      if (t == type) break;
+      else if (type == 'const' && t == 'var') {
+        type = 'var';
+      } else if (type == 'var' && t == 'const') {
+        delete superdi.const[key];
+      } else if (it < itype) {
+        delete superdi.const[key];
+      } else ok = false;
+    }
+  }
+  if (!ok) {
+    console.log('!!dup:', key, type);
+  }
+  return ok?type:ok;
 }
 function checkPlayer(i) {
   id = getidNum(i); document.getElementById(id).checked = true;
@@ -37026,7 +36913,7 @@ function Deck() {
     this.cardHeight = 80;
     this.cardSuit = 13;
     this.cardTotal = 52;
-    this.cardURL = "/cardGame1/Images/cards2/";
+    this.cardURL = "../images/cards2/";
     this.cardReverse = "reverse";
     this.cardName = "";
     this.cardExtension = ".png";
@@ -42124,9 +42011,9 @@ function gaChar(key){
   return String.fromCharCode('0x'+gaChars[key]); //'f520');
 }
 function Game() {
-    this.board = new Board();
+    this.panel = new Panel();
     this.run = function () {
-        this.board.start();
+        this.panel.start();
     }
 }
 function game_add_default_item(ev) {
@@ -66594,9 +66481,28 @@ function paletteFromRGBArray(arr) {
   let result = gen_palette(hue, 1, sat);
   return result;
 }
+function panel(areaName, oSpec, oid, o) {
+  let [num,or,split,bg,fg,id,panels,parent]=getParams(areaName,oSpec,oid);
+  if (num>0){
+    parent.style.display = 'grid';
+    clearElement(parent);
+    for (let i = 0; i < num; i++) {
+      let d = mDiv100(parent);
+      d.id = getUID();
+      if (panels.length > i) {
+        if (oid) dynamicArea(d.id,panels[i],oid,o); else staticArea(d.id, panels[i]);
+      }
+    }
+    if (or == 'rows') {
+      console.log('====',split*100);
+      parent.style.gridTemplateColumns = `${split*100}% 1fr`;
+    }
+  }
+  return parent;
+}
 function Panel() {
     var self = this;
-    this.div = document.getElementById("div-board");
+    this.div = document.getElementById("dTable");
     this.receptors = new Array();
     this.numbers = new Array();
     this.drags = new Array();
@@ -66634,25 +66540,6 @@ function Panel() {
         self.div.appendChild(div);
         return (number);
     }
-}
-function panel(areaName, oSpec, oid, o) {
-  let [num,or,split,bg,fg,id,panels,parent]=getParams(areaName,oSpec,oid);
-  if (num>0){
-    parent.style.display = 'grid';
-    clearElement(parent);
-    for (let i = 0; i < num; i++) {
-      let d = mDiv100(parent);
-      d.id = getUID();
-      if (panels.length > i) {
-        if (oid) dynamicArea(d.id,panels[i],oid,o); else staticArea(d.id, panels[i]);
-      }
-    }
-    if (or == 'rows') {
-      console.log('====',split*100);
-      parent.style.gridTemplateColumns = `${split*100}% 1fr`;
-    }
-  }
-  return parent;
 }
 function panelLayout(n, R) {
   let params = n.params;
@@ -66763,7 +66650,7 @@ function parse_table_and_players(obj) {
 function parseCodefile(content, fname, preserveRegionNames = true, info = {}, superdi = {}) {
   let defaultRegions = { cla: 'classes', func: 'funcs' };
   let lines = content.split('\r\n');
-  let parsing = false, code, type, key, regionName, regionOrig; 
+  let parsing = false, code, type, key, regionName, regionOrig;
   let firstletters = [], firstWords = [], iline = 0;
   for (const line of lines) {
     let l = line; iline += 1;
@@ -66778,7 +66665,7 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
     if (parsing) {
       let l1 = replaceAllSpecialChars(l, '\t', '  ');
       let ch = l1[0];
-      let oneliner=(type == 'var' && !code.includes('\r\n'));
+      let oneliner = (type == 'var' && !code.includes('\r\n'));
       if (' }]'.includes(ch)) code += l1 + '\r\n';
       if (ch != ' ') { 
         parsing = false;
@@ -66794,17 +66681,22 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
           else sig = `function ${key}()`;
           sig += '{}';
         } else { sig = `${type} ${key}`; }
-        let othervars = [];
-        if (oneliner && code.includes(',') && !code.includes('[') && !code.includes('{')){
-          othervars = stringAfter(l, 'var').trim().split(',');
-          othervars = othervars.map(x => firstWord(x)); 
+        let addvars = [];
+        if (oneliner && code.includes(',') && !code.includes('[') && !code.includes('{')) {
+          let othervars = stringAfter(l, 'var').trim().split(',');
+          othervars = othervars.map(x => firstWord(x));
           othervars.shift();
+          for(const v of othervars){
+            let t = checkKey(superdi,key,type);
+            if (t) addvars.push[{name:v,type:t}];
+          }
         }
         let o = { name: key, code: code, sig: sig, region: regKey, filename: fname, type: type };
         addKeys(info, o);
-        lookupSetOverride(superdi, [type, key], o);
-        for (const v of othervars) {
-          let o = { lead: key, name: v, code: '', sig: sig, region: regKey, filename: fname, type: type };
+        type = checkKey(superdi,key,type);
+        if (type) lookupSetOverride(superdi, [type, key], o);
+        for (const v of addvars) {
+          let o = { lead: key, name: v.name, code: '', sig: sig, region: regKey, filename: fname, type: v.type };
           addKeys(info, o);
           lookupSetOverride(superdi, [type, v], o);
         }
@@ -66821,28 +66713,28 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
       regionName = firstWordAfter(l, 'region');
     } else if (startsWith(l, 'var')) {
       key = firstWordAfter(l, 'var');
-      for(const t of ['const','func','cla']) if (lookup(superdi,[t,key])) continue;
+      for (const t of ['const', 'func', 'cla']) if (lookup(superdi, [t, key])) continue;
       parsing = true;
       code = l + '\r\n';
       type = 'var';
     } else if (startsWith(l, 'const')) {
       key = firstWordAfter(l, 'const');
-      for(const t of ['func','cla']) if (lookup(superdi,[t,key])) continue;
+      for (const t of ['func', 'cla']) if (lookup(superdi, [t, key])) continue;
       if (isdef(superdi.var[key])) delete superdi.var[key];
       parsing = true;
       code = l + '\r\n';
       type = 'const';
     } else if (startsWith(l, 'class')) {
       key = firstWordAfter(l, 'class');
-      for(const t of ['func']) if (lookup(superdi,[t,key])) continue;
-      for(const t of ['var','const']) if (lookup(superdi,[t,key])) delete superdi[t][key];
+      for (const t of ['func']) if (lookup(superdi, [t, key])) continue;
+      for (const t of ['var', 'const']) if (lookup(superdi, [t, key])) delete superdi[t][key];
       parsing = true;
       code = l + '\r\n';
       type = 'cla';
       key = firstWordAfter(l, 'class');
     } else if (startsWith(l, 'async') || startsWith(l, 'function')) {
       key = stringBefore(stringAfter(l, 'function').trim(), '(');
-      for(const t of ['var','const','cla']) if (lookup(superdi,[t,key])) delete superdi[t][key];
+      for (const t of ['var', 'const', 'cla']) if (lookup(superdi, [t, key])) delete superdi[t][key];
       parsing = true;
       code = l + '\r\n';
       type = 'func';
