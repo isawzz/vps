@@ -192,8 +192,8 @@ let dirimportant = [
 	'C:\\D\\a03\\nodemaster\\all\\leaflet\\routing',
 	// 'C:\\D\\a03\\nodemaster\\all\\mapbox\\mapbox',
 	'C:\\D\\a03\\nodemaster\\all\\mybrary\\public\\javascripts',
-	'C:\\D\\a03\\nodemaster\\all\\openlayers\\map',
-	'C:\\D\\a03\\nodemaster\\all\\openlayers\\mapTEXT',
+	// 'C:\\D\\a03\\nodemaster\\all\\openlayers\\map',
+	// 'C:\\D\\a03\\nodemaster\\all\\openlayers\\mapTEXT',
 	'C:\\xampp\\htdocs\\aroot\\games',
 	'C:\\D\\a03\\nodemaster\\basejs',
 	'C:\\D\\a03\\nodemaster\\cai',
@@ -208,11 +208,17 @@ let dirimportant = [
 let dirlist = LG ? dirimportant : dirlegacy.concat(dironedrive).concat(dirgit).concat(dirmiddle).concat(dirimportant);
 //#endregion done
 
-const { parseCodefile, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./game/_bau1.js');
+const { nundef, firstWordAfter, removeInPlace, stringAfter, isEmpty, dict2list, isdef, jsCopy, sortByFunc, parseCodefile, parseCodefile1, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./game/basemin.js');
 
 //#region funcs done
 
 function endsWith(s, sSub) { let i = s.indexOf(sSub); return i >= 0 && i == s.length - sSub.length; }
+function* entries(obj) {
+	let keys = Object.keys(obj);
+	sortCaseInsensitive(keys); //.sort();
+	for (let key of keys)
+		yield [key, obj[key]];
+}
 function fromFile(filePath) { const data = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' }); return data; }
 function getCodeFilenames(dir) {
 	let files = fs.readdirSync(dir); //__dirname);
@@ -401,38 +407,268 @@ function test10() {
 function test11() {
 	let list = getSortedCodefileList(dirlist, 'datetime');
 	let file;
-	let i = 0;
 	let superdi = {};
-	console.log('file count:', list.length); //return;
+	console.log('file count:', list.length);
 	for (file of list) {
 		if (file.fname.startsWith('aaasuper') || file.fname.startsWith('z')) continue;
 		let text = fromFile(file.path);
+		if (text.includes('require')) continue;
 		let res = parseCodefile(text, file.fname, false, file, superdi);
 	}
 
-	let text = '';
-	for (const type of ['var', 'const', 'cla', 'func']) {
-		let keys = get_keys(superdi[type]);
-		if (type != 'const') sortCaseInsensitive(keys);
-		console.log('1:', keys[0]);
-		for (const k of keys) {
-
-			let code = superdi[type][k].code;
-			if (!isEmptyOrWhiteSpace(code)) {
-				text += code;
-				//if (code.trim() == '}') text += '\r\n';
+	let tsieve = ['func', 'var', 'const', 'cla']; //first one has highest priority!
+	let diresult = { var: {}, const: {}, cla: {}, func: {} };
+	let allkeys = {};
+	for (const type of tsieve) {
+		for (const k in superdi[type]) {
+			if (allkeys[k]) continue;
+			allkeys[k] = diresult[type][k] = superdi[type][k];
+			if (k == 'is_key_down') {
+				console.log('trage ein', type, k, allkeys[k].path);
 			}
 		}
 	}
+
+	console.log('is_key_down', allkeys.is_key_down)
+	console.log('const!!!!', diresult.const.is_key_down)
+
+	let text = '';
+	let alltypes = ['const', 'var', 'cla', 'func'];
+	for (const type of alltypes) {
+		let keys = get_keys(diresult[type]);
+		if (type == 'cla' || type == 'func') sortCaseInsensitive(keys);
+		else if (type == 'const') keys = sortByFunc(keys, x => diresult[type][x].code.length);
+
+		for (const k of keys) {
+			let code = diresult[type][k].code;
+			if (!isEmptyOrWhiteSpace(code)) { text += code; }
+			delete diresult[type][k].code;
+		}
+	}
 	toFile(text, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.js`);
-	toYamlFile(superdi, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
-	// toFile(text,`C:\\D\\a03\\nodemaster\\z_all.js`);
-	// toYamlFile(superdi,`C:\\D\\a03\\nodemaster\\z_all.yaml`);
+	toYamlFile(diresult, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
 	console.log('DONE!');
+	return diresult;
 }
+function test12() {
+	let list = getSortedCodefileList(dirlist, 'datetime');
+	let file;
+	let superdi = {};
+	console.log('file count:', list.length);
+	for (file of list) {
+		if (file.fname.startsWith('aaasuper') || file.fname.startsWith('z')) continue;
+		let text = fromFile(file.path);
+		if (text.includes('require')) continue;
+		let res = parseCodefile(text, file.fname, false, file, superdi);
+	}
+
+	let supermap = new Map(entries(superdi.func));
+	superdi.func = supermap;
+	toYamlFile(superdi, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
+}
+function test13() {
+	let list = getSortedCodefileList(dirlist, 'datetime');
+	let file = list.find(x => x.fname == 'basemin.js');
+	let superdi = {};
+	let text = fromFile(file.path);
+	parseCodefile1(text, file.fname, false, file, superdi);
+	let keys = sortCaseInsensitive(Object.keys(superdi.func));
+	let res = {};
+	for (const k of keys) {
+		res[k] = superdi.func[k];
+	}
+
+	console.log('funcs:', Object.keys(superdi.func).length);
+	toYamlFile(res, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
+}
+function test14() {
+	let list = getSortedCodefileList(dirlist, 'datetime');
+	let superdi = {};
+	for (const file of list) {
+		//console.log('path', file.path);
+		if (file.path == 'C:\\D\\a04\\game\\all.js') continue;
+		let text = fromFile(file.path);
+		parseCodefile1(text, file.fname, false, file, superdi);
+	}
+
+	let di2 = {};
+	let text = '';
+	for (const type of ['cla', 'func']) {
+		let keys = sortCaseInsensitive(Object.keys(superdi[type]));
+		let res = {};
+		for (const k of keys) {
+			if (type == 'cla' && isdef(superdi.func[k])) { console.log('skip class', k, superdi.cla[k].path); continue; }
+			res[k] = jsCopy(superdi[type][k]);
+			let code = res[k].code;
+			if (!isEmptyOrWhiteSpace(code)) { text += code; }
+			delete res[k].code;
+		}
+		di2[type] = res;
+	}
+
+	console.log('classes:', Object.keys(di2.cla).length);
+	console.log('funcs:', Object.keys(di2.func).length);
+	toFile(text, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.js`);
+	toYamlFile(di2, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
+}
+function test15() {
+	let list = getSortedCodefileList(dirlist, 'datetime');
+	let superdi = {};
+	for (const file of list) {
+		//console.log('path', file.path);
+		if (file.path == 'C:\\D\\a04\\game\\all.js') continue;
+		let text = fromFile(file.path);
+		parseCodefile1(text, file.fname, false, file, superdi);
+	}
+
+	let di2 = {};
+	let text = '';
+	for (const varkey in superdi.var) { 
+		let code = superdi.var[varkey].code;
+		if (!isEmptyOrWhiteSpace(code)) text += code; 
+	}
+	let constlist = sortConstKeys(superdi);
+	for (const c of constlist) { text += c.code; }
+	text += '\r\n';
+	for (const type of ['var', 'const', 'cla', 'func']) {
+		let keys = sortCaseInsensitive(Object.keys(superdi[type]));
+
+		if (type == 'cla') keys = sortClassKeys(superdi);
+		let res = {};
+		for (const k of keys) {
+			if (type == 'cla' && isdef(superdi.func[k])) { console.log('skip class', k, superdi.cla[k].path); continue; }
+			res[k] = jsCopy(superdi[type][k]);
+			let code = res[k].code;
+			if (type != 'const' && type !='var') { text += code; } // && !isEmptyOrWhiteSpace(code)) { text += code; }
+			delete res[k].code;
+		}
+		di2[type] = res;
+	}
+
+	console.log('var:', Object.keys(di2.var).length);
+	console.log('const:', constlist.length);
+	console.log('classes:', Object.keys(di2.cla).length);
+	console.log('funcs:', Object.keys(di2.func).length);
+	toFile(text, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.js`);
+	toYamlFile(di2, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
+}
+
+
 //#endregion done
 
-test11(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
+function sortClassKeys(di) {
+	let classes = dict2list(di.cla, 'key');
+	let classesWithoutExtends = classes.filter(x => !x.code.includes(' extends '));
+
+	let keys = sortCaseInsensitive(classesWithoutExtends.map(x => x.key));
+	let dinew = {};
+	for (const el of keys) { dinew[el] = di.cla[el]; }
+
+	let classesWithExtends = classes.filter(x => x.code.includes(' extends '));
+
+	let MAX = 150, i = 0;
+	console.log('starting class loop')
+	while (!isEmpty(classesWithExtends)) {
+		if (++i > MAX) { console.log("WRONG!!!"); return []; }
+		let o = classesWithExtends.find(x => {
+			let ext = firstWordAfter(x.code, 'extends', true).trim();
+			if (nundef(di.cla[ext])) return true; //Array
+			//console.log('extends:', ext);
+			return isdef(dinew[ext]);
+		});
+		if (isdef(o)) { dinew[o.key] = o; removeInPlace(classesWithExtends, o); }
+	}
+	return Object.keys(dinew);
+}
+function sortConstKeys(di) {
+	let tbd = dict2list(di.const, 'key');
+	let donelist = [];
+
+	tbd = sortBy(tbd, x => x.code.length); //sortCaseInsensitive(tbd.map(x => x.key));
+	//console.log('tbd',tbd)
+	let dinew = {};
+
+	//let keystbd=tbd.map(x=>x.key);
+	let MAX = 3000, i1 = 0, i2 = 0, i3 = 0;
+	console.log('starting const loop')
+	console.log('const keys', tbd.length)
+	while (!isEmpty(tbd)) {
+		if (++i1 > MAX) { console.log("WRONG!!!"); return dinew; }
+
+		//find a key in keystbd which code does NOT contain any other const
+		let o = null;
+		i2 = 0;
+		for (const c of tbd) {
+			if (++i2 > MAX) { console.log("WRONG!!!"); return dinew; }
+			i3 = 0;
+			let ok = true;
+			for (const c1 of tbd) {
+				if (++i3 > MAX) { console.log("WRONG!!!"); return dinew; }
+				if (c1 == c) continue;
+				if (c.code.includes(c1)) ok = false;
+			}
+			if (ok) { o = c; break; }
+		}
+
+		//let o = tbd.find(x => tbd.every(y => y.key != x.key && !x.code.includes(y.key)));
+		//console.log('o',o)
+		if (isdef(o)) { donelist.push(o); dinew[o.key] = o; removeInPlace(tbd, o); console.log('removing',o.key); }
+	}
+
+	return donelist; //dinew; //Object.keys(dinew);
+}
+
+
+function test16() {
+	let list = getSortedCodefileList(dirlist, 'datetime');
+	let superdi = {};
+	for (const file of list) {
+		//console.log('path', file.path);
+		if (file.path == 'C:\\D\\a04\\game\\all.js') continue;
+		let text = fromFile(file.path);
+		if (text.includes('require') || text.includes('ol.')) continue;
+		parseCodefile1(text, file.fname, false, file, superdi);
+	}
+
+	let di2 = {};
+	let text = '';
+	for (const varkey in superdi.var) { 
+		let code = superdi.var[varkey].code;
+		if (!isEmptyOrWhiteSpace(code)) text += code; 
+	}
+	let constlist = sortConstKeys(superdi);
+	for (const c of constlist) { 
+		let constkey = c.key;
+		if (['cx','PORT','SERVER','SERVERRURL'].some(x=>x==constkey)) {delete superdi.const[constkey]; continue; }
+		if (isdef(superdi.func[constkey]) || isdef(superdi.cla[constkey])) {delete superdi.const[constkey]; continue; }
+		text += c.code; 
+	}
+	text += '\r\n';
+	for (const type of ['var', 'const', 'cla', 'func']) {
+		let keys = sortCaseInsensitive(Object.keys(superdi[type]));
+
+		if (type == 'cla') keys = sortClassKeys(superdi);
+		let res = {};
+		for (const k of keys) {
+
+			let code = superdi[type][k].code;
+			if (['colorDict','VectorLayer','lCard'].some(x=>code.includes(x))) continue;
+
+
+			if (type == 'cla' && isdef(superdi.func[k])) { console.log('skip class', k, superdi.cla[k].path); continue; }
+			res[k] = jsCopy(superdi[type][k]);
+			//let code = res[k].code;
+			if (type != 'const' && type !='var') { text += code; } // && !isEmptyOrWhiteSpace(code)) { text += code; }
+			delete res[k].code;
+		}
+		di2[type] = res;
+		console.log('',type, Object.keys(di2[type]).length);
+	}
+	toFile(text, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.js`);
+	toYamlFile(di2, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
+}
+dirlist = ['C:\\D\\a04\\game'];
+test16(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
 
 //#endregion
 

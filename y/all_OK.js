@@ -1,4232 +1,31 @@
-var activatedTests = [];
-var ActiveButton = null;
-var ActiveChats = {}; 
-var AD, ADS; 
-var AGAME = {
-  stage: {
-  }
-};
-var AIThinkingTime = 30;
-var allAreas = {}; 
-var allGames = null; 
-var allGames1 = {
-  ttt: {
-    name: 'TicTacToe',
-    long_name: 'Tic-Tac-Toe',
-    short_name: 'ttt',
-    num_players: [2],
-    player_names: ['Player1', 'Player2'],
-  },
-  s1: {
-    name: 's1',
-    long_name: 's1',
-    short_name: 's1',
-    num_players: [2, 3, 4, 5],
-    player_names: ['Player1', 'Player2', 'Player3', 'Player4', 'Player5'],
-  },
-  starter: {
-    name: 'Starter',
-    long_name: 'Starter',
-    short_name: 'starter',
-    num_players: [2],
-    player_names: ['Player1', 'Player2'],
-  },
-  catan: {
-    name: 'Catan',
-    long_name: 'The Settlers of Catan',
-    short_name: 'catan',
-    num_players: [3, 4],
-    player_names: ['White', 'Red', 'Blue', 'Orange'],
-  },
-  aristocracy: {
-    name: 'Aristocracy',
-    long_name: 'Aristocracy',
-    short_name: 'aristocracy',
-    num_players: [2, 3, 4, 5],
-    player_names: ['Player1', 'Player2', 'Player3', 'Player4', 'Player5'],
-  }
-};
-var allGamesC = null;
-var AnimTimer = function () {
-  this.date = new Date();
-  this.lastTime = 0;
-  this.currentTime = 0;
-  this.start = function () {
-    this.currentTime = Date.now();
-  }
-  this.reset = function () {
-    this.currentTime = Date.now();
-  }
-  this.getTimeElapsed = function () {
-    this.lastTime = this.currentTime;
-    this.currentTime = Date.now();
-    return (this.currentTime - this.lastTime);
-  }
-}
-var App; 
-var areaSubTypes = {}; 
-var _AUDIOCONTEXT;
-var _audioSources = {
-  incorrect1: '../base/assets/sounds/incorrect1.wav',
-  incorrect3: '../base/assets/sounds/incorrect3.mp3',
-  goodBye: "../base/assets/sounds/level1.wav",
-  down: "../base/assets/sounds/down.mp3",
-  levelComplete: "../base/assets/sounds/sound1.wav",
-  rubberBand: "../base/assets/sounds/sound2.wav",
-  hit: "../base/assets/sounds/hit.wav",
-  mozart: "../base/assets/music/mozart_s39_4.mp3",
-};
-var autoplayFunction = () => false;
-var auxOpen, GameTimer, STOPAUS = false;
-var Avatars = [];
-var AvatarTimeout;
-var axiom, rules, factor, angle, max, sentence, interval_id;
-var B = {};
-var badges = [];
-var Badges = [];
-var Ball = function () {
-  var velocity = [0, 0];
-  var position = [0, 0];
-  var element = $('#ball');
-  var owner;
-  var halfTile = 32;
-  var paused = false;
-  function move(t) {
-    if (owner !== undefined) {
-      var ownerPosition = owner.getPosition();
-      position[1] = ownerPosition[1] + owner.getSize() / 2;
-      if (owner.getSide() === 'left') {
-        position[0] = ownerPosition[0] + owner.getSize();
-      } else {
-        position[0] = ownerPosition[0];
-      }
-    } else {
-      if (position[1] - halfTile <= 0 ||
-          position[1] + halfTile >= innerHeight) {
-        velocity[1] = -velocity[1];
-      }
-      position[0] += velocity[0] * t; 
-      position[1] += velocity[1] * t;   
-    }  
-    element.css('left', (position[0] - halfTile) + 'px');
-    element.css('top', (position[1] - halfTile) + 'px');
-  };
-    function checkScored() {
-    if (position[0] <= 0) {
-      pause();
-      $(document).trigger('ping:opponentScored');
-    }
-    if (position[0] >= innerWidth) {
-      pause();
-      $(document).trigger('ping:playerScored');
-    }
-  }
-  function update(t) {
-    if(!paused) {
-      move(t);
-    }
-    if (owner !== undefined) {
-      return;
-    }
-    var playerPosition = player.getPosition();
-    if (position[0] <= player.getSize() &&
-        position[1] >= playerPosition[1] &&
-        position[1] <= playerPosition[1] + player.getSize()) {
-      console.log("Grabbed by player!");
-      owner = player;
-    }
-    var opponentPosition = opponent.getPosition();
-     if (position[0] >= innerWidth - opponent.getSize() &&
-        position[1] >= opponentPosition[1] &&
-        position[1] <= opponentPosition[1] + opponent.getSize()) {
-      console.log("Grabbed by opponent!");
-      owner = opponent;
-    }
-   checkScored();
-  }
-  function pause() {
-    paused = true;
-  }
-  function start() {
-    paused = false;
-  }
-  return {
-    update: update,
-    pause:        pause,
-    start:        start,
-    getOwner:     function()  { return owner; },
-    setOwner:     function(o) { owner = o; },
-    getVelocity:  function()  { return velocity }, 
-    setVelocity:  function(v) { velocity = v; },
-    getPosition:  function(p) { return position; },
-  }
-};
-var bBySuit = document.createElement('button')
-var bDeal = document.createElement('button')
-var BestKeysD, BestKeysE, BestKeySets;
-var BestMinusScore = Infinity, BestMinusState, BestPlusScore = -Infinity, BestPlusState;
-var bFan = document.createElement('button')
-var BFBoard = {};
-var BFGameContr = {};
-var bFlip = document.createElement('button')
-var BFUserMove = {};
-var BG_CARD_BACK = randomColor();
-var bicycleRental = {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -104.9998241,
-          39.7471494
-        ]
-      },
-      "type": "Feature",
-      "properties": {
-        "popupContent": "This is a B-Cycle Station. Come pick up a bike and pay by the hour. What a deal!"
-      },
-      "id": 51
-    },
-    {
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -104.9983545,
-          39.7502833
-        ]
-      },
-      "type": "Feature",
-      "properties": {
-        "popupContent": "This is a B-Cycle Station. Come pick up a bike and pay by the hour. What a deal!"
-      },
-      "id": 52
-    },
-    {
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -104.9963919,
-          39.7444271
-        ]
-      },
-      "type": "Feature",
-      "properties": {
-        "popupContent": "This is a B-Cycle Station. Come pick up a bike and pay by the hour. What a deal!"
-      },
-      "id": 54
-    },
-    {
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -104.9960754,
-          39.7498956
-        ]
-      },
-      "type": "Feature",
-      "properties": {
-        "popupContent": "This is a B-Cycle Station. Come pick up a bike and pay by the hour. What a deal!"
-      },
-      "id": 55
-    },
-    {
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -104.9933717,
-          39.7477264
-        ]
-      },
-      "type": "Feature",
-      "properties": {
-        "popupContent": "This is a B-Cycle Station. Come pick up a bike and pay by the hour. What a deal!"
-      },
-      "id": 57
-    },
-    {
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -104.9913392,
-          39.7432392
-        ]
-      },
-      "type": "Feature",
-      "properties": {
-        "popupContent": "This is a B-Cycle Station. Come pick up a bike and pay by the hour. What a deal!"
-      },
-      "id": 58
-    },
-    {
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -104.9788452,
-          39.6933755
-        ]
-      },
-      "type": "Feature",
-      "properties": {
-        "popupContent": "This is a B-Cycle Station. Come pick up a bike and pay by the hour. What a deal!"
-      },
-      "id": 74
-    }
-  ]
-};
-var BiDir = [-9, -11, 11, 9];
-var BINDINGS = {}
-var BishopPair = 30;
-var BishopTable = [
-  0, 0, -10, 0, 0, -10, 0, 0,
-  0, 0, 0, 10, 10, 0, 0, 0,
-  0, 0, 10, 15, 15, 10, 0, 0,
-  0, 10, 15, 20, 20, 15, 10, 0,
-  0, 10, 15, 20, 20, 15, 10, 0,
-  0, 0, 10, 15, 15, 10, 0, 0,
-  0, 0, 0, 10, 10, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0
-];
-var BlockServerSend = false;
-var BlockServerSend1 = false;
-var bluegreen = [
-  '#f7fcfd',
-  '#eff9fb',
-  '#e7f6f8',
-  '#def2f3',
-  '#d2eeeb',
-  '#c4e9e2',
-  '#b1e1d6',
-  '#9cd9c9',
-  '#86d0bb',
-  '#72c7ab',
-  '#5fbe9a',
-  '#4fb587',
-  '#40aa73',
-  '#339d5f',
-  '#268f4d',
-  '#18823e',
-  '#0c7433',
-  '#03652a',
-  '#005522',
-  '#00441b'
-];
-var bluepurple = [
-  '#f7fcfd',
-  '#edf5f9',
-  '#e3eef5',
-  '#d7e5f0',
-  '#c9dbeb',
-  '#bcd1e5',
-  '#aec7e0',
-  '#a2bbd9',
-  '#98add2',
-  '#919eca',
-  '#8d8dc1',
-  '#8c7bb9',
-  '#8b69b0',
-  '#8a57a7',
-  '#88449e',
-  '#853192',
-  '#801e84',
-  '#741073',
-  '#62075f',
-  '#4d004b'
-];
-var blues = [
-  '#f7fbff',
-  '#ecf4fc',
-  '#e2eef8',
-  '#d8e7f5',
-  '#cde0f1',
-  '#c0d9ed',
-  '#b0d2e8',
-  '#9fc9e2',
-  '#8bbfdd',
-  '#77b4d8',
-  '#63a8d2',
-  '#529ccc',
-  '#4190c5',
-  '#3382be',
-  '#2575b6',
-  '#1a67ad',
-  '#1059a1',
-  '#0a4c92',
-  '#083e7f',
-  '#08306b'
-];
-var boatFilters = [];
-var boatHighlighted = null;
-var bodyZoom = 1.0;
-var BOOL = { FALSE: 0, TRUE: 1 };
-var BotTicker, POLL_COUNTER = 0;
-var boundary;
-var bPoker = document.createElement('button')
-var brd_searchKillers = new Array(3 * MAXDEPTH);
-var BRD_SQ_NUM = 120;
-var browserZoom = Math.round(window.devicePixelRatio * 100);
-var bShuffle = document.createElement('button')
-var bSort = document.createElement('button')
-var c = canvas.getContext("2d");
-var c52 = null;
-var C52, Syms, SymKeys, KeySets, Categories, ByGroupSubgroup, Dictionary, WordP; 
-var c52C = null;
-var campus = {
-  "type": "Feature",
-  "properties": {
-    "popupContent": "This is the Auraria West Campus",
-    "style": {
-      weight: 2,
-      color: "#999",
-      opacity: 1,
-      fillColor: "#B0DE5C",
-      fillOpacity: 0.8
-    }
-  },
-  "geometry": {
-    "type": "MultiPolygon",
-    "coordinates": [
-      [
-        [
-          [-105.00432014465332, 39.74732195489861],
-          [-105.00715255737305, 39.74620006835170],
-          [-105.00921249389647, 39.74468219277038],
-          [-105.01067161560059, 39.74362625960105],
-          [-105.01195907592773, 39.74290029616054],
-          [-105.00989913940431, 39.74078835902781],
-          [-105.00758171081543, 39.74059036160317],
-          [-105.00346183776855, 39.74059036160317],
-          [-105.00097274780272, 39.74059036160317],
-          [-105.00062942504881, 39.74072235994946],
-          [-105.00020027160645, 39.74191033368865],
-          [-105.00071525573731, 39.74276830198601],
-          [-105.00097274780272, 39.74369225589818],
-          [-105.00097274780272, 39.74461619742136],
-          [-105.00123023986816, 39.74534214278395],
-          [-105.00183105468751, 39.74613407445653],
-          [-105.00432014465332, 39.74732195489861]
-        ], [
-          [-105.00361204147337, 39.74354376414072],
-          [-105.00301122665405, 39.74278480127163],
-          [-105.00221729278564, 39.74316428375108],
-          [-105.00283956527711, 39.74390674342741],
-          [-105.00361204147337, 39.74354376414072]
-        ]
-      ], [
-        [
-          [-105.00942707061768, 39.73989736613708],
-          [-105.00942707061768, 39.73910536278566],
-          [-105.00685214996338, 39.73923736397631],
-          [-105.00384807586671, 39.73910536278566],
-          [-105.00174522399902, 39.73903936209552],
-          [-105.00041484832764, 39.73910536278566],
-          [-105.00041484832764, 39.73979836621592],
-          [-105.00535011291504, 39.73986436617916],
-          [-105.00942707061768, 39.73989736613708]
-        ]
-      ]
-    ]
-  }
-};
-var card1 = cards1['c1'];
-var cards1 = {
-  'c1':
-  {
-    desc: "Move the Robber. Steal 1 resource card from the owner of an adjacent settlement or city.",
-    name: "Knight",
-    obj_type: "devcard",
-    visible: { _set: ["White", "Red", "Blue", "Orange"] },
-  },
-  'c2':
-  {
-    desc: "1 Victory Point!",
-    name: "Victory Point",
-    obj_type: "devcard",
-    visible: { _set: ["White", "Red", "Blue", "Orange"] },
-  },
-  'c3':
-  {
-    desc: "Take any 2 resources from the bank. Add them to your hand. They can be 2 of the same or 2 different resources.",
-    name: "Year of Plenty",
-    obj_type: "devcard",
-    visible: { _set: ["White", "Red", "Blue", "Orange"] },
-  },
-  'c4':
-  {
-    desc: "Place 2 new roads as if you had just built them.",
-    name: "Road Building",
-    obj_type: "devcard",
-    visible: { _set: ["White", "Red", "Blue", "Orange"] },
-  },
-  'c5':
-  {
-    desc: "When you play this card, announce 1 type of resource. All other players must give you all their resource cards of that type.",
-    name: "Monopoly",
-    obj_type: "devcard",
-    visible: { _set: ["White", "Red", "Blue", "Orange"] },
-  },
-};
-var CASTLEBIT = { WKCA: 1, WQCA: 2, BKCA: 4, BQCA: 8 };
-var CastleKeys = new Array(16);
-var CastlePerm = [
-  15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-  15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-  15, 13, 15, 15, 15, 12, 15, 15, 14, 15,
-  15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-  15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-  15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-  15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-  15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-  15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-  15, 7, 15, 15, 15, 3, 15, 15, 11, 15,
-  15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-  15, 15, 15, 15, 15, 15, 15, 15, 15, 15
-];
-var CCC = 0;
-var CGAP = CSZ * .05;
-var CHEIGHT = CSZ;
-var choiceCompleted = false;
-var circle = {
-  x : canvas.width/2,
-  y : canvas.height/2,
-  vx: 0, 
-  vy: 0
-};
-var CLICK_TO_SELECT = true; 
-var cnt=0;
-var ColBrd = new Array(BRD_SQ_NUM);
-var ColChar = "abcdefgh";
-var collections = {};
-var ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = {}, Socket = null;
-var colorDict = null; 
-var ColorNames; 
-var ColorThiefObject, SelectedItem, SelectedColor;
-var COLOURS = { WHITE: 0, BLACK: 1, BOTH: 2 };
-var COLUMNS =  { COL_A:0, COL_B:1, COL_C:2, COL_D:3, COL_E:4, COL_F:5, COL_G:6, COL_H:7, COL_NONE:8 };
-var commandChain = [];
-var COND = {};
-var Config, Syms, SymKeys, ByGroupSubgroup, KeySets, C52, Cinno, C52Cards;
-var container;
-var container1 = document.getElementById('container')
-var coorsField = {
-  "type": "Feature",
-  "properties": {
-    "popupContent": "Coors Field"
-  },
-  "geometry": {
-    "type": "Point",
-    "coordinates": [-104.99404191970824, 39.756213909328125]
-  }
-};
-var CorrectWords, CorrectWordsExact, CorrectWordsCorrect, CorrectWordsFailed;
-var count = fen[fenCnt].charCodeAt() - '0'.charCodeAt(); 
-var countries = [
-  'Afghanistan',
-  'Albania',
-  'Algeria',
-  'Andorra',
-  'Angola',
-  'Anguilla',
-  'Antigua & Barbuda',
-  'Argentina',
-  'Armenia',
-  'Aruba',
-  'Australia',
-  'Austria',
-  'Azerbaijan',
-  'Bahamas',
-  'Bahrain',
-  'Bangladesh',
-  'Barbados',
-  'Belarus',
-  'Belgium',
-  'Belize',
-  'Benin',
-  'Bermuda',
-  'Bhutan',
-  'Bolivia',
-  'Bosnia & Herzegovina',
-  'Botswana',
-  'Brazil',
-  'British Virgin Islands',
-  'Brunei',
-  'Bulgaria',
-  'Burkina Faso',
-  'Burundi',
-  'Cambodia',
-  'Cameroon',
-  'Canada',
-  'Cape Verde',
-  'Cayman Islands',
-  'Central Arfrican Republic',
-  'Chad',
-  'Chile',
-  'China',
-  'Colombia',
-  'Congo',
-  'Cook Islands',
-  'Costa Rica',
-  'Cote D Ivoire',
-  'Croatia',
-  'Cuba',
-  'Curacao',
-  'Cyprus',
-  'Czech Republic',
-  'Denmark',
-  'Djibouti',
-  'Dominica',
-  'Dominican Republic',
-  'Ecuador',
-  'Egypt',
-  'El Salvador',
-  'Equatorial Guinea',
-  'Eritrea',
-  'Estonia',
-  'Ethiopia',
-  'Falkland Islands',
-  'Faroe Islands',
-  'Fiji',
-  'Finland',
-  'France',
-  'French Polynesia',
-  'French West Indies',
-  'Gabon',
-  'Gambia',
-  'Georgia',
-  'Germany',
-  'Ghana',
-  'Gibraltar',
-  'Greece',
-  'Greenland',
-  'Grenada',
-  'Guam',
-  'Guatemala',
-  'Guernsey',
-  'Guinea',
-  'Guinea Bissau',
-  'Guyana',
-  'Haiti',
-  'Honduras',
-  'Hong Kong',
-  'Hungary',
-  'Iceland',
-  'India',
-  'Indonesia',
-  'Iran',
-  'Iraq',
-  'Ireland',
-  'Isle of Man',
-  'Israel',
-  'Italy',
-  'Jamaica',
-  'Japan',
-  'Jersey',
-  'Jordan',
-  'Kazakhstan',
-  'Kenya',
-  'Kiribati',
-  'Kosovo',
-  'Kuwait',
-  'Kyrgyzstan',
-  'Laos',
-  'Latvia',
-  'Lebanon',
-  'Lesotho',
-  'Liberia',
-  'Libya',
-  'Liechtenstein',
-  'Lithuania',
-  'Luxembourg',
-  'Macau',
-  'Macedonia',
-  'Madagascar',
-  'Malawi',
-  'Malaysia',
-  'Maldives',
-  'Mali',
-  'Malta',
-  'Marshall Islands',
-  'Mauritania',
-  'Mauritius',
-  'Mexico',
-  'Micronesia',
-  'Moldova',
-  'Monaco',
-  'Mongolia',
-  'Montenegro',
-  'Montserrat',
-  'Morocco',
-  'Mozambique',
-  'Myanmar',
-  'Namibia',
-  'Nauro',
-  'Nepal',
-  'Netherlands',
-  'Netherlands Antilles',
-  'New Caledonia',
-  'New Zealand',
-  'Nicaragua',
-  'Niger',
-  'Nigeria',
-  'North Korea',
-  'Norway',
-  'Oman',
-  'Pakistan',
-  'Palau',
-  'Palestine',
-  'Panama',
-  'Papua New Guinea',
-  'Paraguay',
-  'Peru',
-  'Philippines',
-  'Poland',
-  'Portugal',
-  'Puerto Rico',
-  'Qatar',
-  'Reunion',
-  'Romania',
-  'Russia',
-  'Rwanda',
-  'Saint Pierre & Miquelon',
-  'Samoa',
-  'San Marino',
-  'Sao Tome and Principe',
-  'Saudi Arabia',
-  'Senegal',
-  'Serbia',
-  'Seychelles',
-  'Sierra Leone',
-  'Singapore',
-  'Slovakia',
-  'Slovenia',
-  'Solomon Islands',
-  'Somalia',
-  'South Africa',
-  'South Korea',
-  'South Sudan',
-  'Spain',
-  'Sri Lanka',
-  'St Kitts & Nevis',
-  'St Lucia',
-  'St Vincent',
-  'Sudan',
-  'Suriname',
-  'Swaziland',
-  'Sweden',
-  'Switzerland',
-  'Syria',
-  'Taiwan',
-  'Tajikistan',
-  'Tanzania',
-  'Thailand',
-  "Timor L'Este",
-  'Togo',
-  'Tonga',
-  'Trinidad & Tobago',
-  'Tunisia',
-  'Turkey',
-  'Turkmenistan',
-  'Turks & Caicos',
-  'Tuvalu',
-  'Uganda',
-  'Ukraine',
-  'United Arab Emirates',
-  'United Kingdom',
-  'United States of America',
-  'Uruguay',
-  'Uzbekistan',
-  'Vanuatu',
-  'Vatican City',
-  'Venezuela',
-  'Vietnam',
-  'Virgin Islands (US)',
-  'Yemen',
-  'Zambia',
-  'Zimbabwe'
-];
-var CSZ = 300;
-var cubehelix = [
-  '#000000',
-  '#130918',
-  '#1a1732',
-  '#192a47',
-  '#15414e',
-  '#17584a',
-  '#246b3d',
-  '#3f7632',
-  '#647a30',
-  '#8d7a3c',
-  '#b17959',
-  '#ca7b81',
-  '#d485ac',
-  '#d296d1',
-  '#c9ade9',
-  '#c2c5f3',
-  '#c3dbf2',
-  '#d0ecef',
-  '#e6f7f1',
-  '#ffffff'
-];
-var CURRENT_FEN = "";
-var currentCategories = ['nosymbols'];
-var currentDeck;
-var currentGame = IS_TESTING ? 'gTouchPic' : 'sequence';
-var currentGamename;
-var currentKey = null;
-var currentKeys; 
-var currentLanguage = 'E';
-var currentLevel;
-var currentNumPlayers;
-var currentPlaymode;
-var currentSeed;
-var CurrentSessionData, CurrentGameData, CurrentLevelData;
-var currentUser = 'Gunter';
-var CWIDTH = CSZ * .7
-var CYCLES=0;
-var DA = {}
-var Daat = {}, DA = {}, Items, ItemsByKey;
-var dActions, dActions0, dActions1, dActions2, dActions3, dActions4, dActions5, dError;
-var dampening = 0.995;
+
+//#region vars (basemin)
+var Pollmode = 'auto', Globals;
+var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {};
+var Counter = { server: 0 };
+var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
+var uiActivated = false, Selected, Turn, Prevturn;
 var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
 var dBottom, dButtons, dCenter, dCode, dConsole, dContent, dFiddle, dFooter, dHeader, dLeft, dMap, dMain, dMenu, dMessage, dPage, dPuppet;
-var dCurrent = null;
-var DDInfo = null;
-var deck = DeckA()
-var DeckA = (function () {
-  //#region variables  
-  var ____fontSize;
-  var ___fontSize;
-  var __fontSize;
-  var _fontSize;
-  var ticking;
-  var animations = [];
-  var style = document.createElement('p').style;
-  var memoized = {};
-  var has3d;
-  var maxZ = 52;
-  var displacement = 4;
-  window.requestAnimationFrame || (window.requestAnimationFrame = function (cb) { setTimeout(cb, 0); });
-  //#endregion
-  //#region modules
-  var ease = {
-    linear: function linear(t) {
-      return t;
-    },
-    quadIn: function quadIn(t) {
-      return t * t;
-    },
-    quadOut: function quadOut(t) {
-      return t * (2 - t);
-    },
-    quadInOut: function quadInOut(t) {
-      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-    },
-    cubicIn: function cubicIn(t) {
-      return t * t * t;
-    },
-    cubicOut: function cubicOut(t) {
-      return --t * t * t + 1;
-    },
-    cubicInOut: function cubicInOut(t) {
-      return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-    },
-    quartIn: function quartIn(t) {
-      return t * t * t * t;
-    },
-    quartOut: function quartOut(t) {
-      return 1 - --t * t * t * t;
-    },
-    quartInOut: function quartInOut(t) {
-      return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * --t * t * t * t;
-    },
-    quintIn: function quintIn(t) {
-      return t * t * t * t * t;
-    },
-    quintOut: function quintOut(t) {
-      return 1 + --t * t * t * t * t;
-    },
-    quintInOut: function quintInOut(t) {
-      return t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t;
-    }
-  };
-  var flip = {
-    deck: function deck(_deck) {
-      _deck.flip = _deck.queued(flip);
-      function flip(next, side) {
-        var flipped = _deck.cards.filter(function (card) {
-          return card.side === 'front';
-        }).length / _deck.cards.length;
-        _deck.cards.forEach(function (card, i) {
-          card.setSide(side ? side : flipped > 0.5 ? 'back' : 'front');
-        });
-        next();
-      }
-    }
-  };
-  var sort = {
-    deck: function deck(_deck2) {
-      _deck2.sort = _deck2.queued(sort);
-      function sort(next, reverse) {
-        var cards = _deck2.cards;
-        cards.sort(function (a, b) {
-          if (reverse) {
-            return a.i - b.i;
-          } else {
-            return b.i - a.i;
-          }
-        });
-        cards.forEach(function (card, i) {
-          card.sort(i, cards.length, function (i) {
-            if (i === cards.length - 1) {
-              next();
-            }
-          }, reverse);
-        });
-      }
-    },
-    card: function card(_card2) {
-      var cardElem = _card2.elem;
-      _card2.sort = function (i, len, cb, reverse) {
-        var z = i / 4;
-        var delay = i * 10;
-        _card2.animateTo({
-          delay: delay,
-          duration: 400,
-          x: -z,
-          y: -150,
-          rot: 0,
-          onComplete: function onComplete() {
-            cardElem.style.zIndex = i;
-          }
-        });
-        _card2.animateTo({
-          delay: delay + 500,
-          duration: 400,
-          x: -z,
-          y: -z,
-          rot: 0,
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  var shuffle = {
-    deck: function deck(_deck3) {
-      _deck3.shuffle = _deck3.queued(shuffle);
-      function shuffle(next) {
-        var cards = _deck3.cards;
-        ____fontSize = fontSize();
-        fisherYates(cards);
-        cards.forEach(function (card, i) {
-          card.pos = i;
-          card.shuffle(function (i) {
-            if (i === cards.length - 1) {
-              next();
-            }
-          });
-        });
-        return;
-      }
-    },
-    card: function card(_card3) {
-      var cardElem = _card3.elem;
-      _card3.shuffle = function (cb) {
-        var i = _card3.pos;
-        var z = i / 4;
-        var delay = i * 2;
-        _card3.animateTo({
-          delay: delay,
-          duration: 200,
-          x: plusminus(Math.random() * 40 + 20) * ____fontSize / 16,
-          y: -z,
-          rot: 0
-        });
-        _card3.animateTo({
-          delay: 200 + delay,
-          duration: 200,
-          x: -z,
-          y: -z,
-          rot: 0,
-          onStart: function onStart() {
-            cardElem.style.zIndex = i;
-          },
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  var poker = {
-    deck: function deck(_deck4) {
-      _deck4.poker = _deck4.queued(poker);
-      function poker(next) {
-        var cards = _deck4.cards;
-        var len = cards.length;
-        __fontSize = fontSize();
-        cards.slice(-5).reverse().forEach(function (card, i) {
-          card.poker(i, len, function (i) {
-            card.setSide('front');
-            if (i === 4) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card4) {
-      var cardElem = _card4.elem;
-      _card4.poker = function (i, len, cb) {
-        var delay = i * 250;
-        _card4.animateTo({
-          delay: delay,
-          duration: 250,
-          x: Math.round((i - 2.05) * 70 * __fontSize / 16),
-          y: Math.round(-110 * __fontSize / 16),
-          rot: 0,
-          onStart: function onStart() {
-            cardElem.style.zIndex = len - 1 + i;
-          },
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  var pokerN = {
-    deck: function deck(_deck4) {
-      _deck4.pokerN = _deck4.queued(pokerN); 
-      function pokerN(next,num) { 
-        var cards = _deck4.cards;
-        var len = cards.length;
-        __fontSize = fontSize();
-        console.log()
-        cards.slice(-num).reverse().forEach(function (card, i) {
-          card.pokerN(num,i, len, function (i) {
-            card.setSide('front');
-            if (i === num-1) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card4) {
-      var cardElem = _card4.elem;
-      _card4.pokerN = function (num,i, len, cb) {
-        var delay = i * 250;
-        _card4.animateTo({
-          delay: delay,
-          duration: 250,
-          x: Math.round((i - (num-.8)/2) * 70 * __fontSize / 16),
-          y: Math.round(-110 * __fontSize / 16),
-          rot: 0,
-          onStart: function onStart() {
-            cardElem.style.zIndex = len - 1 + i;
-          },
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  var intro = {
-    deck: function deck(_deck5) {
-      _deck5.intro = _deck5.queued(intro);
-      function intro(next) {
-        var cards = _deck5.cards;
-        cards.forEach(function (card, i) {
-          card.setSide('front');
-          card.intro(i, function (i) {
-            animationFrames(250, 0).start(function () {
-              card.setSide('back');
-            });
-            if (i === cards.length - 1) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card5) {
-      var transform = prefix('transform');
-      var cardElem = _card5.elem;
-      _card5.intro = function (i, cb) {
-        var delay = 500 + i * 10;
-        var z = i / 4;
-        cardElem.style[transform] = translate(-z + 'px', '-250px');
-        cardElem.style.opacity = 0;
-        _card5.x = -z;
-        _card5.y = -250 - z;
-        _card5.rot = 0;
-        _card5.animateTo({
-          delay: delay,
-          duration: 1000,
-          x: -z,
-          y: -z,
-          onStart: function onStart() {
-            cardElem.style.zIndex = i;
-          },
-          onProgress: function onProgress(t) {
-            cardElem.style.opacity = t;
-          },
-          onComplete: function onComplete() {
-            cardElem.style.opacity = '';
-            cb && cb(i);
-          }
-        });
-      };
-    }
-  };
-  var fan = {
-    deck: function deck(_deck6) {
-      _deck6.fan = _deck6.queued(fan);
-      function fan(next) {
-        var cards = _deck6.cards;
-        var len = cards.length;
-        _fontSize = fontSize();
-        cards.forEach(function (card, i) {
-          card.fan(i, len, function (i) {
-            if (i === cards.length - 1) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card6) {
-      var cardElem = _card6.elem;
-      _card6.fan = function (i, len, cb) {
-        var z = i / 4;
-        var delay = i * 10;
-        var rot = i / (len - 1) * 260 - 130;
-        _card6.animateTo({
-          delay: delay,
-          duration: 300,
-          x: -z,
-          y: -z,
-          rot: 0
-        });
-        _card6.animateTo({
-          delay: 300 + delay,
-          duration: 300,
-          x: Math.cos(deg2rad(rot - 90)) * 55 * _fontSize / 16,
-          y: Math.sin(deg2rad(rot - 90)) * 55 * _fontSize / 16,
-          rot: rot,
-          onStart: function onStart() {
-            cardElem.style.zIndex = i;
-          },
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  var bysuit = {
-    deck: function deck(_deck7) {
-      _deck7.bysuit = _deck7.queued(bysuit);
-      function bysuit(next) {
-        var cards = _deck7.cards;
-        ___fontSize = fontSize();
-        cards.forEach(function (card) {
-          card.bysuit(function (i) {
-            if (i === cards.length - 1) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card7) {
-      var rank = _card7.rank;
-      var suit = _card7.suit;
-      _card7.bysuit = function (cb) {
-        var i = _card7.i;
-        var delay = i * 10;
-        _card7.animateTo({
-          delay: delay,
-          duration: 400,
-          x: -Math.round((6.75 - rank) * 8 * ___fontSize / 16),
-          y: -Math.round((1.5 - suit) * 92 * ___fontSize / 16),
-          rot: 0,
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  //#endregion
-  //#region helpers
-  function createElement(type) {
-    return document.createElement(type);
-  }
-  function addListener(target, name, listener) {
-    target.addEventListener(name, listener);
-  }
-  function removeListener(target, name, listener) {
-    target.removeEventListener(name, listener);
-  }
-  function plusminus(value) {
-    var plusminus = Math.round(Math.random()) ? -1 : 1;
-    return plusminus * value;
-  }
-  function fisherYates(array) {
-    var rnd, temp;
-    for (var i = array.length - 1; i; i--) {
-      rnd = Math.random() * i | 0;
-      temp = array[i];
-      array[i] = array[rnd];
-      array[rnd] = temp;
-    }
-    return array;
-  }
-  function fontSize() {
-    return window.getComputedStyle(document.body).getPropertyValue('font-size').slice(0, -2);
-  }
-  function deg2rad(degrees) {
-    return degrees * Math.PI / 180;
-  }
-  function queue(target) {
-    var array = Array.prototype;
-    var queueing = [];
-    target.queue = queue;
-    target.queued = queued;
-    return target;
-    function queued(action) {
-      return function () {
-        var self = this;
-        var args = arguments;
-        queue(function (next) {
-          action.apply(self, array.concat.apply(next, args));
-        });
-      };
-    }
-    function queue(action) {
-      if (!action) {
-        return;
-      }
-      queueing.push(action);
-      if (queueing.length === 1) {
-        next();
-      }
-    }
-    function next() {
-      queueing[0](function (err) {
-        if (err) {
-          throw err;
-        }
-        queueing = queueing.slice(1);
-        if (queueing.length) {
-          next();
-        }
-      });
-    }
-  }
-  function observable(target) {
-    target || (target = {});
-    var listeners = {};
-    target.on = on;
-    target.one = one;
-    target.off = off;
-    target.trigger = trigger;
-    return target;
-    function on(name, cb, ctx) {
-      listeners[name] || (listeners[name] = []);
-      listeners[name].push({ cb: cb, ctx: ctx });
-    }
-    function one(name, cb, ctx) {
-      listeners[name] || (listeners[name] = []);
-      listeners[name].push({
-        cb: cb, ctx: ctx, once: true
-      });
-    }
-    function trigger(name) {
-      var self = this;
-      var args = Array.prototype.slice(arguments, 1);
-      var currentListeners = listeners[name] || [];
-      currentListeners.filter(function (listener) {
-        listener.cb.apply(self, args);
-        return !listener.once;
-      });
-    }
-    function off(name, cb) {
-      if (!name) {
-        listeners = {};
-        return;
-      }
-      if (!cb) {
-        listeners[name] = [];
-        return;
-      }
-      listeners[name] = listeners[name].filter(function (listener) {
-        return listener.cb !== cb;
-      });
-    }
-  }
-  function animationFrames(delay, duration) {
-    var now = Date.now();
-    var start = now + delay;
-    var end = start + duration;
-    var animation = {
-      start: start,
-      end: end
-    };
-    animations.push(animation);
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(tick);
-    }
-    var self = {
-      start: function start(cb) {
-        animation.startcb = cb;
-        return self;
-      },
-      progress: function progress(cb) {
-        animation.progresscb = cb;
-        return self;
-      },
-      end: function end(cb) {
-        animation.endcb = cb;
-        return self;
-      }
-    };
-    return self;
-  }
-  function tick() {
-    var now = Date.now();
-    if (!animations.length) {
-      ticking = false;
-      return;
-    }
-    for (var i = 0, animation; i < animations.length; i++) {
-      animation = animations[i];
-      if (now < animation.start) {
-        continue;
-      }
-      if (!animation.started) {
-        animation.started = true;
-        animation.startcb && animation.startcb();
-      }
-      var t = (now - animation.start) / (animation.end - animation.start);
-      animation.progresscb && animation.progresscb(t < 1 ? t : 1);
-      if (now > animation.end) {
-        animation.endcb && animation.endcb();
-        animations.splice(i--, 1);
-        continue;
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-  function prefix(param) {
-    if (typeof memoized[param] !== 'undefined') {
-      return memoized[param];
-    }
-    if (typeof style[param] !== 'undefined') {
-      memoized[param] = param;
-      return param;
-    }
-    var camelCase = param[0].toUpperCase() + param.slice(1);
-    var prefixes = ['webkit', 'moz', 'Moz', 'ms', 'o'];
-    var test;
-    for (var i = 0, len = prefixes.length; i < len; i++) {
-      test = prefixes[i] + camelCase;
-      if (typeof style[test] !== 'undefined') {
-        memoized[param] = test;
-        return test;
-      }
-    }
-  }
-  function translate(a, b, c) {
-    typeof has3d !== 'undefined' || (has3d = check3d());
-    c = c || 0;
-    if (has3d) {
-      return 'translate3d(' + a + ', ' + b + ', ' + c + ')';
-    } else {
-      return 'translate(' + a + ', ' + b + ')';
-    }
-  }
-  function check3d() {
-    // http://julian.com/research/velocity/
-    var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (!isMobile) {
-      return false;
-    }
-    var transform = prefix('transform');
-    var $p = document.createElement('p');
-    document.body.appendChild($p);
-    $p.style[transform] = 'translate3d(1px,1px,1px)';
-    has3d = $p.style[transform];
-    has3d = has3d != null && has3d.length && has3d !== 'none';
-    document.body.removeChild($p);
-    return has3d;
-  }
-  function iToSuit52(suit) {
-    return suit === 0 ? 'spades' : suit === 1 ? 'hearts' : suit === 2 ? 'clubs' : suit === 3 ? 'diamonds' : 'joker';
-  }
-  //#endregion
-  function _card(i, text = '') {
-    var transform = prefix('transform');
-    var rank = i % 13 + 1;
-    var suit = i / 13 | 0;
-    var z = (52 - i) / displacement;
-    var elem = createElement('div');
-    var faceElem = createElement('div');
-    var backElem = createElement('div');
-    var isDraggable = false;
-    var isFlippable = false;
-    var self = { text: text, i: i, rank: rank, suit: suit, pos: i, elem: elem, 
-      mount: mount, unmount: unmount, setSide: setSide };
-    var modules = DeckA.modules;
-    var module;
-    faceElem.classList.add('face');
-    backElem.classList.add('back');
-    elem.style[transform] = translate(-z + 'px', -z + 'px');
-    self.x = -z;
-    self.y = -z;
-    self.z = z;
-    self.rot = 0;
-    self.setSide('back');
-    addListener(elem, 'mousedown', onMousedown);
-    addListener(elem, 'touchstart', onMousedown);
-    for (module in modules) {
-      addModule(modules[module]);
-    }
-    self.animateTo = function (params) {
-      var delay = params.delay;
-      var duration = params.duration;
-      var _params$x = params.x;
-      var x = _params$x === undefined ? self.x : _params$x;
-      var _params$y = params.y;
-      var y = _params$y === undefined ? self.y : _params$y;
-      var _params$rot = params.rot;
-      var rot = _params$rot === undefined ? self.rot : _params$rot;
-      var ease$$ = params.ease;
-      var onStart = params.onStart;
-      var onProgress = params.onProgress;
-      var onComplete = params.onComplete;
-      var startX, startY, startRot;
-      var diffX, diffY, diffRot;
-      animationFrames(delay, duration).start(function () {
-        startX = self.x || 0;
-        startY = self.y || 0;
-        startRot = self.rot || 0;
-        onStart && onStart();
-      }).progress(function (t) {
-        var et = ease[ease$$ || 'cubicInOut'](t);
-        diffX = x - startX;
-        diffY = y - startY;
-        diffRot = rot - startRot;
-        onProgress && onProgress(t, et);
-        self.x = startX + diffX * et;
-        self.y = startY + diffY * et;
-        self.rot = startRot + diffRot * et;
-        elem.style[transform] = translate(self.x + 'px', self.y + 'px') + (diffRot ? 'rotate(' + self.rot + 'deg)' : '');
-      }).end(function () {
-        onComplete && onComplete();
-      });
-    };
-    self.setRankSuit = function (rank, suit) {
-      elem.setAttribute('class', 'card blank')
-      faceElem.style.fontSize = '8px';
-      faceElem.innerHTML = 'hallo das ist eine wundeschoene catan karte!';
-    };
-    self.setText = function (text = 'hallo das ist eine wundeschoene catan karte!') {
-      elem.setAttribute('class', 'card blank')
-      faceElem.innerHTML = text;
-    };
-    self.setRankSuit(rank, suit);
-    self.enableDragging = function () {
-      if (isDraggable) {
-        return;
-      }
-      isDraggable = true;
-      elem.style.cursor = 'move';
-    };
-    self.enableFlipping = function () {
-      if (isFlippable) {
-        return;
-      }
-      isFlippable = true;
-    };
-    self.disableFlipping = function () {
-      if (!isFlippable) {
-        return;
-      }
-      isFlippable = false;
-    };
-    self.disableDragging = function () {
-      if (!isDraggable) {
-        return;
-      }
-      isDraggable = false;
-      elem.style.cursor = '';
-    };
-    return self;
-    function addModule(module) {
-      module.card && module.card(self);
-    }
-    function onMousedown(e) {
-      var startPos = {};
-      var pos = {};
-      var starttime = Date.now();
-      e.preventDefault();
-      if (e.type === 'mousedown') {
-        startPos.x = pos.x = e.clientX;
-        startPos.y = pos.y = e.clientY;
-        addListener(window, 'mousemove', onMousemove);
-        addListener(window, 'mouseup', onMouseup);
-      } else {
-        startPos.x = pos.x = e.touches[0].clientX;
-        startPos.y = pos.y = e.touches[0].clientY;
-        addListener(window, 'touchmove', onMousemove);
-        addListener(window, 'touchend', onMouseup);
-      }
-      if (!isDraggable) {
-        return;
-      }
-      elem.style[transform] = translate(self.x + 'px', self.y + 'px') + (self.rot ? ' rotate(' + self.rot + 'deg)' : '');
-      elem.style.zIndex = maxZ++;
-      function onMousemove(e) {
-        if (!isDraggable) {
-          return;
-        }
-        if (e.type === 'mousemove') {
-          pos.x = e.clientX;
-          pos.y = e.clientY;
-        } else {
-          pos.x = e.touches[0].clientX;
-          pos.y = e.touches[0].clientY;
-        }
-        elem.style[transform] = translate(Math.round(self.x + pos.x - startPos.x) + 'px', Math.round(self.y + pos.y - startPos.y) + 'px') + (self.rot ? ' rotate(' + self.rot + 'deg)' : '');
-      }
-      function onMouseup(e) {
-        if (isFlippable && Date.now() - starttime < 200) {
-          self.setSide(self.side === 'front' ? 'back' : 'front');
-        }
-        if (e.type === 'mouseup') {
-          removeListener(window, 'mousemove', onMousemove);
-          removeListener(window, 'mouseup', onMouseup);
-        } else {
-          removeListener(window, 'touchmove', onMousemove);
-          removeListener(window, 'touchend', onMouseup);
-        }
-        if (!isDraggable) {
-          return;
-        }
-        self.x = self.x + pos.x - startPos.x;
-        self.y = self.y + pos.y - startPos.y;
-      }
-    }
-    function mount(target) {
-      target.appendChild(elem);
-      self.dCard = target;
-    }
-    function unmount() {
-      self.dCard && self.dCard.removeChild(elem);
-      self.dCard = null;
-    }
-    function setSide(newSide) {
-      if (newSide === 'front') {
-        if (self.side === 'back') {
-          elem.removeChild(backElem);
-        }
-        self.side = 'front';
-        elem.appendChild(faceElem);
-        self.setRankSuit(self.rank, self.suit);
-      } else {
-        if (self.side === 'front') {
-          elem.removeChild(faceElem);
-        }
-        self.side = 'back';
-        elem.appendChild(backElem);
-        elem.setAttribute('class', 'card');
-      }
-    }
-  }
-  function DeckA(jokers) {
-    var cards = new Array(jokers ? 55 : 52);
-    var deckElem = createElement('div');
-    var self = observable({ mount: mount, unmount: unmount, cards: cards, elem: deckElem });
-    var dDeck;
-    var modules = DeckA.modules;
-    var module;
-    queue(self);
-    for (module in modules) {
-      addModule(modules[module]);
-    }
-    deckElem.classList.add('deck');
-    var card;
-    for (var i = cards.length; i; i--) {
-      card = cards[i - 1] = _card(i - 1);
-      card.setSide('back');
-      card.mount(deckElem);
-    }
-    return self;
-    function mount(root) {
-      dDeck = root;
-      dDeck.appendChild(deckElem);
-    }
-    function unmount() {
-      dDeck.removeChild(deckElem);
-    }
-    function addModule(module) {
-      module.deck && module.deck(self);
-    }
-  }
-  DeckA.animationFrames = animationFrames;
-  DeckA.ease = ease;
-  DeckA.modules = { bysuit: bysuit, fan: fan, intro: intro, poker: poker, pokerN: pokerN, shuffle: shuffle, sort: sort, flip: flip };
-  DeckA.Card = _card;
-  DeckA.prefix = prefix;
-  DeckA.translate = translate;
-  console.log('hallo!')
-  return DeckA;
-})();
-var DeckB = (function () {
-  //#region variables  
-  let ____fontSize;
-  let ___fontSize;
-  let __fontSize;
-  let _fontSize;
-  let ticking;
-  let animations = [];
-  let style = document.createElement('p').style;
-  let memoized = {};
-  let has3d;
-  let maxZ = 52;
-  let displacement = 4;
-  let _deckParams = {}; 
-  window.requestAnimationFrame || (window.requestAnimationFrame = function (cb) { setTimeout(cb, 0); });
-  //#endregion
-  //#region modules
-  var ease = {
-    linear: function linear(t) {
-      return t;
-    },
-    quadIn: function quadIn(t) {
-      return t * t;
-    },
-    quadOut: function quadOut(t) {
-      return t * (2 - t);
-    },
-    quadInOut: function quadInOut(t) {
-      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-    },
-    cubicIn: function cubicIn(t) {
-      return t * t * t;
-    },
-    cubicOut: function cubicOut(t) {
-      return --t * t * t + 1;
-    },
-    cubicInOut: function cubicInOut(t) {
-      return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-    },
-    quartIn: function quartIn(t) {
-      return t * t * t * t;
-    },
-    quartOut: function quartOut(t) {
-      return 1 - --t * t * t * t;
-    },
-    quartInOut: function quartInOut(t) {
-      return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * --t * t * t * t;
-    },
-    quintIn: function quintIn(t) {
-      return t * t * t * t * t;
-    },
-    quintOut: function quintOut(t) {
-      return 1 + --t * t * t * t * t;
-    },
-    quintInOut: function quintInOut(t) {
-      return t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t;
-    }
-  };
-  var flip = {
-    deck: function deck(_deck) {
-      _deck.flip = _deck.queued(flip);
-      function flip(next, side) {
-        var flipped = _deck.cards.filter(function (card) {
-          return card.side === 'front';
-        }).length / _deck.cards.length;
-        _deck.cards.forEach(function (card, i) {
-          card.setSide(side ? side : flipped > 0.5 ? 'back' : 'front');
-        });
-        next();
-      }
-    }
-  };
-  var sort = {
-    deck: function deck(_deck2) {
-      _deck2.sort = _deck2.queued(sort);
-      function sort(next, reverse) {
-        var cards = _deck2.cards;
-        cards.sort(function (a, b) {
-          if (reverse) {
-            return a.i - b.i;
-          } else {
-            return b.i - a.i;
-          }
-        });
-        cards.forEach(function (card, i) {
-          card.sort(i, cards.length, function (i) {
-            if (i === cards.length - 1) {
-              next();
-            }
-          }, reverse);
-        });
-      }
-    },
-    card: function card(_card2) {
-      var cardElem = _card2.elem;
-      _card2.sort = function (i, len, cb, reverse) {
-        var z = i / 4;
-        var delay = i * 10;
-        _card2.animateTo({
-          delay: delay,
-          duration: 400,
-          x: -z,
-          y: -150,
-          rot: 0,
-          onComplete: function onComplete() {
-            cardElem.style.zIndex = i;
-          }
-        });
-        _card2.animateTo({
-          delay: delay + 500,
-          duration: 400,
-          x: -z,
-          y: -z,
-          rot: 0,
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  var shuffle = {
-    deck: function deck(_deck3) {
-      _deck3.shuffle = _deck3.queued(shuffle);
-      function shuffle(next) {
-        var cards = _deck3.cards;
-        ____fontSize = fontSize();
-        fisherYates(cards);
-        cards.forEach(function (card, i) {
-          card.pos = i;
-          card.shuffle(function (i) {
-            if (i === cards.length - 1) {
-              next();
-            }
-          });
-        });
-        return;
-      }
-    },
-    card: function card(_card3) {
-      var cardElem = _card3.elem;
-      _card3.shuffle = function (cb) {
-        var i = _card3.pos;
-        var z = i / 4;
-        var delay = i * 2;
-        _card3.animateTo({
-          delay: delay,
-          duration: 200,
-          x: plusminus(Math.random() * 40 + 20) * ____fontSize / 16,
-          y: -z,
-          rot: 0
-        });
-        _card3.animateTo({
-          delay: 200 + delay,
-          duration: 200,
-          x: -z,
-          y: -z,
-          rot: 0,
-          onStart: function onStart() {
-            cardElem.style.zIndex = i;
-          },
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  var poker = {
-    deck: function deck(_deck4) {
-      _deck4.poker = _deck4.queued(poker);
-      function poker(next) {
-        var cards = _deck4.cards;
-        var len = cards.length;
-        __fontSize = fontSize();
-        cards.slice(-5).reverse().forEach(function (card, i) {
-          card.poker(i, len, function (i) {
-            card.setSide('front');
-            if (i === 4) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card4) {
-      var cardElem = _card4.elem;
-      _card4.poker = function (i, len, cb) {
-        var delay = i * 250;
-        _card4.animateTo({
-          delay: delay,
-          duration: 250,
-          x: Math.round((i - 2.05) * 70 * __fontSize / 16),
-          y: Math.round(-110 * __fontSize / 16),
-          rot: 0,
-          onStart: function onStart() {
-            cardElem.style.zIndex = len - 1 + i;
-          },
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  var intro = {
-    deck: function deck(_deck5) {
-      _deck5.intro = _deck5.queued(intro);
-      function intro(next) {
-        var cards = _deck5.cards;
-        cards.forEach(function (card, i) {
-          card.setSide('front');
-          card.intro(i, function (i) {
-            animationFrames(250, 0).start(function () {
-              card.setSide('back');
-            });
-            if (i === cards.length - 1) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card5) {
-      var transform = prefix('transform');
-      var cardElem = _card5.elem;
-      _card5.intro = function (i, cb) {
-        var delay = 500 + i * 10;
-        var z = i / 4;
-        cardElem.style[transform] = translate(-z + 'px', '-250px');
-        cardElem.style.opacity = 0;
-        _card5.x = -z;
-        _card5.y = -250 - z;
-        _card5.rot = 0;
-        _card5.animateTo({
-          delay: delay,
-          duration: 1000,
-          x: -z,
-          y: -z,
-          onStart: function onStart() {
-            cardElem.style.zIndex = i;
-          },
-          onProgress: function onProgress(t) {
-            cardElem.style.opacity = t;
-          },
-          onComplete: function onComplete() {
-            cardElem.style.opacity = '';
-            cb && cb(i);
-          }
-        });
-      };
-    }
-  };
-  var fan = {
-    deck: function deck(_deck6) {
-      _deck6.fan = _deck6.queued(fan);
-      function fan(next) {
-        var cards = _deck6.cards;
-        var len = cards.length;
-        _fontSize = fontSize();
-        cards.forEach(function (card, i) {
-          card.fan(i, len, function (i) {
-            if (i === cards.length - 1) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card6) {
-      var cardElem = _card6.elem;
-      _card6.fan = function (i, len, cb) {
-        var z = i / 4;
-        var delay = i * 10;
-        var rot = i / (len - 1) * 260 - 130;
-        _card6.animateTo({
-          delay: delay,
-          duration: 300,
-          x: -z,
-          y: -z,
-          rot: 0
-        });
-        _card6.animateTo({
-          delay: 300 + delay,
-          duration: 300,
-          x: Math.cos(deg2rad(rot - 90)) * 55 * _fontSize / 16,
-          y: Math.sin(deg2rad(rot - 90)) * 55 * _fontSize / 16,
-          rot: rot,
-          onStart: function onStart() {
-            cardElem.style.zIndex = i;
-          },
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  var bysuit = {
-    deck: function deck(_deck7) {
-      _deck7.bysuit = _deck7.queued(bysuit);
-      function bysuit(next) {
-        var cards = _deck7.cards;
-        ___fontSize = fontSize();
-        cards.forEach(function (card) {
-          card.bysuit(function (i) {
-            if (i === cards.length - 1) {
-              next();
-            }
-          });
-        });
-      }
-    },
-    card: function card(_card7) {
-      var rank = _card7.rank;
-      var suit = _card7.suit;
-      _card7.bysuit = function (cb) {
-        var i = _card7.i;
-        var delay = i * 10;
-        _card7.animateTo({
-          delay: delay,
-          duration: 400,
-          x: -Math.round((6.75 - rank) * 8 * ___fontSize / 16),
-          y: -Math.round((1.5 - suit) * 92 * ___fontSize / 16),
-          rot: 0,
-          onComplete: function onComplete() {
-            cb(i);
-          }
-        });
-      };
-    }
-  };
-  //#endregion
-  //#region helpers
-  function createElement(type) {
-    return document.createElement(type);
-  }
-  function addListener(target, name, listener) {
-    target.addEventListener(name, listener);
-  }
-  function removeListener(target, name, listener) {
-    target.removeEventListener(name, listener);
-  }
-  function plusminus(value) {
-    var plusminus = Math.round(Math.random()) ? -1 : 1;
-    return plusminus * value;
-  }
-  function fisherYates(array) {
-    var rnd, temp;
-    for (var i = array.length - 1; i; i--) {
-      rnd = Math.random() * i | 0;
-      temp = array[i];
-      array[i] = array[rnd];
-      array[rnd] = temp;
-    }
-    return array;
-  }
-  function fontSize() {
-    return window.getComputedStyle(document.body).getPropertyValue('font-size').slice(0, -2);
-  }
-  function deg2rad(degrees) {
-    return degrees * Math.PI / 180;
-  }
-  function queue(target) {
-    var array = Array.prototype;
-    var queueing = [];
-    target.queue = queue;
-    target.queued = queued;
-    return target;
-    function queued(action) {
-      return function () {
-        var self = this;
-        var args = arguments;
-        queue(function (next) {
-          action.apply(self, array.concat.apply(next, args));
-        });
-      };
-    }
-    function queue(action) {
-      if (!action) {
-        return;
-      }
-      queueing.push(action);
-      if (queueing.length === 1) {
-        next();
-      }
-    }
-    function next() {
-      queueing[0](function (err) {
-        if (err) {
-          throw err;
-        }
-        queueing = queueing.slice(1);
-        if (queueing.length) {
-          next();
-        }
-      });
-    }
-  }
-  function observable(target) {
-    target || (target = {});
-    var listeners = {};
-    target.on = on;
-    target.one = one;
-    target.off = off;
-    target.trigger = trigger;
-    return target;
-    function on(name, cb, ctx) {
-      listeners[name] || (listeners[name] = []);
-      listeners[name].push({ cb: cb, ctx: ctx });
-    }
-    function one(name, cb, ctx) {
-      listeners[name] || (listeners[name] = []);
-      listeners[name].push({
-        cb: cb, ctx: ctx, once: true
-      });
-    }
-    function trigger(name) {
-      var self = this;
-      var args = Array.prototype.slice(arguments, 1);
-      var currentListeners = listeners[name] || [];
-      currentListeners.filter(function (listener) {
-        listener.cb.apply(self, args);
-        return !listener.once;
-      });
-    }
-    function off(name, cb) {
-      if (!name) {
-        listeners = {};
-        return;
-      }
-      if (!cb) {
-        listeners[name] = [];
-        return;
-      }
-      listeners[name] = listeners[name].filter(function (listener) {
-        return listener.cb !== cb;
-      });
-    }
-  }
-  function animationFrames(delay, duration) {
-    var now = Date.now();
-    var start = now + delay;
-    var end = start + duration;
-    var animation = {
-      start: start,
-      end: end
-    };
-    animations.push(animation);
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(tick);
-    }
-    var self = {
-      start: function start(cb) {
-        animation.startcb = cb;
-        return self;
-      },
-      progress: function progress(cb) {
-        animation.progresscb = cb;
-        return self;
-      },
-      end: function end(cb) {
-        animation.endcb = cb;
-        return self;
-      }
-    };
-    return self;
-  }
-  function tick() {
-    var now = Date.now();
-    if (!animations.length) {
-      ticking = false;
-      return;
-    }
-    for (var i = 0, animation; i < animations.length; i++) {
-      animation = animations[i];
-      if (now < animation.start) {
-        continue;
-      }
-      if (!animation.started) {
-        animation.started = true;
-        animation.startcb && animation.startcb();
-      }
-      var t = (now - animation.start) / (animation.end - animation.start);
-      animation.progresscb && animation.progresscb(t < 1 ? t : 1);
-      if (now > animation.end) {
-        animation.endcb && animation.endcb();
-        animations.splice(i--, 1);
-        continue;
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-  function prefix(param) {
-    if (typeof memoized[param] !== 'undefined') {
-      return memoized[param];
-    }
-    if (typeof style[param] !== 'undefined') {
-      memoized[param] = param;
-      return param;
-    }
-    var camelCase = param[0].toUpperCase() + param.slice(1);
-    var prefixes = ['webkit', 'moz', 'Moz', 'ms', 'o'];
-    var test;
-    for (var i = 0, len = prefixes.length; i < len; i++) {
-      test = prefixes[i] + camelCase;
-      if (typeof style[test] !== 'undefined') {
-        memoized[param] = test;
-        return test;
-      }
-    }
-  }
-  function translate(a, b, c) {
-    typeof has3d !== 'undefined' || (has3d = check3d());
-    c = c || 0;
-    if (has3d) {
-      return 'translate3d(' + a + ', ' + b + ', ' + c + ')';
-    } else {
-      return 'translate(' + a + ', ' + b + ')';
-    }
-  }
-  function check3d() {
-    // http://julian.com/research/velocity/
-    var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (!isMobile) {
-      return false;
-    }
-    var transform = prefix('transform');
-    var $p = document.createElement('p');
-    document.body.appendChild($p);
-    $p.style[transform] = 'translate3d(1px,1px,1px)';
-    has3d = $p.style[transform];
-    has3d = has3d != null && has3d.length && has3d !== 'none';
-    document.body.removeChild($p);
-    return has3d;
-  }
-  //#endregion
-  function fCard(i) {
-    let transform = prefix('transform');
-    let rank = i % 13 + 1;
-    let suit = i / 13 | 0;
-    let z = (_deckParams.N - i) / displacement;
-    let elem = createElement('div');
-    let faceElem = createElement('div');
-    let backElem = createElement('div');
-    let isDraggable = false;
-    let isFlippable = false;
-    let text = 'hallo'; 
-    let self = { params: _deckParams, text: text, i: i, rank: rank, suit: suit, pos: i, elem: elem, mount: mount, unmount: unmount, setSide: setSide };
-    let modules = DeckB.modules;
-    let module;
-    faceElem.classList.add('face');
-    backElem.classList.add('back');
-    elem.style[transform] = translate(-z + 'px', -z + 'px');
-    self.x = -z;
-    self.y = -z;
-    self.z = z;
-    self.rot = 0;
-    addListener(elem, 'mousedown', onMousedown);
-    addListener(elem, 'touchstart', onMousedown);
-    for (module in modules) {
-      addModule(modules[module]);
-    }
-    self.animateTo = function (_params) {
-      var delay = _params.delay;
-      var duration = _params.duration;
-      var _params$x = _params.x;
-      var x = _params$x === undefined ? self.x : _params$x;
-      var _params$y = _params.y;
-      var y = _params$y === undefined ? self.y : _params$y;
-      var _params$rot = _params.rot;
-      var rot = _params$rot === undefined ? self.rot : _params$rot;
-      var ease$$ = _params.ease;
-      var onStart = _params.onStart;
-      var onProgress = _params.onProgress;
-      var onComplete = _params.onComplete;
-      var startX, startY, startRot;
-      var diffX, diffY, diffRot;
-      animationFrames(delay, duration).start(function () {
-        startX = self.x || 0;
-        startY = self.y || 0;
-        startRot = self.rot || 0;
-        onStart && onStart();
-      }).progress(function (t) {
-        var et = ease[ease$$ || 'cubicInOut'](t);
-        diffX = x - startX;
-        diffY = y - startY;
-        diffRot = rot - startRot;
-        onProgress && onProgress(t, et);
-        self.x = startX + diffX * et;
-        self.y = startY + diffY * et;
-        self.rot = startRot + diffRot * et;
-        elem.style[transform] = translate(self.x + 'px', self.y + 'px') + (diffRot ? 'rotate(' + self.rot + 'deg)' : '');
-      }).end(function () {
-        onComplete && onComplete();
-      });
-    };
-    self.eraseFace = function () {
-      clearElement(faceElem);
-    }
-    self.prepFace = function () {
-      self.params.fPrepFace(self, self.params);
-    }
-    self.updateFace = function () {
-      self.params.fUpdateFace(self, self.params);
-    }
-    self.updateBack = function () {
-      self.params.fUpdateBack(self, self.params);
-    }
-    self.prepFace(); 
-    self.setSide('back');
-    self.enableDragging = function () {
-      if (isDraggable) {
-        return;
-      }
-      isDraggable = true;
-      elem.style.cursor = 'move';
-    };
-    self.enableFlipping = function () {
-      if (isFlippable) {
-        return;
-      }
-      isFlippable = true;
-    };
-    self.disableFlipping = function () {
-      if (!isFlippable) {
-        return;
-      }
-      isFlippable = false;
-    };
-    self.disableDragging = function () {
-      if (!isDraggable) {
-        return;
-      }
-      isDraggable = false;
-      elem.style.cursor = '';
-    };
-    return self;
-    function addModule(module) {
-      module.card && module.card(self);
-    }
-    function onMousedown(e) {
-      var startPos = {};
-      var pos = {};
-      var starttime = Date.now();
-      e.preventDefault();
-      if (e.type === 'mousedown') {
-        startPos.x = pos.x = e.clientX;
-        startPos.y = pos.y = e.clientY;
-        addListener(window, 'mousemove', onMousemove);
-        addListener(window, 'mouseup', onMouseup);
-      } else {
-        startPos.x = pos.x = e.touches[0].clientX;
-        startPos.y = pos.y = e.touches[0].clientY;
-        addListener(window, 'touchmove', onMousemove);
-        addListener(window, 'touchend', onMouseup);
-      }
-      if (!isDraggable) {
-        return;
-      }
-      elem.style[transform] = translate(self.x + 'px', self.y + 'px') + (self.rot ? ' rotate(' + self.rot + 'deg)' : '');
-      elem.style.zIndex = maxZ++;
-      function onMousemove(e) {
-        if (!isDraggable) {
-          return;
-        }
-        if (e.type === 'mousemove') {
-          pos.x = e.clientX;
-          pos.y = e.clientY;
-        } else {
-          pos.x = e.touches[0].clientX;
-          pos.y = e.touches[0].clientY;
-        }
-        elem.style[transform] = translate(Math.round(self.x + pos.x - startPos.x) + 'px', Math.round(self.y + pos.y - startPos.y) + 'px') + (self.rot ? ' rotate(' + self.rot + 'deg)' : '');
-      }
-      function onMouseup(e) {
-        if (isFlippable && Date.now() - starttime < 200) {
-          self.setSide(self.side === 'front' ? 'back' : 'front');
-        }
-        if (e.type === 'mouseup') {
-          removeListener(window, 'mousemove', onMousemove);
-          removeListener(window, 'mouseup', onMouseup);
-        } else {
-          removeListener(window, 'touchmove', onMousemove);
-          removeListener(window, 'touchend', onMouseup);
-        }
-        if (!isDraggable) {
-          return;
-        }
-        self.x = self.x + pos.x - startPos.x;
-        self.y = self.y + pos.y - startPos.y;
-      }
-    }
-    function mount(target) {
-      target.appendChild(elem);
-      self.dParent = target;
-    }
-    function unmount() {
-      self.dParent && self.dParent.removeChild(elem);
-      self.dParent = null;
-    }
-    function setSide(newSide) {
-      if (newSide === 'front') {
-        if (self.side === 'back') {
-          elem.removeChild(backElem);
-        }
-        self.side = 'front';
-        elem.appendChild(faceElem);
-        self.updateFace();
-      } else {
-        if (self.side === 'front') {
-          elem.removeChild(faceElem);
-        }
-        self.side = 'back';
-        elem.appendChild(backElem);
-        self.updateBack();
-      }
-    }
-  }
-  function fDeck(deckParams) {
-    _deckParams = deckParams;
-    let w = deckParams.size.w;
-    let h = deckParams.size.h;
-    if (deckParams.orientation == 'landscape' && w < h || w > h) {
-      deckParams.size = { w: h, h: w };
-      w = deckParams.size.w;
-      h = deckParams.size.h;
-    }
-    setCSSVariable('--wCard', w + 'px');
-    setCSSVariable('--hCard', h + 'px');
-    let cards = new Array(_deckParams.NTotal);
-    let deckElem = createElement('div');
-    let self = observable({ mount: mount, unmount: unmount, cards: cards, elem: deckElem });
-    let dParent;
-    let modules = DeckB.modules;
-    let module;
-    queue(self);
-    for (module in modules) {
-      addModule(modules[module]);
-    }
-    deckElem.classList.add('deck');
-    let card;
-    for (let i = cards.length; i; i--) {
-      card = cards[i - 1] = fCard(i - 1);
-      card.setSide('back');
-      card.mount(deckElem);
-    }
-    return self;
-    function mount(root) {
-      dParent = root;
-      dParent.appendChild(deckElem);
-    }
-    function unmount() {
-      dParent.removeChild(deckElem);
-    }
-    function addModule(module) {
-      module.deck && module.deck(self);
-    }
-  }
-  fDeck.animationFrames = animationFrames;
-  fDeck.ease = ease;
-  fDeck.modules = { bysuit: bysuit, fan: fan, intro: intro, poker: poker, shuffle: shuffle, sort: sort, flip: flip };
-  fDeck.Card = fCard;
-  fDeck.prefix = prefix;
-  fDeck.translate = translate;
-  fDeck.params = _deckParams;
-  return { fDeck: fDeck };
-})();
-var DECKS = 'br';
-var DeDict,EdDict; 
-var DEFAULT_PLAYER_AREA = 'area_players';
-var defaultFocusElement;
-var defaultSpec = null
-var defaultSpecC = null;
-var DEFAULTUSERNAME = 'gul';
-var DEFS = null; 
-var DELAY_BETWEEN_MIKE_AND_SPEECH = 2000;
-var DELETED_THIS_ROUND = [];
-var dg = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
-var dHelp, counters, timit; 
-var dHint, dFeedback, dInstruction, dScore, dLevel;
-var DirNum = [0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8];
-var divMain, divPlayer, divOpps, colors, iColor, timit;
-var dLeiste, dScore, dGameTitle, dTable, dTableShield, dTitle, dLinks, dRechts, dOben, dUnten, dPlayerStats, dMessage, dStatus;
-var dLineBottomOuter, dLineBottom, dLineBottomLeft, dLineBottomRight, dLineBottomMiddle;
-var dLineTableOuter, dLineTable, dLineTableLeft, dLineTableRight, dLineTableMiddle;
-var dLineTitleOuter, dLineTitle, dLineTitleLeft, dLineTitleRight, dLineTitleMiddle;
-var dLineTopOuter, dLineTop, dLineTopLeft, dLineTopRight, dLineTopMiddle;
-var dMain = document.getElementById('dMain'), dTable, Step = 0;
-var DMM = {}, timit, STARTED;
-var DOC_CURRENT_FUNC;
-var domUpdate_ordering;
-var DONE={};
-var DragElem = null; 
-var draggedElement;
-var DragSource = null; 
-var DragSourceItem = null;
-var DragSourceItems = [];
-var dragStartOffset;
 var dRight, dSidebar, dTable, dTitle, dTop;
-var dropPosition = 'none'; 
-var DropZoneItem = null;
-var DropZoneItems = [];
-var DropZones = []; 
-var dSettings = mBy('dSettings');
-var dTable, dPage, dMap, dHeader, dFooter, dMessage, dPuppet, dMenu, dLeft, dCenter, dRight, dTop, dBottom; 
-var dummyString = "translateX(-50%) scale(1.2)";
-var dynSpec;
-var EBEF = null, UBEF = null, GBEF = null;
-var EC = {}; 
-var EID = {}; 
-var elements = {}; 
-var Emicons = {
-  msmaus: "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/microsoft/319/mouse-face_1f42d.png",
-  gmaus: "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/google/346/mouse-face_1f42d.png",
-  smaus: "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/softbank/145/mouse-face_1f42d.png",
-  twmaus: "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/322/mouse-face_1f42d.png",
-  maus: "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/whatsapp/326/mouse-face_1f42d.png",
-};
-var emoCharsC = null;
-var emoSets = {
-  nosymbols: { name: 'nosymbols', f: o => o.group != 'symbols' && o.group != 'flags' && o.group != 'clock' },
-  nosymemo: { name: 'nosymemo', f: o => o.group != 'smileys-emotion' && o.group != 'symbols' && o.group != 'flags' && o.group != 'clock' },
-  all: { name: 'all', f: _ => true },
-  activity: { name: 'activity', f: o => o.group == 'people-body' && (o.subgroups == 'person-activity' || o.subgroups == 'person-resting') },
-  animal: { name: 'animal', f: o => startsWith(o.group, 'animal') && startsWith(o.subgroups, 'animal') },
-  body: { name: 'body', f: o => o.group == 'people-body' && o.subgroups == 'body-parts' },
-  clock: { name: 'clock', f: o => o.group == 'clock' },
-  drink: { name: 'drink', f: o => o.group == 'food-drink' && o.subgroups == 'drink' },
-  emotion: { name: 'emotion', f: o => o.group == 'smileys-emotion' },
-  family: { name: 'family', f: o => o.group == 'people-body' && o.subgroups == 'family' },
-  fantasy: { name: 'fantasy', f: o => o.group == 'people-body' && o.subgroups == 'person-fantasy' },
-  food: { name: 'food', f: o => o.group == 'food-drink' && startsWith(o.subgroups, 'food') },
-  fruit: { name: 'fruit', f: o => o.group == 'food-drink' && o.subgroups == 'food-fruit' },
-  game: { name: 'game', f: o => (o.group == 'activities' && o.subgroups == 'game') },
-  gesture: { name: 'gesture', f: o => o.group == 'people-body' && (o.subgroups == 'person-gesture' || o.subgroups.includes('hand')) },
-  kitchen: { name: 'kitchen', f: o => o.group == 'food-drink' && o.subgroups == 'dishware' },
-  math: { name: 'math', f: o => o.group == 'symbols' && o.subgroups == 'math' },
-  misc: { name: 'misc', f: o => o.group == 'symbols' && o.subgroups == 'other-symbol' },
-  object: {
-    name: 'object', f: o =>
-      (o.group == 'food-drink' && o.subgroups == 'dishware')
-      || (o.group == 'travel-places' && o.subgroups == 'time')
-      || (o.group == 'activities' && o.subgroups == 'event')
-      || (o.group == 'activities' && o.subgroups == 'award-medal')
-      || (o.group == 'activities' && o.subgroups == 'arts-crafts')
-      || (o.group == 'activities' && o.subgroups == 'sport')
-      || (o.group == 'activities' && o.subgroups == 'game')
-      || (o.group == 'objects')
-      || (o.group == 'activities' && o.subgroups == 'event')
-      || (o.group == 'travel-places' && o.subgroups == 'sky-weather')
-  },
-  person: { name: 'person', f: o => o.group == 'people-body' && o.subgroups == 'person' },
-  place: { name: 'place', f: o => startsWith(o.subgroups, 'place') },
-  plant: { name: 'plant', f: o => startsWith(o.group, 'animal') && startsWith(o.subgroups, 'plant') },
-  punctuation: { name: 'punctuation', f: o => o.group == 'symbols' && o.subgroups == 'punctuation' },
-  role: { name: 'role', f: o => o.group == 'people-body' && o.subgroups == 'person-role' },
-  shapes: { name: 'shapes', f: o => o.group == 'symbols' && o.subgroups == 'geometric' },
-  sport: { name: 'sport', f: o => o.group == 'people-body' && o.subgroups == 'person-sport' },
-  sports: { name: 'sports', f: o => (o.group == 'activities' && o.subgroups == 'sport') },
-  sternzeichen: { name: 'sternzeichen', f: o => o.group == 'symbols' && o.subgroups == 'zodiac' },
-  symbols: { name: 'symbols', f: o => o.group == 'symbols' },
-  time: { name: 'time', f: o => (o.group == 'travel-places' && o.subgroups == 'time') },
-  toolbar: {
-    name: 'toolbar', f: o => (o.group == 'symbols' && o.subgroups == 'warning')
-      || (o.group == 'symbols' && o.subgroups == 'arrow')
-      || (o.group == 'symbols' && o.subgroups == 'av-symbol')
-      || (o.group == 'symbols' && o.subgroups == 'other-symbol')
-      || (o.group == 'symbols' && o.subgroups == 'keycap')
-  },
-  transport: { name: 'transport', f: o => startsWith(o.subgroups, 'transport') && o.subgroups != 'transport-sign' },
-  vegetable: { name: 'vegetable', f: o => o.group == 'food-drink' && o.subgroups == 'food-vegetable' },
-};
-var EmptyFunc = x => nundef(x) || x == ' ';
-var ENDGAME_MAT = 1 * PieceVal[PIECES.wR] + 2 * PieceVal[PIECES.wN] + 2 * PieceVal[PIECES.wP] + PieceVal[PIECES.wK];
-var ENN = {};
-var ___enteredRecursion = 0;
-var Epsilon = 1e-10;
-var ET = {}; 
-var evAddCounter = 0;
-var exp = expand1_99;
-var extend = function () {
-  var extended = {};
-  var deep = false;
-  var i = 0;
-  if (typeof arguments[0] === 'boolean') {
-    deep = arguments[0];
-    i++;
-  }
-  var merge = function (obj) {
-    for (var prop in obj) {
-      if (obj.hasOwnProperty(prop)) {
-        if (deep && Object.prototype.toString.call(obj[prop]) === '[object Object]') {
-          extended[prop] = extend(true, extended[prop], obj[prop]);
-        } else {
-          extended[prop] = obj[prop];
-        }
-      }
-    }
-  };
-  for (; i < arguments.length; i++) {
-    merge(arguments[i]);
-  }
-  return extended;
-};
-var F_END, F_MOVES, F_APPLYMOVE, F_UNDOMOVE, F_EVAL, DMAX, MAXIMIZER, MINIMIZER, SelectedMove, CANCEL_AI;
-var faChars, gaChars, faKeys;
-var FASTSTART = false && EXPERIMENTAL;
-var fen = "345623";
-var Fen, R, Qu, U, G, A;
-var fenCnt=3;
-var FenPositionList;
-var FileChar = "abcdefgh";
-var FILES = { FILE_A: 0, FILE_B: 1, FILE_C: 2, FILE_D: 3, FILE_E: 4, FILE_F: 5, FILE_G: 6, FILE_H: 7, FILE_NONE: 8 };
-var FilesBrd = new Array(BRD_SQ_NUM);
-var final_confidence, final_confidence2, final_confidence_sum, final_num;
-var firstDomLoad = null;
-var FirstLoad = true;
-var FLAG_AI_CANCELED = false;
-var flags = {};
-var fleetingMessageTimeout;
+var Config, Syms, SymKeys, ByGroupSubgroup, KeySets, C52, Cinno, C52Cards;
 var FORCE_REDRAW = false, TESTING = false;
+var ColorThiefObject, SelectedItem, SelectedColor;
 var FR = 50, CX, CV, AU = {}, CONTEXT = null;
-var FRAMERATE = 30; 
-var freeBus = {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [-105.00341892242432, 39.75383843460583],
-          [-105.0008225440979, 39.751891803969535]
-        ]
-      },
-      "properties": {
-        "popupContent": "This is a free bus line that will take you across downtown.",
-        "underConstruction": false
-      },
-      "id": 1
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [-105.0008225440979, 39.751891803969535],
-          [-104.99820470809937, 39.74979664004068]
-        ]
-      },
-      "properties": {
-        "popupContent": "This is a free bus line that will take you across downtown.",
-        "underConstruction": true
-      },
-      "id": 2
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [-104.99820470809937, 39.74979664004068],
-          [-104.98689651489258, 39.741052354709055]
-        ]
-      },
-      "properties": {
-        "popupContent": "This is a free bus line that will take you across downtown.",
-        "underConstruction": false
-      },
-      "id": 3
-    }
-  ]
-};
-var frozen = false;
-var FRUIDCounter = -1;
-var FUNCS = {};
-var FUNCTIONS = {
-  instanceof: 'instanceOf',
-  prop: (o, v) => isdef(o[v]),
-  no_prop: (o, v) => nundef(o[v]),
-  no_spec: (o, v) => false, 
-}
-var G, S, M, UIS, IdOwner, id2oids, id2uids, oid2ids;
-var GAME = 'ttt'; 
-var game = new Game;
-var GameController = {};
-var GAMEPLID = null; 
-var gameSequence = IS_TESTING ? ['gSayPicAuto', 'gTouchPic', 'gTouchColors', 'gWritePic', 'gMissingLetter', 'gSayPic']
-  : ['gSayPic', 'gTouchColors', 'gWritePic'];//'gMissingLetter','gTouchPic', 
-var Gaussian = function (mean, variance) {
-  if (variance <= 0) {
-    throw new Error('Variance must be > 0 (but was ' + variance + ')');
-  }
-  this.mean = mean;
-  this.variance = variance;
-  this.standardDeviation = Math.sqrt(variance);
-}
-var gcs = {
-  ttt: {
-    numPlayers: 2,
-    players: [
-      { id: 'Player1', playerType: 'me', agentType: null, username: USERNAME },
-      { id: 'Player2', playerType: 'me', agentType: null, username: USERNAME + '1' },
-    ]
-  },
-  s1: {
-    numPlayers: 4,
-    players: [
-      { id: 'Player1', playerType: 'me', agentType: null, username: USERNAME },
-      { id: 'Player2', playerType: 'me', agentType: null, username: USERNAME + '1' },
-      { id: 'Player3', playerType: 'me', agentType: null, username: USERNAME + '2' },
-      { id: 'Player4', playerType: 'me', agentType: null, username: USERNAME + '3' },
-    ]
-  },
-  starter: {
-    numPlayers: 2,
-    players: [
-      { id: 'Player1', playerType: 'me', agentType: null, username: USERNAME },
-      { id: 'Player2', playerType: 'me', agentType: null, username: USERNAME + '1' },
-    ]
-  },
-  aristocracy: {
-    numPlayers: 2,
-    players: [
-      { id: 'Player1', playerType: 'me', agentType: null, username: USERNAME },
-      { id: 'Player2', playerType: 'me', agentType: null, username: USERNAME + '1' },
-    ]
-  },
-  catan: {
-    numPlayers: 3,
-    players: [
-      { id: 'White', playerType: 'me', agentType: null, username: USERNAME },
-      { id: 'Red', playerType: 'me', agentType: null, username: USERNAME + '1' },
-      { id: 'Blue', playerType: 'me', agentType: null, username: USERNAME + '2' },
-    ]
-  }
-}
-var globalSum = 0 
-var Goal, Selected;
-var grammar;
-var gravity = 0.1;
-var green = [
-  '#f7fcf5',
-  '#eff9ec',
-  '#e7f6e2',
-  '#dcf1d7',
-  '#d0edca',
-  '#c2e7bc',
-  '#b3e0ac',
-  '#a2d99d',
-  '#90d18d',
-  '#7dc87f',
-  '#69be72',
-  '#55b466',
-  '#42a85c',
-  '#339c52',
-  '#268f47',
-  '#18823d',
-  '#0c7433',
-  '#03652a',
-  '#005522',
-  '#00441b'
-];
-var greys = [
-  '#ffffff',
-  '#f9f9f9',
-  '#f2f2f2',
-  '#e9e9e9',
-  '#e0e0e0',
-  '#d5d5d5',
-  '#cacaca',
-  '#bdbdbd',
-  '#aeaeae',
-  '#9f9f9f',
-  '#8f8f8f',
-  '#808080',
-  '#727272',
-  '#636363',
-  '#545454',
-  '#434343',
-  '#313131',
-  '#202020',
-  '#101010',
-  '#000000'
-];
-var gridsize = 12;
-var hasGotResult, hasGotFinalResult;
-var higherOrderEmoSetNames = {
-  animals: ['animal'],
-  animalplantfood: ['animal', 'plant', 'drink', 'food', 'fruit', 'vegetable'],
-  life: ['animal', 'plant', 'drink', 'food', 'fruit', 'vegetable', 'kitchen', 'game', 'sport'],
-  more: ['animal', 'plant', 'drink', 'food', 'fruit', 'kitchen', 'vegetable', 'game', 'sport', 'transport', 'object'],
-};
-var higherOrderEmoSetNames1 = { all: ['all'], select: selectedEmoSetNames, abstract: ['time', 'symbols'], action: ['game', 'sports'], food: ['drink', 'food', 'fruit', 'kitchen', 'vegetable'], human: ['body', 'gesture', 'emotion', 'person', 'role'], life: ['animal', 'plant'], mood: ['emotion'], object: ['object'], places: ['place', 'transport'] };
-var HistoryOfStates = {};
-var I; 
-var ibox4oid={};
-var iconChars = null;
-var iconCharsC = null;
-var IconSet, lastIndex;
-var id2oids = {}; 
-var id2uids = {}; 
-var IdOwner = {}; 
-var inferno = [
-  '#000004',
-  '#08051d',
-  '#180c3c',
-  '#2f0a5b',
-  '#450a69',
-  '#5c126e',
-  '#71196e',
-  '#87216b',
-  '#9b2964',
-  '#b1325a',
-  '#c43c4e',
-  '#d74b3f',
-  '#e55c30',
-  '#f1711f',
-  '#f8870e',
-  '#fca108',
-  '#fbba1f',
-  '#f6d543',
-  '#f1ed71',
-  '#fcffa4'
-];
-var INFINITE = 30000;
-var INFO={};
-var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {}, Counter = { server: 0 };
-var initialDataC = {}; 
-var inputBox;
-var inputs = [];
-var interim_confidence, interim_confidence2, interim_confidence_sum, interim_num;
-var IsAnswerCorrect;
-var IsCanvasActive = false;
-var isReallyMultiplayer = false;
-var isRunning = false;
-var isSpeakerRunning, isINTERRUPT;
-var isTraceOn = true; 
-var Items = {};
-var iTHEME = 0;
-var jewel = (function() {
-    var settings = {
-        rows : 8,
-        cols : 8,
-        baseScore : 100,
-        baseLevelScore : 1500,
-        baseLevelExp : 1.05,
-        baseLevelTimer : 60000,
-        numJewelTypes : 7,
-        controls : {
-            KEY_UP : "moveUp",
-            KEY_LEFT : "moveLeft",
-            KEY_DOWN : "moveDown",
-            KEY_RIGHT : "moveRight",
-            KEY_ENTER : "selectJewel",
-            KEY_SPACE : "selectJewel",
-            CLICK : "selectJewel",
-            TOUCH : "selectJewel",
-            BUTTON_A: "selectJewel",
-            LEFT_STICK_UP: "moveUp",
-            LEFT_STICK_DOWN: "moveDown",
-            LEFT_STICK_LEFT: "moveLeft",
-            LEFT_STICK_RIGHT: "moveRight"
-        }
-    };
-    var scriptQueue = [],
-        numResourcesLoaded = 0,
-        numResources = 0,
-        executeRunning = false;
-    function executeScriptQueue() {
-        var next = scriptQueue[0],
-            first, script;
-        if (next && next.loaded) {
-            executeRunning = true;
-            scriptQueue.shift();
-            first = document.getElementsByTagName("script")[0];
-            script = document.createElement("script");
-            script.onload = function() {
-                if (next.callback) {
-                    next.callback();
-                }
-                executeScriptQueue();
-            };
-            script.src = next.src;
-            first.parentNode.insertBefore(script, first);
-        } else {
-            executeRunning = false;
-        }
-    }
-    function getLoadProgress() {
-        return numResourcesLoaded / numResources;
-    }
-    function load(src, callback) {
-        var image, queueEntry;
-        numResources++;
-        queueEntry = {
-            src: src,
-            callback: callback,
-            loaded: false
-        };
-        scriptQueue.push(queueEntry);
-        image = new Image();
-        image.onload = image.onerror = function() {
-            numResourcesLoaded++;
-            queueEntry.loaded = true;
-            if (!executeRunning) {
-                executeScriptQueue();
-            }
-        };
-        image.src = src;
-    }
-    function preload(src) {
-        var image = new Image();
-        image.src = src;
-    }
-    function showScreen(screenId) {
-        var dom = jewel.dom,
-            $ = dom.$,
-            activeScreen = $("#game .screen.active")[0],
-            screen = $("#" + screenId)[0];
-        if (!jewel.screens[screenId]) {
-            alert("This module is not implemented yet!");
-            return;
-        }
-        if (activeScreen) {
-            dom.removeClass(activeScreen, "active");
-        }
-        dom.addClass(screen, "active");
-        jewel.screens[screenId].run();
-    }
-    function isStandalone() {
-        return (window.navigator.standalone !== false);
-    }
-    function hasWebWorkers() {
-        return ("Worker" in window);
-    }
-    function hasWebWorkers() {
-        return ("Worker" in window);
-    }
-    function hasWebGL() {
-        var canvas = document.createElement("canvas"),
-            gl = canvas.getContext("webgl") ||
-                 canvas.getContext("experimental-webgl");
-        return !!gl;
-    }
-    function setup() {
-        if (/Android/.test(navigator.userAgent)) {
-            jewel.dom.$("html")[0].style.height = "200%";
-            setTimeout(function() {
-                window.scrollTo(0, 1);
-            }, 0);
-        }
-        jewel.dom.bind(document, "touchmove", function(event) {
-            event.preventDefault();
-        });
-        if (isStandalone()) {
-            showScreen("splash-screen");
-        } else {
-            showScreen("install-screen");
-        }
-    }
-    return {
-        getLoadProgress: getLoadProgress,
-        hasWebWorkers: hasWebWorkers,
-        hasWebGL: hasWebGL,
-        isStandalone: isStandalone,
-        preload: preload,
-        load: load,
-        setup: setup,
-        showScreen : showScreen,
-        settings: settings,
-        screens: {}
-    };
-})();
-var joinCandidate = null;
-var justExpand = false;
-var keysDown = new Array(256);
-var KeySets;
-var KiDir = [-1, -10, 1, 10, -9, -11, 11, 9];
-var KingE = [
-  -50, -10, 0, 0, 0, 0, -10, -50,
-  -10, 0, 10, 10, 10, 10, 0, -10,
-  0, 10, 20, 20, 20, 20, 10, 0,
-  0, 10, 20, 40, 40, 20, 10, 0,
-  0, 10, 20, 40, 40, 20, 10, 0,
-  0, 10, 20, 20, 20, 20, 10, 0,
-  -10, 0, 10, 10, 10, 10, 0, -10,
-  -50, -10, 0, 0, 0, 0, -10, -50
-];
-var KingO = [
-  0, 5, 5, -10, -10, 0, 10, 5,
-  -30, -30, -30, -30, -30, -30, -30, -30,
-  -50, -50, -50, -50, -50, -50, -50, -50,
-  -70, -70, -70, -70, -70, -70, -70, -70,
-  -70, -70, -70, -70, -70, -70, -70, -70,
-  -70, -70, -70, -70, -70, -70, -70, -70,
-  -70, -70, -70, -70, -70, -70, -70, -70,
-  -70, -70, -70, -70, -70, -70, -70, -70
-];
-var Kings = [PIECES.wK, PIECES.bK];
-var KnDir = [-8, -19, -21, -12, 8, 19, 21, 12];
-var KnightTable = [
-  0, -10, 0, 0, 0, 0, -10, 0,
-  0, 0, 0, 5, 5, 0, 0, 0,
-  0, 0, 10, 10, 10, 10, 0, 0,
-  0, 0, 10, 20, 20, 10, 5, 0,
-  5, 10, 15, 20, 20, 15, 10, 5,
-  5, 10, 10, 20, 20, 10, 10, 5,
-  0, 0, 5, 10, 10, 5, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0
-];
-var lastPosition;
-var LastPositionX = 0, LastPositionY = 0;
-var lastUpdate = 0;
-var LevelChange = true;
-var levelIncrement, levelPoints;
-var levelKeys = ['island', 'justice star', 'materials science', 'mayan pyramid', 'medieval gate',
-  'great pyramid', 'meeple', 'smart', 'stone tower', 'trophy cup', 'viking helmet',
-  'flower star', 'island', 'justice star', 'materials science', 'mayan pyramid',];
-var lifeView = new LifeView(document.getElementById('grid'), gridsize);
-var lightRailStop = {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {
-        "popupContent": "18th & California Light Rail Stop"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [-104.98999178409576, 39.74683938093904]
-      }
-    }, {
-      "type": "Feature",
-      "properties": {
-        "popupContent": "20th & Welton Light Rail Stop"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [-104.98689115047453, 39.747924136466565]
-      }
-    }
-  ]
-};
-var lineWidth = 4;
-var Live, DB, G, T, P, U, User, Settings, SettingsChanged; 
-var LOG = {};
-var logCounter = 0;
-var LOGDIVS = [];
-var loggedIn = false;
-var LoopNonSlideIndex = [0, 3];
-var LoopNonSlidePce = [PIECES.wN, PIECES.wK, 0, PIECES.bN, PIECES.bK, 0];
-var LoopSlideIndex = [0, 4];
-var LoopSlidePce = [PIECES.wB, PIECES.wR, PIECES.wQ, 0, PIECES.bB, PIECES.bR, PIECES.bQ, 0];
-var M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
-var magCounter = 0;
-var magma = [
-  '#000004',
-  '#07061c',
-  '#150e38',
-  '#29115a',
-  '#3f0f72',
-  '#56147d',
-  '#6a1c81',
-  '#802582',
-  '#942c80',
-  '#ab337c',
-  '#c03a76',
-  '#d6456c',
-  '#e85362',
-  '#f4695c',
-  '#fa815f',
-  '#fd9b6b',
-  '#feb47b',
-  '#fecd90',
-  '#fde5a7',
-  '#fcfdbf'
-];
-var MAGNIFIER_IMAGE;
-var mappings;
-var mappingsInitialized;
-var mappingTypes;
-var Markers = [];
-var MATE = 29000;
-var MAXDEPTH = 64;
-var MAXGAMEMOVES = 2048;
-var MAXITER = 200, ITER = 0;
-var MAXLEVEL = 10;
-var MaxNumTrials = 1;
-var MAXPOSITIONMOVES = 256;
-var maxWidthPreserver = new MaxWidthPreserver();
-var MaxWordLength = 100;
-var maxZIndex = 110;
-var meme;
-var MessageCounter = 0;
-var MFLAGCA = 0x1000000
-var MFLAGCAP = 0x7C000
-var MFLAGEP = 0x40000
-var MFLAGPROM = 0xF00000
-var MFLAGPS = 0x80000
-var MicrophoneUi;
-var minIncrement = 1, maxIncrement = 5, levelDonePoints = 5;
-var MinWordLength = 1;
-var Mirror64 = [
-  56, 57, 58, 59, 60, 61, 62, 63,
-  48, 49, 50, 51, 52, 53, 54, 55,
-  40, 41, 42, 43, 44, 45, 46, 47,
-  32, 33, 34, 35, 36, 37, 38, 39,
-  24, 25, 26, 27, 28, 29, 30, 31,
-  16, 17, 18, 19, 20, 21, 22, 23,
-  8, 9, 10, 11, 12, 13, 14, 15,
-  0, 1, 2, 3, 4, 5, 6, 7
-];
-var MirrorCols = [ COLUMNS.COL_H, COLUMNS.COL_G, COLUMNS.COL_F, COLUMNS.COL_E, COLUMNS.COL_D, COLUMNS.COL_C, COLUMNS.COL_B, COLUMNS.COL_A ];
-var MirrorFiles = [FILES.FILE_H, FILES.FILE_G, FILES.FILE_F, FILES.FILE_E, FILES.FILE_D, FILES.FILE_C, FILES.FILE_B, FILES.FILE_A];
-var MirrorRanks = [RANKS.RANK_8, RANKS.RANK_7, RANKS.RANK_6, RANKS.RANK_5, RANKS.RANK_4, RANKS.RANK_3, RANKS.RANK_2, RANKS.RANK_1];
-var MirrorRows = [ ROWS.ROW_8, ROWS.ROW_7, ROWS.ROW_6, ROWS.ROW_5, ROWS.ROW_4, ROWS.ROW_3, ROWS.ROW_2, ROWS.ROW_1 ];
-var mkMan = null
-var modern_palettes = {
-  CD_green_blue: { GreenMountain: '#3d7c47', BlueMountain: '#09868b', LightBlueBackdrop: '#76c1d4', BarelyGrayEdge: '#f7f7f7' },
-  CD_gelb_orange_grau: { Blueberry: '#6B7A8F', Apricot: '#F7882F', Citrus: '#F7C331', AppleCore: ' #DCC7AA' },
-  CD_blue_brown: { FrenchLaundryBlue: '#3a4660', ComfortablyTan: '#c9af98', PeachyKreme: '#ed8a63', BrownBonnet: '#845007' },
-  CD_yellow_grey: { Areyayellow: '#feda6a', SilverFox: '#d4d4dc', DeepMatteGrey: '#393f4d' }, 
-  CD_fresh_green_grey_yellow: { MorningSky: '#CAE4DB', Honey: '#DCAE1D', Cerulean: '#00303F', Mist: '#7A9D96' },
-  CD_green_beige: { green: '#BFEB55', green2: '#458766', beige: '#F9F68A', beige2: '#FBF1B4' },
-  CD_dark_beach: { c1: 'rgb(3, 74, 166)', c2: 'rgb(0, 6, 13)', c3: 'rgb(83, 119, 166)', c4: 'rgb(64, 95, 115)', c5: 'rgb(62, 89, 86)' },
-  CD_color_beach: { c1: 'rgb(83, 111, 166)', c2: 'rgb(3, 74, 166)', c3: 'rgb(126, 174, 217)', c4: 'rgb(242, 181, 107)', c5: 'rgb(4, 173, 191)' }
-};
-var mouse = {
-  x : 0, 
-  y : 0,
-  down: false
-};
-var MouseMoveCounter = 0;
-var mousePullStrength = 0.005;
-var MSTimeClock, MSTimeDiff, MSTimeStart, MSTimeCallback, MSTimeTO;
-var MvvLvaScores = new Array(14 * 14);
-var MvvLvaValue = [0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600];
-var myGameArea = {
-  canvas: document.createElement('canvas'),
-  start: function () {
-    this.canvas.width = 480;
-    this.canvas.height = 270;
-    this.context = this.canvas.getContext('2d');
-    document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-    this.frameNo = 0;
-    this.interval = setInterval(updateGameArea, 20);
-  },
-  clear: function () {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  },
-};
-var NAMED_UIDS = {};
-var nextIndex = -1;
-var NextPictureIndex = 0;
-var NiceBaseColors = ['#791900']
-var NOMOVE = 0
-var NumColors;
-var numCorrectAnswers, numTotalAnswers, percentageCorrect;
-var NUMDECKS = 2;
-var numgen=0;
-var NUMJOKERS = 0;
-var NumLabels;
-var numlayers = 0;
-var NumMissingLetters, nMissing, MaxPosMissing;
-var NumPics;
-var numPlayersMax = 8;
-var numPlayersMin = 0;
-var ObjetoSolitario = function () {
-  this.CartaDrag = new Array();
-  this.ImagenDrag = new Array();
-  this.Movimiento = 0;
-  this.Movimientos = new Array();
-  this.MovimientosAuyda = new Array();
-  this.MovimientosAuydaActual = 0;
-  this.Iniciar = function () {
-    $("body").on("keydown", function (e) {
-      if (e.ctrlKey && (String.fromCharCode(e.which) === 'z' || String.fromCharCode(e.which) === 'Z')) {
-        Solitario.Deshacer(e);
-      } else if (e.ctrlKey && (String.fromCharCode(e.which) === 'y' || String.fromCharCode(e.which) === 'Y')) {
-        Solitario.Rehacer(e);
-      } else if (String.fromCharCode(e.which) === 'n' || String.fromCharCode(e.which) === 'N') {
-        Solitario.NuevoJuego();
-      } else if (String.fromCharCode(e.which) === ' ') {
-        Solitario.MostrarAyuda();
-      }
-    });
-    $("ventanamenu > button:nth-child(1)").on("click", this.NuevoJuego.bind(this));
-    $("ventanamenu > button:nth-child(2)").on("click", this.Deshacer.bind(this));
-    $("ventanamenu > button:nth-child(3)").on("click", this.Rehacer.bind(this));
-    $("ventanamenu > button:nth-child(4)").on("click", this.MostrarAyuda.bind(this));
-    this.NuevoJuego();
-  };
-  this.MostrarAyuda = function () {
-    $("Carta, Solucion, Baraja, Columna").removeAttr("ayuda1").removeAttr("ayuda2");
-    var Mov = this.MovimientosAuyda[this.MovimientosAuydaActual];
-    if (this.MovimientosAuydaActual === this.MovimientosAuyda.length - 1) {
-      this.MovimientosAuydaActual = 0;
-    } else {
-      this.MovimientosAuydaActual++;
-    }
-    Mov.origen.attr({
-      "ayuda1": "true"
-    });
-    Mov.destino.attr({
-      "ayuda2": "true"
-    });
-  }
-  this.NuevoJuego = function () {
-    var Orden = new Array(4 * 13);
-    var Baraja = Array();
-    for (i = 0; i < 4; i++) {
-      Baraja[i] = $("Baraja[num='" + (i + 1) + "']");
-      Baraja[i].html("");
-    }
-    var Solucion = Array();
-    for (i = 0; i < 4; i++) {
-      Solucion[i] = $("Solucion[num='" + (i + 1) + "']");
-      Solucion[i].html("");
-    }
-    var Columna = Array();
-    for (i = 0; i < 7; i++) {
-      Columna[i] = $("Columna[num='" + (i + 1) + "']");
-      Columna[i].html("");
-    }
-    this.Movimiento = 0;
-    this.Movimientos = [];
-    var Cartas = Array();
-    Contador = 0;
-    for (p = 1; p < 5; p++) {
-      for (v = 0; v < 13; v++) {
-        Orden[Contador] = Contador;
-        Cartas[Contador] = $("<Carta></Carta>")
-        Cartas[Contador++].attr({
-          "Palo": p,
-          "Valor": v,
-          "Tapada": "true"
-        });
-      }
-    }
-    for (var Rand, Tmp, i = Orden.length; i; Rand = Math.floor(Math.random() * i), Tmp = Orden[--i], Orden[i] = Orden[Rand], Orden[Rand] = Tmp);
-    Contador = 0;
-    for (Cols = 0; Cols < 7; Cols++) {
-      Carta = Columna[Cols];
-      for (i = 0; i < Cols + 1; i++) {
-        Carta = Cartas[Orden[Contador++]].appendTo(Carta);
-        if (i == Cols) {
-          Carta.attr({
-            "Tapada": "false",
-            "draggable": "true"
-          });
-        }
-        Carta.css({
-          "z-index": i
-        });
-      }
-    }
-    Carta = Baraja[0];
-    for (var i = Contador; i < 52; i++) {
-      Carta = Cartas[Orden[i]].appendTo(Carta);
-      Carta.css({
-        "z-index": i - Contador
-      });
-    }
-    Baraja[0].off("click").on("click", this.Baraja1_EventoClick.bind(this));
-    $("Carta").off("mouseover").on('mouseover', this.Carta_EventoMouseOver.bind(this));
-    $("Carta").off("mouseout").on('mouseout', this.Carta_EventoMouseOut.bind(this));
-    $("Carta").off("dragstart").on('dragstart', this.Carta_EventoDragStart.bind(this));
-    $("Carta").off("dragend").on('dragend', this.Carta_EventoDragEnd.bind(this));
-    $("Carta").off("dblclick").on('dblclick', this.Carta_EventoDblClick.bind(this));
-    $("Columna").off("drop").on('drop', this.Columna_EventoDrop.bind(this));
-    $("Columna").off("dragover").on('dragover', this.Columna_EventoDragOver.bind(this));
-    $("Solucion").off("drop").on('drop', this.Solucion_EventoDrop.bind(this));
-    $("Solucion").off("dragover").on('dragover', this.Solucion_EventoDragOver.bind(this));
-    this.UltimoHijo($("Columna[num=7]"));
-    $("Victoria").css({
-      "display": "none"
-    });
-    $("Derrota").css({
-      "display": "none"
-    });
-    this.GuardarMovimiento();
-  };
-  this.Carta_EventoMouseOver = function (e) {
-    Carta = $(e.originalEvent.currentTarget);
-    if (Carta.attr("tapada") !== "true" && Carta.attr("draggable") === "true") {
-      $(e.originalEvent.currentTarget).attr({
-        "hover": "true"
-      });
-    }
-    e.stopPropagation();
-  };
-  this.Carta_EventoMouseOut = function (e) {
-    $(e.originalEvent.currentTarget).removeAttr("hover");
-    e.stopPropagation();
-  };
-  this.Carta_EventoDblClick = function (e) {
-    Carta = this.UltimoHijo($(e.originalEvent.currentTarget));
-    Palo = 0;
-    Valor = 0;
-    for (i = 1; i < 5; i++) {
-      if (this.UltimoHijo($("Solucion[num='" + i + "']")).attr("palo") == Carta.attr("palo")) {
-        Valor = parseInt(this.UltimoHijo($("Solucion[num='" + i + "']")).attr("valor")) + 1;
-        Palo = this.UltimoHijo($("Solucion[num='" + i + "']"));
-      }
-    }
-    if (Palo == 0) {
-      for (i = 1; i < 5; i++) {
-        if (this.UltimoHijo($("Solucion[num='" + i + "']")).attr("num") == i) {
-          Palo = this.UltimoHijo($("Solucion[num='" + i + "']"));
-          break;
-        }
-      }
-    }
-    if (parseInt(Carta.attr("valor")) == Valor) {
-      if (typeof (Carta.parent().attr("num")) === "undefined") {
-        Carta.parent().attr({
-          "tapada": "false",
-          "draggable": "true"
-        });
-      }
-      Carta.appendTo(this.UltimoHijo(Palo));
-      Carta.removeAttr("draggable");
-      this.GuardarMovimiento();
-    }
-    e.stopPropagation();
-  };
-  this.Carta_EventoDragStart = function (e) {
-    this.CartaDrag = $(e.originalEvent.currentTarget);
-    this.ImagenDrag = $("#ImgDrag");
-    this.ImagenDrag.attr({
-      "palo": this.CartaDrag.attr("palo"),
-      "valor": this.CartaDrag.attr("valor")
-    }).html(this.CartaDrag.html());
-    this.CartaDrag.css({
-      opacity: 0
-    });
-    OffSet = this.CartaDrag.offset();
-    e.originalEvent.dataTransfer.setDragImage(this.ImagenDrag[0], e.originalEvent.clientX - OffSet.left, (e.originalEvent.clientY - OffSet.top) + $(window).scrollTop());
-    e.originalEvent.dataTransfer.effectAllowed = 'move';
-    e.originalEvent.dataTransfer.setData('text/html', e.originalEvent.currentTarget);
-    e.stopPropagation();
-  }
-  this.Carta_EventoDragEnd = function (e) {
-    this.CartaDrag.css({
-      opacity: 1
-    });
-  };
-  this.Baraja1_EventoClick = function (e) {
-    Baraja1 = $("Baraja[num='1']");
-    Baraja2 = $("Baraja[num='2']");
-    if (this.UltimoHijo(Baraja1) !== Baraja1) {
-      $("Baraja[num='2'] Carta[draggable]").removeAttr("draggable");
-      Carta = this.UltimoHijo(Baraja1).appendTo(this.UltimoHijo(Baraja2));
-      Carta.css({
-        "z-index": (Cartas.length + 1)
-      }).attr({
-        "Tapada": "false",
-        "draggable": "true"
-      });
-      this.GuardarMovimiento();
-    } else { 
-      if (this.UltimoHijo(Baraja2) === Baraja2) return;
-      Carta = this.UltimoHijo(Baraja2);
-      while (Carta !== Baraja2) {
-        Carta.appendTo(this.UltimoHijo(Baraja1)).attr({
-          "Tapada": "true",
-          "draggable": "false"
-        });
-        Carta = this.UltimoHijo(Baraja2);
-      }
-      this.Baraja1_EventoClick();
-    }
-  };
-  this.Solucion_EventoDragOver = function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    e.originalEvent.dataTransfer.dropEffect = 'move';
-    return false;
-  };
-  this.Solucion_EventoDrop = function (e) {
-    if (this.UltimoHijo(this.CartaDrag) === this.CartaDrag) {
-      Solucion = this.UltimoHijo($(e.originalEvent.target));
-      Valor = 0;
-      if (typeof (Solucion.attr("num")) === "undefined") {
-        if (Solucion.attr("palo") === this.CartaDrag.attr("palo")) {
-          Valor = (parseInt(Solucion.attr("valor")) + 1);
-        } else {
-          Valor = -1;
-        }
-      }
-      if (parseInt(this.CartaDrag.attr("valor")) === Valor) {
-        if (typeof (this.CartaDrag.parent().attr("num")) === "undefined") {
-          this.CartaDrag.parent().attr({
-            "tapada": "false",
-            "draggable": "true"
-          });
-        }
-        this.CartaDrag.appendTo(Solucion);
-        this.CartaDrag.removeAttr("draggable");
-        this.GuardarMovimiento();
-      }
-    }
-  };
-  this.Columna_EventoDragOver = function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    e.originalEvent.dataTransfer.dropEffect = 'move';
-    return false;
-  };
-  this.Columna_EventoDrop = function (e) {
-    var GM = false;
-    if (this.CartaValida(this.CartaDrag, $(e.originalEvent.target)) == true) {
-      if (this.UltimoHijo(this.CartaDrag) != this.UltimoHijo($(e.originalEvent.target))) {
-        if (typeof (this.CartaDrag.parent().attr("num")) === "undefined") {
-          this.CartaDrag.parent().attr({
-            "tapada": "false",
-            "draggable": "true"
-          });
-        }
-        this.CartaDrag.appendTo(this.UltimoHijo($(e.originalEvent.target)));
-        GM = true;
-      }
-      UH = this.UltimoHijo($("Baraja[num='2']"));
-      $("Baraja[num='2'] Carta[draggable]").removeAttr("draggable");
-      if (typeof (UH.attr("num")) === "undefined") {
-        this.UltimoHijo($("Baraja[num='2']")).attr({
-          "draggable": "true"
-        });
-      }
-      if (GM === true) {
-        this.GuardarMovimiento();
-      }
-    }
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
-  };
-  this.CartaValida = function (Carta, Destino) {
-    if (typeof (Destino.attr("num")) !== "undefined" && parseInt(Carta.attr("valor")) === 12) {
-      return true;
-    }
-    if (Destino.attr("tapada") === true) {
-      return false;
-    }
-    if (parseInt(Carta.attr("valor")) === parseInt(Destino.attr("valor")) - 1) {
-      if (parseInt(Carta.attr("palo")) > 2) {
-        if (parseInt(Destino.attr("palo")) < 3) {
-          return true;
-        }
-      }
-      else {
-        if (parseInt(Destino.attr("palo")) > 2) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-  this.UltimoHijo = function (nPadre) {
-    Cartas = nPadre.find(":last-child");
-    if (Cartas.length == 0) return nPadre;
-    return $(Cartas[Cartas.length - 1]);
-  };
-  this.Victoria = function () {
-    return ($("Columna Carta[tapada='true']").length > 0) ? false : true;
-  }
-  this.GuardarMovimiento = function () {
-    $("Carta, Solucion, Baraja, Columna").removeAttr("ayuda1").removeAttr("ayuda2");
-    var DH = [];
-    DH["Baraja1"] = $("Baraja[num='1']").html();
-    DH["Baraja2"] = $("Baraja[num='2']").html();
-    DH["Solucion1"] = $("Solucion[num='1']").html();
-    DH["Solucion2"] = $("Solucion[num='2']").html();
-    DH["Solucion3"] = $("Solucion[num='3']").html();
-    DH["Solucion4"] = $("Solucion[num='4']").html();
-    DH["Columna1"] = $("Columna[num='1']").html();
-    DH["Columna2"] = $("Columna[num='2']").html();
-    DH["Columna3"] = $("Columna[num='3']").html();
-    DH["Columna4"] = $("Columna[num='4']").html();
-    DH["Columna5"] = $("Columna[num='5']").html();
-    DH["Columna6"] = $("Columna[num='6']").html();
-    DH["Columna7"] = $("Columna[num='7']").html();
-    this.Movimientos[this.Movimiento++] = DH;
-    $("movimientos").html(this.Movimiento - 1);
-    /* Miramos si se ha ganado o perdido la partida */
-    var V = this.Victoria();
-    $("Derrota").css({
-      "display": (this.Ayuda() === false && V !== true) ? "block" : "none"
-    });
-    $("Victoria").css({
-      "display": (V === true) ? "block" : "none"
-    });
-  };
-  this.Rehacer = function (e) {
-    if (this.Movimiento < this.Movimientos.length) {
-      var DH = this.Movimientos[this.Movimiento++];
-      $("Baraja[num='1']").html(DH["Baraja1"]);
-      $("Baraja[num='2']").html(DH["Baraja2"]);
-      $("Solucion[num='1']").html(DH["Solucion1"]);
-      $("Solucion[num='2']").html(DH["Solucion2"]);
-      $("Solucion[num='3']").html(DH["Solucion3"]);
-      $("Solucion[num='4']").html(DH["Solucion4"]);
-      $("Columna[num='1']").html(DH["Columna1"]);
-      $("Columna[num='2']").html(DH["Columna2"]);
-      $("Columna[num='3']").html(DH["Columna3"]);
-      $("Columna[num='4']").html(DH["Columna4"]);
-      $("Columna[num='5']").html(DH["Columna5"]);
-      $("Columna[num='6']").html(DH["Columna6"]);
-      $("Columna[num='7']").html(DH["Columna7"]);
-      $("Carta").css({
-        opacity: 1
-      }).removeAttr("hover");
-      /* Re-asignamos los eventos */
-      $("Carta").off("mouseover").on('mouseover', this.Carta_EventoMouseOver.bind(this));
-      $("Carta").off("mouseout").on('mouseout', this.Carta_EventoMouseOut.bind(this));
-      $("Carta").off("dragstart").on('dragstart', this.Carta_EventoDragStart.bind(this));
-      $("Carta").off("dragend").on('dragend', this.Carta_EventoDragEnd.bind(this));
-      $("Carta").off("dblclick").on('dblclick', this.Carta_EventoDblClick.bind(this));
-    }
-    $("movimientos").html(this.Movimiento - 1);
-    $("Derrota").css({
-      "display": (this.Ayuda() === false) ? "block" : "none"
-    });
-    $("Victoria").css({
-      "display": (this.Victoria() === true) ? "block" : "none"
-    });
-  };
-  this.Deshacer = function (e) {
-    if (this.Movimiento !== 1) {
-      var DH = this.Movimientos[--this.Movimiento - 1];
-      $("Baraja[num='1']").html(DH["Baraja1"]);
-      $("Baraja[num='2']").html(DH["Baraja2"]);
-      $("Solucion[num='1']").html(DH["Solucion1"]);
-      $("Solucion[num='2']").html(DH["Solucion2"]);
-      $("Solucion[num='3']").html(DH["Solucion3"]);
-      $("Solucion[num='4']").html(DH["Solucion4"]);
-      $("Columna[num='1']").html(DH["Columna1"]);
-      $("Columna[num='2']").html(DH["Columna2"]);
-      $("Columna[num='3']").html(DH["Columna3"]);
-      $("Columna[num='4']").html(DH["Columna4"]);
-      $("Columna[num='5']").html(DH["Columna5"]);
-      $("Columna[num='6']").html(DH["Columna6"]);
-      $("Columna[num='7']").html(DH["Columna7"]);
-      $("Carta").css({
-        opacity: 1
-      }).removeAttr("hover");
-      /* Re-asignamos los eventos */
-      $("Carta").off("mouseover").on('mouseover', this.Carta_EventoMouseOver.bind(this));
-      $("Carta").off("mouseout").on('mouseout', this.Carta_EventoMouseOut.bind(this));
-      $("Carta").off("dragstart").on('dragstart', this.Carta_EventoDragStart.bind(this));
-      $("Carta").off("dragend").on('dragend', this.Carta_EventoDragEnd.bind(this));
-      $("Carta").off("dblclick").on('dblclick', this.Carta_EventoDblClick.bind(this));
-      $("movimientos").html(this.Movimiento - 1);
-    }
-    $("Derrota").css({
-      "display": (this.Ayuda() === false) ? "block" : "none"
-    });
-    $("Victoria").css({
-      "display": (this.Victoria() === true) ? "block" : "none"
-    });
-  };
-  this.Ayuda = function (e) {
-    var Solucion = [];
-    var Baraja = [];
-    var Columna = [];
-    Solucion[1] = this.UltimoHijo($("Solucion[num='1']"));
-    Solucion[2] = this.UltimoHijo($("Solucion[num='2']"));
-    Solucion[3] = this.UltimoHijo($("Solucion[num='3']"));
-    Solucion[4] = this.UltimoHijo($("Solucion[num='4']"));
-    Baraja[1] = this.UltimoHijo($("Baraja[num='1']"));
-    Baraja[2] = this.UltimoHijo($("Baraja[num='2']"));
-    /* OJO porque también existe la columna 0 que se usa exclusivamente para las imagenes del drag & drop, no hay que tenerla en cuenta */
-    Columna[1] = this.UltimoHijo($("Columna[num='1']"));
-    Columna[2] = this.UltimoHijo($("Columna[num='2']"));
-    Columna[3] = this.UltimoHijo($("Columna[num='3']"));
-    Columna[4] = this.UltimoHijo($("Columna[num='4']"));
-    Columna[5] = this.UltimoHijo($("Columna[num='5']"));
-    Columna[6] = this.UltimoHijo($("Columna[num='6']"));
-    Columna[7] = this.UltimoHijo($("Columna[num='7']"));
-    /* Array con los posibles movimientos Origen -> Destino, y con una valoración en puntos. */
-    this.MovimientosAuyda = new Array();
-    this.MovimientosAuydaActual = 0;
-    this.MovimientosAuyda.push({
-      origen: $("Baraja[num='1']"),
-      destino: $("Baraja[num='2']"),
-      valor: 0
-    });
-    if (Baraja[2].prop("tagName") === "CARTA") {
-      for (i = 1; i < 5; i++) {
-        Valor = (Solucion[i].prop("tagName") === "CARTA") ? parseInt(Solucion[i].attr("valor")) : -1;
-        Palo = (Solucion[i].prop("tagName") === "CARTA") ? Solucion[i].attr("palo") : Baraja[2].attr("palo");
-        if (Valor + 1 === parseInt(Baraja[2].attr("valor")) && Palo === Baraja[2].attr("palo")) {
-          this.MovimientosAuyda.push({
-            origen: Baraja[2],
-            destino: Solucion[i],
-            valor: 150 - ((Valor + 1) * 10)
-          });
-        }
-      }
-    }
-    for (c = 7; c > 0; c--) {
-      for (i = 1; i < 5; i++) {
-        Valor = (Solucion[i].prop("tagName") === "CARTA") ? parseInt(Solucion[i].attr("valor")) : -1;
-        Palo = (Solucion[i].prop("tagName") === "CARTA") ? Solucion[i].attr("palo") : Columna[c].attr("palo");
-        if (Valor + 1 === parseInt(Columna[c].attr("valor")) && Palo === Columna[c].attr("palo")) {
-          this.MovimientosAuyda.push({
-            origen: Columna[c],
-            destino: Solucion[i],
-            valor: 150 - ((Valor + 1) * 10)
-          });
-        }
-      }
-    }
-    for (c = 7; c > 0; c--) {
-      Carta = this.UltimoHijo(Columna[c]);
-      if (Carta.prop("tagName") === "CARTA") {
-        Padres = 1;
-        do {
-          for (c2 = 7; c2 > 0; c2--) {
-            CC = this.UltimoHijo(Columna[c2]);
-            Valor = (CC.prop("tagName") === "CARTA") ? parseInt(CC.attr("valor")) : -1;
-            Palo = (CC.prop("tagName") === "CARTA") ? CC.attr("palo") : Carta.attr("palo");
-            if (this.CartaValida(Carta, CC)) {
-              if (Carta.parent().attr("tapada") === "true" || Carta.parent().prop("tagName") !== "CARTA") {
-                if (parseInt(Carta.attr("valor")) === 12 && CC.prop("tagName") === "COLUMNA" && Carta.parent().prop("tagName") === "COLUMNA") {} else {
-                  this.MovimientosAuyda.push({
-                    origen: Carta,
-                    destino: CC,
-                    valor: 10 * Padres
-                  });
-                }
-              }
-            }
-          }
-          Carta = Carta.parent();
-          Padres++;
-        } while (Carta.attr("tapada") !== "true" && Carta.prop("tagName") === "CARTA");
-      }
-    }
-    if (Baraja[2].prop("tagName") === "CARTA") {
-      for (c = 7; c > 0; c--) {
-        CC = this.UltimoHijo(Columna[c]);
-        Valor = (CC.prop("tagName") === "CARTA") ? CC.attr("valor") : -1;
-        Palo = (CC.prop("tagName") === "CARTA") ? CC.attr("palo") : Baraja[2].attr("palo");
-        if (this.CartaValida(Baraja[2], CC)) {
-          this.MovimientosAuyda.push({
-            origen: Baraja[2],
-            destino: CC,
-            valor: 10
-          });
-        }
-      }
-    }
-    /* Ordeno el array de movimientos posibles por su valor */
-    this.MovimientosAuyda.sort(function (a, b) {
-      var a1 = a.valor,
-        b1 = b.valor;
-      if (a1 === b1) return 0;
-      return (a1 < b1) ? 1 : -1;
-    });
-    /* Para depurar la IA he decidido que lo mejor es mostrar los movimientos de cada turno de forma eficiente 
-     * además de contar con un experto anónimo local para mejorar la IA del juego hasta donde mis habilidades lo permitan */
-    var DebugIA = $("DebugIA");
-    var DebugHTML = "<ul>";
-    var ValoresCartas = Array("A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K")
-    for (d = 0; d < this.MovimientosAuyda.length; d++) {
-      var OrigenPalo = this.MovimientosAuyda[d].origen.attr("palo");
-      var OrigenValor = this.MovimientosAuyda[d].origen.attr("valor");
-      var DestinoPalo = this.MovimientosAuyda[d].destino.attr("palo");
-      var DestinoValor = this.MovimientosAuyda[d].destino.attr("valor");
-      DebugHTML += "<li>" + "<palo num= '" + OrigenPalo + "'> " + ValoresCartas[OrigenValor] + " -&gt; " + DestinoPalo + "'> " + ValoresCartas[DestinoValor] + "</li>"
-    }
-    DebugHTML += "</ul>"
-    DebugIA.html(DebugHTML);
-    /* Si solo hay un movimiento posible miramos los movimientos posibles que quedan en la baraja 
-     * para comprobar si se ha perdido la partida. */
-    if (this.MovimientosAuyda.length === 1) {
-      /* Movimientos posibles de la baraja a las columnas */
-      for (b = 1; b < 3; b++) {
-        Carta = Baraja[b];
-        do {
-          for (c = 7; c > 0; c--) {
-            if (this.CartaValida(Carta, Columna[c])) {
-              return true; /* Aun se pueden poner cartas en los mazos de las columnas */
-            }
-          }
-          Carta = Carta.parent();
-        } while (Carta.prop("tagName") === "CARTA");
-      }
-      /* Movimientos posibles de la baraja a las soluciones */
-      for (b = 1; b < 3; b++) {
-        Carta = Baraja[b];
-        do {
-          for (s = 1; s < 5; s++) {
-            Valor = (Solucion[s].prop("tagName") === "CARTA") ? parseInt(Solucion[s].attr("valor")) : -1;
-            Palo = (Solucion[s].prop("tagName") === "CARTA") ? Solucion[s].attr("palo") : Carta.attr("palo");
-            if (Valor + 1 === parseInt(Carta.attr("valor")) && Palo === Carta.attr("palo")) {
-              return true; /* Aun se pueden poner cartas en los mazos de las soluciones */
-            }
-          }
-          Carta = Carta.parent();
-        } while (Carta.prop("tagName") === "CARTA");
-      }
-      return false; /* No quedan movimientos posibles */
-    }
-    return true;
-  };
-};
-var obstacles = [];
-var oid2ids = {}; 
-var OnMicrophoneReady, OnMicrophoneGotResult, OnMicrophoneProblem;
-var Options = {};
-var oranges = [
-  '#fff5eb',
-  '#ffefdf',
-  '#fee8d1',
-  '#fee0c1',
-  '#fdd6af',
-  '#fdcb9b',
-  '#fdbe85',
-  '#fdb06f',
-  '#fda25a',
-  '#fc9446',
-  '#f98534',
-  '#f57623',
-  '#ee6815',
-  '#e55a0b',
-  '#d84d05',
-  '#c84303',
-  '#b43b02',
-  '#a13403',
-  '#902d04',
-  '#7f2704'
-];
-var OVD = .25, OVW = 14, OVH = 20;
-var palDict = {};
-var palette = null;
-var paneOpen = false;
-var panzoom = (function () {
-  const MIN_SCALE = 0.35;
-  var txStart;
-  var tyStart;
-  var xStart;
-  var yStart;
-  var panning = false;
-  var couldBePanning = false;
-  var totalMaxDelta;
-  function initPanZoom(id) {
-    let map = document.getElementById(id);
-    map.setAttribute("transform", `translate(0,0) scale(${MIN_SCALE})`); 
-    map.addEventListener("wheel", ev => {
-      onwheel(ev, map);
-    });
-    map.addEventListener("pointerdown", ev => {
-      onmousedown(ev);
-    });
-    addEventListener("mouseup", ev => {
-      onmouseup(ev, map);
-    });
-    addEventListener("mousemove", ev => {
-      onmousemove(ev, map);
-    });
-    addEventListener("dblclick", ev => reset(ev, map));
-  }
-  function onwheel(ev, board) {
-    let delta = ev.wheelDelta;
-    let z = delta < 0 ? 0.5 : 2;
-    let dir = Math.sign(delta);
-    let currentMouseX = ev.offsetX;
-    let currentMouseY = ev.offsetY;
-    let transOld = getTransformInfo(board);
-    let getLeft = transOld.translateX;
-    let getTop = transOld.translateY;
-    let scale = transOld.scale;
-    if (scale <= MIN_SCALE + 0.1 && dir < 0) return;
-    let dx = (currentMouseX - getLeft) * (z - 1);
-    let dy = (currentMouseY - getTop) * (z - 1);
-    let scaleNew = scale * z;
-    let txNew = getLeft - dx;
-    let tyNew = getTop - dy;
-    const MIN_TX = -(3400 * scaleNew - 3400 * MIN_SCALE);
-    const MIN_TY = -(2200 * scaleNew - 2200 * MIN_SCALE);
-    txNew = Math.min(txNew, 0);
-    txNew = Math.max(txNew, MIN_TX);
-    tyNew = Math.min(tyNew, 0);
-    tyNew = Math.max(tyNew, MIN_TY);
-    let transNew = `translate(${txNew},${tyNew}) scale(${scaleNew})`;
-    board.setAttribute("transform", transNew);
-    transNew = getTransformInfo(board);
-    ev.preventDefault();
-  }
-  function reset(ev, board) {
-    let map = ev.target;
-    let transNew = `translate(0,0) scale(${MIN_SCALE})`;
-    board.setAttribute("transform", transNew);
-  }
-  function onmousedown(ev) {
-    let map = ev.target;
-    let board = ev.path[1];
-    let x = ev.screenX; 
-    let y = ev.screenY; 
-    let transOld = getTransformInfo(board);
-    let scale = transOld.scale;
-    if (scale <= MIN_SCALE + 0.1) return;
-    xStart = x;
-    yStart = y;
-    txStart = transOld.translateX;
-    tyStart = transOld.translateY;
-    totalMaxDelta = 0;
-    couldBePanning = true;
-  }
-  function onmousemove(ev, board) {
-    let id = ev.target.id;
-    if (id != "imgMap" && id != "mapG") {
-      couldBePanning = false;
-      panning = false;
-      return;
-    }
-    if (couldBePanning) {
-      let x = Math.abs(ev.screenX - xStart); 
-      let y = Math.abs(ev.screenY - yStart); 
-      totalMaxDelta += Math.max(x, y);
-      if (totalMaxDelta > 10) {
-        panning = true;
-        couldBePanning = false;
-        board.setPointerCapture(true);
-        ev.preventDefault();
-      }
-    } else if (panning) {
-      let x = ev.screenX; 
-      let y = ev.screenY; 
-      let transOld = getTransformInfo(board);
-      let tx = transOld.translateX;
-      let ty = transOld.translateY;
-      let scale = transOld.scale;
-      let txNew = txStart + x - xStart; 
-      let tyNew = tyStart + y - yStart; 
-      const MIN_TX = -(3400 * scale - 3400 * MIN_SCALE);
-      const MIN_TY = -(2200 * scale - 2200 * MIN_SCALE);
-      txNew = Math.min(txNew, 0);
-      txNew = Math.max(txNew, MIN_TX);
-      tyNew = Math.min(tyNew, 0);
-      tyNew = Math.max(tyNew, MIN_TY);
-      let transNew = `translate(${txNew},${tyNew}) scale(${scale})`;
-      board.setAttribute("transform", transNew);
-    }
-  }
-  function onmouseup(ev, board) {
-    if (panning) {
-      let map = ev.target;
-      let x = ev.screenX; 
-      let y = ev.screenY; 
-      let transOld = getTransformInfo(board);
-      let tx = transOld.translateX;
-      let ty = transOld.translateY;
-      let scale = transOld.scale;
-      let txNew = txStart + x - xStart;
-      let tyNew = tyStart + y - yStart;
-      const MIN_TX = -(3400 * scale - 3400 * MIN_SCALE);
-      const MIN_TY = -(2200 * scale - 2200 * MIN_SCALE);
-      txNew = Math.min(txNew, 0);
-      txNew = Math.max(txNew, MIN_TX);
-      tyNew = Math.min(tyNew, 0);
-      tyNew = Math.max(tyNew, MIN_TY);
-      let transNew = `translate(${txNew},${tyNew}) scale(${scale})`;
-      board.setAttribute("transform", transNew);
-      board.releasePointerCapture(true);
-      panning = false;
-    } else couldBePanning = false;
-  }
-  return function (id) {initPanZoom(id);}
-})();
-var PawnIsolated = -10;
-var PawnPassed = [0, 5, 10, 20, 35, 60, 100, 200];
-var PawnRanksBlack = new Array(10);
-var PawnRanksWhite = new Array(10);
-var PawnRowsBlack = new Array(10);
-var PawnRowsWhite = new Array(10);
-var PawnTable = [
-  0, 0, 0, 0, 0, 0, 0, 0,
-  10, 10, 0, -10, -10, 0, 10, 10,
-  5, 0, 0, 5, 5, 0, 0, 5,
-  0, 0, 10, 20, 20, 10, 0, 0,
-  5, 5, 5, 10, 10, 5, 5, 5,
-  10, 10, 10, 20, 20, 10, 10, 10,
-  20, 20, 20, 30, 30, 20, 20, 20,
-  0, 0, 0, 0, 0, 0, 0, 0
-];
-var PceChar = ".PNBRQKpnbrqk";
-var PceDir = [0, 0, KnDir, BiDir, RkDir, KiDir, KiDir, 0, KnDir, BiDir, RkDir, KiDir, KiDir];
-var perft_leafNodes;
-var PerlenDict, BaseColor, HeaderColor, SidebarColor, IsControlKeyDown = false
-var PGAMEPLID = null; 
-var phase = 0;
-var PI = Math.pi, interval_id, angle, factor = .67, tree = [], leaves = [], jittering = false;
-var PICS_PER_LEVEL = IS_TESTING ? 1 : 3;
-var Pictures, Goal, Selected, Score, TO, TOMain, TOTrial, TOList, IsAnswerCorrect, QContextCounter = 0;
-var pictureSize, TOMain, TOTrial;
-var piece1= RAND_32();
-var piece2= RAND_32();
-var piece3= RAND_32();
-var piece4= RAND_32();
-var PieceBig = [BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE];
-var PieceBishopQueen = [BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.FALSE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.FALSE, BOOL.TRUE, BOOL.FALSE];
-var PieceCol = [COLOURS.BOTH, COLOURS.WHITE, COLOURS.WHITE, COLOURS.WHITE, COLOURS.WHITE, COLOURS.WHITE, COLOURS.WHITE,COLOURS.BLACK, COLOURS.BLACK, COLOURS.BLACK, COLOURS.BLACK, COLOURS.BLACK, COLOURS.BLACK];
-var PieceKeys = new Array(14 * 120);
-var PieceKing = [BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE];
-var PieceKnight = [BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE];
-var PieceMaj = [BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE];
-var PieceMin = [BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE];
-var PiecePawn = [BOOL.FALSE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE];
-var PieceRookQueen = [BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE];
-var PIECES = { EMPTY: 0, wP: 1, wN: 2, wB: 3, wR: 4, wQ: 5, wK: 6, bP: 7, bN: 8, bB: 9, bR: 10, bQ: 11, bK: 12 };
-var PieceSlides = [BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE];
-var PieceVal = [0, 100, 325, 325, 550, 1000, 50000, 100, 325, 325, 550, 1000, 50000];
-var player, ball, opponent, ai;
-var playerConfig = null;
-var playerConfigC = null;
-var Players, PlayerOnTurn, GC, GameCounter;
-var PLAYMODE = 'hotseat'; 
-var Pollmode = 'auto', Globals;
-var PolyClips = {
-  hex: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-  test1: 'inset(50% 0% 100% 25% 100% 75% 50% 100% 0% 75% 0% 25% round 10px)',
-  test0: 'inset(45% 0% 33% 10% round 10px)',
-  hexagon: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-  hexF: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
-  hexFlat: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
-  hexflat: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
-  tri: 'polygon(50% 0%, 100% 100%, 0% 100%)',
-  triangle: 'polygon(50% 0%, 100% 100%, 0% 100%)',
-  triUp: 'polygon(50% 0%, 100% 100%, 0% 100%)',
-  triup: 'polygon(50% 0%, 100% 100%, 0% 100%)',
-  triDown: 'polygon(0% 0%, 100% 0%, 50% 100%)',
-  tridown: 'polygon(0% 0%, 100% 0%, 50% 100%)',
-  triright: 'polygon(0% 0%, 100% 50%, 0% 100%)',
-  triRight: 'polygon(0% 0%, 100% 50%, 0% 100%)',
-  trileft: 'polygon(0% 50%, 100% 0%, 100% 100%)',
-  triLeft: 'polygon(0% 50%, 100% 0%, 100% 100%)',
-  splayup: 'polygon(0% 70%, 100% 70%, 100% 100%, 0% 100%)',
-}
-var POOLS = {};
-var positionCount;
-var posKey = 0;
-var PREFERRED_CARD_HEIGHT = 0;
-var prefix = DeckA.prefix
-var PRES={};
-var prevGamePlid = null;
-var PrevUser = null;
-var prevWaitingFor = null; 
-var primitiveSetNames = ['all', 'activity', 'animal', 'body', 'drink',
-  'emotion', 'family', 'fantasy', 'food', 'fruit', 'game', 'gesture',
-  'kitchen', 'object', 'place', 'plant', 'person',
-  'role', 'shapes', 'sport', 'sports',
-  'time', 'transport', 'vegetable',
-  'toolbar', 'math', 'punctuation', 'misc'];
-var PROJECTNAME = 'basinno';
-var PROTO;
-var pst_b = {
-  'p': pst_w['p'].slice().reverse(),
-  'n': pst_w['n'].slice().reverse(),
-  'b': pst_w['b'].slice().reverse(),
-  'r': pst_w['r'].slice().reverse(),
-  'q': pst_w['q'].slice().reverse(),
-  'k': pst_w['k'].slice().reverse(),
-  'k_e': pst_w['k_e'].slice().reverse()
-}
-var pstOpponent = { 'w': pst_b, 'b': pst_w };
-var pstSelf = { 'w': pst_w, 'b': pst_b };
-var purplegreen = [
-  '#40004b',
-  '#5c1768',
-  '#753283',
-  '#8a529a',
-  '#9e74ae',
-  '#b391c1',
-  '#c7acd2',
-  '#dac4e0',
-  '#e9daea',
-  '#f0ebf0',
-  '#ecf2ea',
-  '#def0d9',
-  '#c8e8c2',
-  '#acdca7',
-  '#89c988',
-  '#64b26a',
-  '#409750',
-  '#237b3b',
-  '#0f5f2a',
-  '#00441b'
-];
-var purples = [
-  '#fcfbfd',
-  '#f6f5fa',
-  '#f0eff6',
-  '#e9e8f2',
-  '#e0dfee',
-  '#d6d6e9',
-  '#cacae3',
-  '#bebedc',
-  '#b1b0d4',
-  '#a4a2cd',
-  '#9894c6',
-  '#8b87bf',
-  '#8079b8',
-  '#7668af',
-  '#6c56a6',
-  '#63449d',
-  '#5a3294',
-  '#51218c',
-  '#481085',
-  '#3f007d'
-];
-var PVENTRIES = 10000;
-var Q, TOQ, AkQ;
-var QCancelAutoreset, TOQRunner, QRunnerRunning = false, QRunning = false;
-var QCounter = 0;
-var QueenOpenCol = 5;
-var QueenOpenFile = 5;
-var QueenSemiOpenCol = 3;
-var QueenSemiOpenFile = 3;
-var QuestionCounter = 0;
-var radius = 32;
-var RankChar = "12345678";
-var RANKS = { RANK_1: 0, RANK_2: 1, RANK_3: 2, RANK_4: 3, RANK_5: 4, RANK_6: 5, RANK_7: 6, RANK_8: 7, RANK_NONE: 8 };
-var RanksBrd = new Array(BRD_SQ_NUM);
-var received_audio = new Audio("../base/assets/sounds/message_received.mp3");
-var RecogHighPriorityOutput = true;
-var recognition;
-var RecogOutput = false;
-var RecogOutputError = true;
-var requestAnimFrame = (function(){
-  return window.requestAnimationFrame       || 
-         window.webkitRequestAnimationFrame || 
-         window.mozRequestAnimationFrame    || 
-         window.oRequestAnimationFrame      || 
-         window.msRequestAnimationFrame     || 
-         function( callback ){
-           window.setTimeout(callback, 1000 / 60);
-         };
-})();
-var resizeObserver = new ResizeObserver(entries => {
-  for (let entry of entries) {
-    let cs = window.getComputedStyle(entry.target);
-    console.log('watching element:', entry.target);
-    console.log(entry.contentRect.top, ' is ', cs.paddingTop);
-    console.log(entry.contentRect.left, ' is ', cs.paddingLeft);
-    console.log(entry.borderBoxSize[0].inlineSize, ' is ', cs.width);
-    console.log(entry.borderBoxSize[0].blockSize, ' is ', cs.height);
-    if (entry.target.handleResize)
-      entry.target.handleResize(entry);
-  }
-});
-var RkDir = [-1, -10, 1, 10];
-var RookOpenCol = 10;
-var RookOpenFile = 10;
-var RookSemiOpenCol = 5;
-var RookSemiOpenFile = 5;
-var RookTable = [
-  0, 0, 5, 10, 10, 5, 0, 0,
-  0, 0, 5, 10, 10, 5, 0, 0,
-  0, 0, 5, 10, 10, 5, 0, 0,
-  0, 0, 5, 10, 10, 5, 0, 0,
-  0, 0, 5, 10, 10, 5, 0, 0,
-  0, 0, 5, 10, 10, 5, 0, 0,
-  25, 25, 25, 25, 25, 25, 25, 25,
-  0, 0, 5, 10, 10, 5, 0, 0
-];
-var ROOT = null;
-var ROUND_OUTPUT = true;
-var route_counter = 0;
-var RowBrd = new Array(BRD_SQ_NUM);
-var RowChar = "12345678";
-var ROWS =  { ROW_1:0, ROW_2:1, ROW_3:2, ROW_4:3, ROW_5:4, ROW_6:5, ROW_7:6, ROW_8:7, ROW_NONE:8 };
-var S = {}, Z, U = null, PL, G, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
-var SAMPLES_PER_LEVEL = new Array(20).fill(PICS_PER_LEVEL);
-var scenarioQ = [];
-var scenarioRunning = false;
-var SCENEHEIGHT = 600;
-var SCENEWIDTH = 900;
-var score;
-var scoringMode, DefaultScoringMode = 'n'; 
-var Script = {
-  _loadedScripts: [],
-  include: function (script) {
-    if (this._loadedScripts.include(script)) {
-      return false;
-    }
-    var code = new Ajax.Request(script, {
-      asynchronous: false,
-      method: "GET",
-      evalJS: false,
-      evalJSON: false
-    }).transport.responseText;
-    if (Prototype.Browser.IE) {
-      window.execScript(code);
-    } else if (Prototype.Browser.WebKit) {
-      $$("head").first().insert(Object.extend(
-        new Element("script", {
-          type: "text/javascript"
-        }), {
-        text: code
-      }
-      ));
-    } else {
-      window.eval(code);
-    }
-    this._loadedScripts.push(script);
-  }
-};
-var SearchController = {};
-var SEED = 1;
-var SEEN_STATUS = false;
-var selectedEmoSetNames = ['all', 'animal', 'body', 'drink', 'emotion', 'food', 'fruit', 'game', 'gesture', 'kitchen', 'object', 'person', 'place', 'plant', 'sports', 'time', 'transport', 'vegetable'];
-var SelectedMenuKey, MenuItems;
-var sent_audio = new Audio("../base/assets/sounds/message_sent.mp3");
-var SERVER = "http://localhost:8080/aroot/simple"; // oder telecave!
-var serverData = null;
-var serverDataC = null;
-var serverDataUpdated;
-var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
-var SessionId;
-var SessionScore = 0;
-var Settings, SettingsList, SettingsChanged, SelectedMenuKey; 
-var SettingTypesCommon = {
-  samplesPerGame: true,
-  minutesPerUnit: true,
-  incrementLevelOnPositiveStreak: true,
-  decrementLevelOnNegativeStreak: true,
-  showLabels: true,
-  language: true,
-  vocab: true,
-  showTime: true,
-  spokenFeedback: true,
-  silentMode: true,
-  switchGame: true,
-  trials: false,
-  showHint: false,
-}
-var ShapeKeys = ['hex', 'hexF', 'tri', 'triDown', 'triLeft', 'triRight'];
-var sheet = (function () {
-  var style = document.createElement('style');
-  style.appendChild(document.createTextNode(''));
-  document.head.appendChild(style);
-  return style.sheet;
-})();
-var SICHERER = 100;
-var SideChar = "wb-";
-var SideKey;
-var SIGI;
-var skipAnimations = IS_TESTING; 
-var skipBadgeAnimation = true;
-var socket = null;
-var Socket;
-var SOCKETSERVER = 'http://localhost:5000'; //geht im spital
-var SpeakerOutput = false;
-var SPEC_PATH = '/DATA/' + TEST_DIR + '/_spec';
-var Speech;
-var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
-var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
-var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
-var Sq120ToSq64 = new Array(BRD_SQ_NUM);
-var Sq64ToSq120 = new Array(64);
-var square_coordinates = [
-  [1, 1, 1, 2, 2, 2, 3, 3, 3],
-  [1, 1, 1, 2, 2, 2, 3, 3, 3],
-  [1, 1, 1, 2, 2, 2, 3, 3, 3],
-  [4, 4, 4, 5, 5, 5, 6, 6, 6],
-  [4, 4, 4, 5, 5, 5, 6, 6, 6],
-  [4, 4, 4, 5, 5, 5, 6, 6, 6],
-  [7, 7, 7, 8, 8, 8, 9, 9, 9],
-  [7, 7, 7, 8, 8, 8, 9, 9, 9],
-  [7, 7, 7, 8, 8, 8, 9, 9, 9]
-]
-var SQUARES = {
-  A1: 21, B1: 22, C1: 23, D1: 24, E1: 25, F1: 26, G1: 27, H1: 28,
-  A8: 91, B8: 92, C8: 93, D8: 94, E8: 95, F8: 96, G8: 97, H8: 98, NO_SQ: 99, OFFBOARD: 100
-};
-var srch_thinking;
-var START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-var startAtLevel = IS_TESTING ? { gSayPicAuto: 10, gTouchPic: 3, gTouchColors: 6, gWritePic: 10, gMissingLetter: 10, gSayPic: 0 }
-  : { gMissingLetter: 3, gTouchPic: 7, gTouchColors: 8, gWritePic: 10, gSayPic: 0 };
-var startBoats = ['93', '99', '109', '121', '124', '116', '106', '111', '116', '129'];
-var StateDict = {};
-var StepByStepMode = false; 
-var StepCounter = 0, Autoreload=false, KeepSessionUser = false; 
-var SUITS = 'SHDC';
-var svgDict, svgKeys, svgList; 
-var svgDictC = null;
-var symbolColors = {
-  knight: 'red',
-  victory_point: 'gold',
-  road_building: 'dimgray',
-  monopoly: 'violet',
-  year_of_plenty: 'green',
-};
-var symbolDict, symbolKeys, symbolList; 
-var symbolDictC = null;
-var symbols = {
-  knight: 'user-secret',
-  victory_point: 'trophy',
-  road_building: 'road',
-  monopoly: 'umbrella',
-  year_of_plenty: 'tree',
-};
-var symByType, symBySet;
-var symKeysByGroupSub;
-var symKeysByType, symKeysBySet;
-var symListByType, symListBySet;
-var Syms, SymKeys, ByGroupSubgroup, KeySets, C52, Cinno, Aristocards;
-var synth, inputForm, inputTxt, voiceSelect, pitch, pitchValue, rate, rateValue, voices, utterance;
-var system = Complex, len = 100, angle;
-var t_avg = 0;
-var T;
-var TABLE_CREATE = {};
-var testCardsC = null
-var testCounter = 100;
-var testDict = {};
-var TESTING = true; 
-var TestNumber,TestList, TestRunning, TestSuiteRunning;
-var TESTVAR = 0;
-var th = ['', 'thousand', 'million', 'billion', 'trillion'];
-var timeout1, timeout2;
-var TimestampStarted, TimeElapsed, OnTimeOver = null, TimeElem, TimeLeft;
-var timit;
-var tn = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
-var TO; 
-var TOFleetingMessage, dFleetingMessage, Animation1;
-var TOList;
-var TOMan, TO, TOMain, TOTrial, TOList, TOTicker, TCount, TOAnim;
-var Toolbar;
-var topbar1 = document.getElementById('topbar')
-var _TOSound, _sndPlayer, _loaded = false, _qSound, _idleSound = true, _sndCounter = 0;
-var transform = prefix('transform')
-var translate = DeckA.translate
-var trialNumber;
-var TT_JUST_UPDATED = -1;
-var tupleGroups = null;
-var TV = {};
-var tw = ['twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
-var U, G, F, Users, Tables, Basepath, Serverdata, dParent, dTitle;
-var uiActivated = false, Selected, Turn, Prevturn;
-var uiActivatedTC;
-var UID = 0; 
 var UIDCounter = 0;
-var UIDHelpers = 0;
-var uiPaused = 0;
-var uiPausedStack = [];
-var UIROOT; 
-var UIS = {}; 
-var uniqueIdEngine = new UniqueIdEngine();
-var unitTestId = 0;
-var UPD={}; 
-var USE_ADDONS = false;
-var USELIVESERVER = false;
-var userCode = null;
-var userCodeC = null;
-var Userdata, Username, Serverdata, Live;
-var UserMove = {};
-var Username,Gamename,Tablename;
-var Users,User,Tables,Table; 
-var userSpec = null;
-var userSpecC = null;
-var V = {};
-var verbose = false;
-var VictimScore = [0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600];
-var vidCache, allGames, playerConfig, c52, C52,  cinno, testCards; 
-var view = null;
-var virtKeys = false;
-var visualStructures = {}; 
-var W_init = 10; 
-var Waiting_for = null;
-var WAITINGFORPLAYER = null;
-var weights = { 'p': 100, 'n': 280, 'b': 320, 'r': 479, 'q': 929, 'k': 60000, 'k_e': 60000 };
-var WhichCorner = 0;
-var WordProblems;
-var words,grammar,lang,matchingWords,recognition,speechRecognitionList,hintMessage,resultMessage;
-var WR = {};
-var x = {
-  "loc":
-  {
-    "actions":
-    {
-      "_set":
-        [{
-          "_tuple":
-            [{
-              "_set":
-                [{ "ID": "91", "val": "Corner[91]", "type": "obj" },
-                { "ID": "92", "val": "Corner[92]", "type": "obj" },
-                { "ID": "93", "val": "Corner[93]", "type": "obj" },
-                { "ID": "94", "val": "Corner[94]", "type": "obj" },
-                { "ID": "95", "val": "Corner[95]", "type": "obj" },
-                ]
-            }]
-        }]
-    }
-  }
-}
-var xxxxxxxxxx = new ResizeObserver(entries => {
-  for (let entry of entries) {
-    let cs = window.getComputedStyle(entry.target);
-    console.log('watching element:', entry.target);
-    console.log(entry.contentRect.top, ' is ', cs.paddingTop);
-    console.log(entry.contentRect.left, ' is ', cs.paddingLeft);
-    console.log(entry.borderBoxSize[0].inlineSize, ' is ', cs.width);
-    console.log(entry.borderBoxSize[0].blockSize, ' is ', cs.height);
-    if (entry.target.handleResize)
-      entry.target.handleResize(entry);
-  }
-});
-var z, U, G, UI = {}, Users, Tables, Basepath, Serverdata = {};
-var Z, z, U, PL, G, UI = {}, Users, Tables, Basepath, Serverdata = {};
-var ZMax = 0;
-var Zones = {};
-const fieldSorter = fields => (a, b) =>
-  fields
-    .map(o => {
-      let dir = 1;
-      if (o[0] === '-') {
-        dir = -1;
-        o = o.substring(1);
-      }
-      return a[o] > b[o] ? dir : a[o] < b[o] ? -dir : 0;
-    })
-    .reduce((p, n) => (p ? p : n), 0);
-const complementaryColor = color => {
-  const hexColor = color.replace('#', '0x');
-  return `#${('000000' + ('0xffffff' ^ hexColor).toString(16)).slice(-6)}`;
-};
-const MARGIN_XS = '2px 4px';
+var FRUIDCounter = -1;
+var TOFleetingMessage, dFleetingMessage, Animation1;
+//#endregion
+
+
+
 const MSCATS = { rect: 'g', g: 'g', circle: 'g', text: 'g', polygon: 'g', line: 'g', body: 'd', svg: 'd', div: 'd', p: 'd', table: 'd', button: 'd', a: 'd', span: 'd', image: 'd', paragraph: 'd', anchor: 'd' };
 const DOMCATS = { rect: 'g', g: 'g', circle: 'g', text: 'g', polygon: 'g', line: 'g', body: 'd', svg: 'h', div: 'd', p: 'd', table: 'd', button: 'd', a: 'd', span: 'd', image: 'd', paragraph: 'd', anchor: 'd' };
+const AREAS={}; 
 const IS_MIRROR = false;
 const FLASK = true;
 const NGROK = false; //'http://849aec381695.ngrok.io/'; // MUSS / am ende!!! 
+const SERVER_URL = IS_MIRROR ? 'http://localhost:5555/' : FLASK ? (NGROK ? NGROK : 'http://localhost:' + PORT + '/') : 'http://localhost:5005/';
 const playerColors = {
   red: '#D01013',
   blue: '#003399',
@@ -4245,35 +44,72 @@ const defaultGameplayerAreaName = 'gameplayerArea';
 const defaultTabletopCardsAreaName = 'tabletopCardsArea';
 const defaultDeckAreaName = 'deckArea';
 const MIN_CARD_HEIGHT = 60;
+const MAX_CARD_HEIGHT = 100;
 const RSGTYPES = { board: 1, hand: 2, field: 101, edge: 102, corner: 103 };
 const CARD_SZ = 80;
 const LABEL_SZ = 40;
 const FIELD_SZ = 40;
 const THEMES = ['#c9af98', '#2F4F4F', '#6B7A8F', '#00303F', 'rgb(3, 74, 166)', '#458766', '#7A9D96'];
 const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
+const fieldSorter = fields => (a, b) =>
+  fields
+    .map(o => {
+      let dir = 1;
+      if (o[0] === '-') {
+        dir = -1;
+        o = o.substring(1);
+      }
+      return a[o] > b[o] ? dir : a[o] < b[o] ? -dir : 0;
+    })
+    .reduce((p, n) => (p ? p : n), 0);
 const INTERACTION = { none: 0, selected: 1, stop: 2, saveLoad: 3, route: 4 };
+const MAX_PLAYERS_AVAILABLE = 8;
 const soloTypes = ['me', 'AI regular', 'AI random', 'AI pass'];
 const allPlayerTypes = ['me', 'human', 'AI regular', 'AI random', 'AI pass'];
+const PLAYER_CONFIG_FOR_MULTIPLAYER = ['me', 'human', 'human'];
+const USE_LOCAL_STORAGE = false; 
+const VERSION = '_ui'; 
+const CACHE_DEFAULTSPEC = false;
+const CACHE_USERSPEC = false;
+const CACHE_CODE = false;
+const CACHE_INITDATA = true;
+//const TESTING = false; 
 const RUNTEST = false; 
+const USE_NON_TESTING_DATA = true;
+const DSPEC_VERSION = 3;
 const USPEC_VERSION = '2a';
-const CODE = {
-  paths: [],
-  funcs: {},
-  consts: {},
-  index: [],
-};
+const CODE_VERSION = 1;
+const SERVERDATA_VERSION = 1;
+const TEST_PATH = '/zdata/';
 const INIT_CLEAR_LOCALSTORAGE = true; 
+const USE_MAX_PLAYER_NUM = false; 
 const STARTING_TAB_OPEN = 'bPlayers'; 
 const TIMIT_SHOW = false; 
-const PORT = 2022;
+const SHOW_SERVER_ROUTE = false; 
+const SHOW_SERVER_RETURN = false; 
+const SHOW_CODE_DATA = false; 
+const SHOW_SPEC = true; 
+const USE_OLD_GRID_FUNCTIONS = false;
+const USE_ALL_GAMES_ROUTE = false; 
+const USE_SOCKETIO = false;
+const USE_BACKEND_AI = true;
 const names = ['felix', 'amanda', 'sabine', 'tom', 'taka', 'microbe', 'dwight', 'jim', 'michael', 'pam', 'kevin', 'darryl', 'lauren', 'anuj', 'david', 'holly'];
+const TEST_VERSION = '17'; 
+const DSPEC_PATH = '/wCOMMON/defaultSpec'
 const INCREMENTAL_UPDATE = true; 
 const VERBOSE = true; 
+const SHOW_CODE = false; 
+const SHOW_SERVERDATA = false; 
 const USER_SERVERDATA_STUB = false; 
 const DEF_ORIENTATION = 'v';
+const DEF_SPLIT = 0.5;
+const SPEC_PATH = '/work2/static2.yaml';
+const SERVERDATA_PATH = '/work2/sDataFull.yaml';
 const RUPDATE = {
   info: mNodeChangeContent,
 };
+const SHAPEFUNCS = { 'circle': agCircle, 'hex': agHex, 'rect': agRect, };
+const MAX_RECURSIONS = 200;
 const RCREATE = {
   card52: mCard52,
   card: mCard,
@@ -4307,9 +143,8 @@ const PARAMRSG_T = {
   size: true,
   rounding: true,
 };
-const SHOW_SPEC = true; 
-const SERVERDATA_VERSION = 1;
-const CACHE_INITDATA = true;
+const SHOW_TRACE = false; 
+const SHOW_DEFS = false; 
 const MarkerText = ['✔️', '❌'];
 const MarkerId = { SUCCESS: 0, FAIL: 1 };
 const GENERATE_EMPTY_MESSAGES = true;
@@ -4321,9 +156,7 @@ const germanNumbers = {
   sieben: 7, 7: 'sieben', 8: 'acht', acht: 8, 9: 'neun', neun: 9, zehn: 10, elf: 11, zwoelf: 12, zwanzig: 20, dreissig: 30,
   10: 'zehn', 11: 'elf', 12: 'zwoelf', 20: 'zwanzig', 30: 'dreissig', vierzig: 40, fuenfzig: 50, 40: 'vierzig', 50: 'fuenfzig'
 };
-const VERSION = '_ui'; 
-const DSPEC_VERSION = 3;
-const TEST_PATH = '/zdata/';
+const _overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
 const messageTypes = { LEFT: 'left', RIGHT: 'right', LOGIN: 'login' };
 const messages = []; 
 const VerboseSocket = false;
@@ -4359,6 +192,7 @@ const displayMessages = () => {
 const BLUE = '#4363d8';
 const BLUEGREEN = '#004054';
 const BROWN = '#96613d';
+const BRAUN = '#331606';
 const GREEN = '#3cb44b';
 const FIREBRICK = '#800000';
 const LIGHTGREEN = '#afff45'; //'#bfef45';
@@ -5049,11 +883,10 @@ const BLUFF = {
   toword: { _: '_', '3': 'three', '4': 'four', '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine', T: 'ten', J: 'jack', Q: 'queen', K: 'king', A: 'ace' },
   rankstr: '3456789TJQKA',
 };
-const AREAS={}; 
-const MAX_RECURSIONS = 200;
 const DEFAULTPICTYPE = 'all'; 
 const EMOFONTLIST = ['emoOpen', 'openmoBlack', 'segoe ui emoji', 'segoe ui symbol'];
 const sleep = m => new Promise(r => setTimeout(r, m))
+const IS_TESTING = true; 
 const immediateStart = true;  
 const uiHaltedMask = 1 << 0; 
 const beforeActivationMask = 1 << 1;
@@ -5354,22 +1187,23 @@ const ALLTESTSOLUTIONS = {
   7: {"0":{"_1":{"w":22,"h":46},"_2":{"w":22,"h":23},"_3":{"w":22,"h":23}}},
 };
 const MAXNODES = 5; 
+const SHOW_FREEZER = false; 
 const ALLOW_CALIBRATION = false;
 const KSKeys = ['action', 'actionPlus', 'all', 'best25', 'best50', 'best75', 'best100', 'emo', 'huge',
   'life', 'life50', 'lifePlus', 'nemo', 'nemo100', 'object', 'object50', 'objectPlus'];
 const PERLEN_DATA_PATH = './public/PERLENDATA/';
 const PERLENPATH_FRONT = './PERLENDATA/';
 const HEROKU = false;
+const USERNAME_SELECTION = 'random'; 
 const UITEST = false;
 const JUST_PERLEN_GAME = true;
-const BRAUN = '#331606';
+const CLEAR_LOCAL_STORAGE = false;
 const GermanToEnglish = {
   rot: 'red', blau: 'blue', grün: 'green', gelb: 'yellow', violett: 'violet', lila: 'purple',
   braun: 'brown', schwarz: 'black', weiss: 'white', grau: 'grey', rosa: 'pink', orange: 'orange'
 };
-const PLAYER_CONFIG_FOR_MULTIPLAYER = ['me', 'human', 'human'];
-const USERNAME_SELECTION = 'random'; 
-const CLEAR_LOCAL_STORAGE = false;
+const USELIVESERVER = true; 
+const DEFAULTUSERNAME = 'gul'; 
 const Simple = {
   axiom: 'A',
   rules: [
@@ -5395,93 +1229,6 @@ const Complex = {
   angle: 25,
   factor: .5,
   max: 6,
-};
-const style = new ol.style.Style({
-  fill: new ol.style.Fill({
-    color: '#eeeeee',
-  }),
-});
-const vector = new ol.layer.Vector({
-  source: new ol.source.Vector({
-    url: 'https://openlayers.org/data/vector/ecoregions.json',
-    format: new ol.format.GeoJSON(),
-  }),
-  background: 'white',
-  style: function (feature) {
-    const color = feature.get('COLOR') || '#eeeeee';
-    style.getFill().setColor(color);
-    return style;
-  },
-});
-const map = new Map({
-  layers: [
-    new TileLayer({
-      source: new OSM(),
-    }),
-    vectorPolygons,
-    vectorLines,
-    vectorPoints,
-  ],
-  target: 'map',
-  view: new View({
-    center: [-8161939, 6095025],
-    zoom: 8,
-  }),
-});
-const selected = new ol.style.Style({
-  fill: new ol.style.Fill({
-    color: '#eeeeee',
-  }),
-  stroke: new ol.style.Stroke({
-    color: 'rgba(255, 255, 255, 0.7)',
-    width: 2,
-  }),
-});
-const selectSingleClick = new ol.interaction.Select({ style: selectStyle });
-const selectClick = new ol.interaction.Select({
-  condition: ol.events.condition.click,
-  style: selectStyle,
-});
-const selectPointerMove = new ol.interaction.Select({
-  condition: ol.events.condition.pointerMove,
-  style: selectStyle,
-});
-const selectAltClick = new ol.interaction.Select({
-  style: selectStyle,
-  condition: function (mapBrowserEvent) {
-    return click(mapBrowserEvent) && ol.events.condition.altKeyOnly(mapBrowserEvent);
-  },
-});
-const selectElement = document.getElementById('type');
-const changeInteraction = function () {
-  if (select !== null) {
-    map.removeInteraction(select);
-  }
-  const value = selectElement.value;
-  if (value == 'singleclick') {
-    select = selectSingleClick;
-  } else if (value == 'click') {
-    select = selectClick;
-  } else if (value == 'pointermove') {
-    select = selectPointerMove;
-  } else if (value == 'altclick') {
-    select = selectAltClick;
-  } else {
-    select = null;
-  }
-  if (select !== null) {
-    map.addInteraction(select);
-    select.on('select', function (e) {
-      document.getElementById('status').innerHTML =
-        '&nbsp;' +
-        e.target.getFeatures().getLength() +
-        ' selected features (last operation selected ' +
-        e.selected.length +
-        ' and deselected ' +
-        e.deselected.length +
-        ' features)';
-    });
-  }
 };
 const myDom = {
   points: {
@@ -5595,34 +1342,6 @@ const createTextStyle = function (feature, resolution, dom) {
     rotation: rotation,
   });
 };
-const vectorPolygons = new VectorLayer({
-  source: new VectorSource({
-    url: 'data/geojson/polygon-samples.geojson',
-    format: new GeoJSON(),
-  }),
-  style: polygonStyleFunction,
-});
-const vectorLines = new VectorLayer({
-  source: new VectorSource({
-    url: 'data/geojson/line-samples.geojson',
-    format: new GeoJSON(),
-  }),
-  style: lineStyleFunction,
-});
-const vectorPoints = new VectorLayer({
-  source: new VectorSource({
-    url: 'data/geojson/point-samples.geojson',
-    format: new GeoJSON(),
-  }),
-  style: pointStyleFunction,
-});
-const express = require('express');
-const app = express();
-const http = require('http');
-const server = http.createServer(app);
-const { Server } = require("socket.io");
-const cors = require('cors');
-const io = new Server(server, { cors: { origins: '*', } });
 const DARKBLUE = '#04041b';
 const EMO = {
   emoscale: {
@@ -5889,14 +1608,6 @@ const Geo = {
     'South America': ['Argentina', 'Aruba', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Curacao', 'Ecuador', 'French Guiana', 'Guam', 'Guyana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela']
   }
 };
-const is_key_down = (() => {
-  const state = {};
-  window.addEventListener('keyup', (e) => state[e.key] = false);
-  window.addEventListener('keydown', (e) => { state[e.key] = true; });
-  return (key) => state.hasOwnProperty(key) && state[key] || false;
-})();
-const MyNames = ['amanda', 'angela', 'erin', 'holly', 'jan', 'karen', 'kelly', 'pam', 'phyllis', 'andy', 'creed', 'darryl', 'david', 'dwight', 'felix', 'gul', 'jim', 'kevin', 'luis', 'michael', 'nil', 'oscar', 'ryan', 'stanley', 'toby', 'wolfgang'];
-const SHAPEFUNCS = { 'circle': agCircle, 'hex': agHex, 'rect': agRect, };
 const colorShadeX = (c, amt) => {
   let col = colorHex(c);
   col = col.replace(/^#/, '')
@@ -5911,21 +1622,6 @@ const colorShadeX = (c, amt) => {
   const bb = (b.length < 2 ? '0' : '') + b
   return `#${rr}${gg}${bb}`
 }
-const MyEasing = 'cubic-bezier(1,-0.03,.86,.68)';
-const Perlin = {
-  PERLIN_YWRAPB: 4,
-  PERLIN_YWRAP: 1 << 4,
-  PERLIN_ZWRAPB: 8,
-  PERLIN_ZWRAP: 1 << 8,
-  PERLIN_SIZE: 4095,
-  perlin_octaves: 4,
-  perlin_amp_falloff: 0.5,
-  scaled_cosine: i => 0.5 * (1.0 - Math.cos(i * Math.PI)),
-  perlin: null,
-  lastx: 0,
-  speed: 0.02,
-  channels: {},
-}
 const COLORPARAMNAMES = {
   bg: true,
   fg: true,
@@ -5935,13 +1631,6 @@ const COLORPARAMNAMES = {
   highlight: true,
   highlight1: true,
   highlight1: true,
-}
-const RLAYOUT = {
-  card52: lCard52,
-  card: lCard,
-  hand: lHand,
-  grid: lGrid,
-  picto: lPicto,
 }
 const config = {
   src: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/175711/open-peeps-sheet.png',
@@ -6006,7 +1695,6 @@ const walks = [
 ]
 const img = document.createElement('img')
 const canvas = document.querySelector('#canvas')
-const cx = canvas.getContext('2d')
 const stage = {
   width: 0,
   height: 0,
@@ -6014,57 +1702,81 @@ const stage = {
 const allPeeps = []
 const availablePeeps = []
 const crowd = []
-class AAddress extends APasscode {
-  constructor(k, dbInfo, userInfo) {
-    super(k, dbInfo, userInfo);
+const MyEasing = 'cubic-bezier(1,-0.03,.86,.68)';
+const CODE = {
+  paths: [],
+  funcs: {},
+  consts: {},
+  index: [],
+};
+const Perlin = {
+  PERLIN_YWRAPB: 4,
+  PERLIN_YWRAP: 1 << 4,
+  PERLIN_ZWRAPB: 8,
+  PERLIN_ZWRAP: 1 << 8,
+  PERLIN_SIZE: 4095,
+  perlin_octaves: 4,
+  perlin_amp_falloff: 0.5,
+  scaled_cosine: i => 0.5 * (1.0 - Math.cos(i * Math.PI)),
+  perlin: null,
+  lastx: 0,
+  speed: 0.02,
+  channels: {},
+}
+const MyNames = ['amanda', 'angela', 'erin', 'holly', 'jan', 'karen', 'kelly', 'pam', 'phyllis', 'andy', 'creed', 'darryl', 'david', 'dwight', 'felix', 'gul', 'jim', 'kevin', 'luis', 'michael', 'nil', 'oscar', 'ryan', 'stanley', 'toby', 'wolfgang'];
+const MARGIN_S = '3px 6px';
+const MARGIN_M = '4px 10px';
+const MARGIN_XS = '2px 4px';
+const complementaryColor = color => {
+  const hexColor = color.replace('#', '0x');
+  return `#${('000000' + ('0xffffff' ^ hexColor).toString(16)).slice(-6)}`;
+};
+
+class _grid {
+  constructor(o, pool, boardInfo, fieldInfo) {
+    this.boardInfo = boardInfo;
+    this.fieldInfo = fieldInfo;
+    let { board, fields, corners, edges } = this.skeleton = this.gridSkeleton(o, pool, this.boardInfo, this.fieldInfo);
+    board.oid = o.oid;
   }
-  clear() { super.clear(); Speech.setLanguage(Settings.language); window.onclick = null; }
-  presentInit() {
-    this.msgPrompt = 'enter your address';
-    this.lastHintPrompt = 'please complete entering address!';
-    this.goal = { label: '17448 NE 98th Way Redmond 98052' };
-    Speech.setLanguage('E')
-    let wr = 'your address is:';
-    let sp = 'your address is 1 7 4 4 8 - North-East 98th Way - Redmond, 9 8 0 5 2';
-    showInstruction(this.goal.label, wr, this.dInstruction, true, sp, 12);
-    this.goal.div = mText(this.goal.label, this.dMain, { fz: 40 });
-    this.TOList.push(setTimeout(anim1, 300, this.goal, 500));
-  }
-  presentPrompt() {
-    Speech.setLanguage('E');
-    stdInstruction(this.msgPrompt, this.dInstruction, this.msgPrompt, { voice: 'zira' });
-    this.input = stdInput(this.dMain, { w: 600, fz: 24 });
-    this.input.id = this.defaultFocusElement = 'inputAddon';
-    this.nCorrect = 0;
-  }
-  activate() {
-    window.onclick = () => mBy(this.defaultFocusElement).focus();
-    this.input.onkeyup = ev => {
-      if (ev.key === "Enter") {
-        ev.cancelBubble = true;
-        this.processInput(ev);
+  gridSkeleton(omap, pool, gridInfoFunc, fieldInfoFunc) {
+    let board = { o: omap, info: gridInfoFunc(omap.rows, omap.cols) };
+    let fields = {};
+    for (const fid of getElements(omap.fields)) {
+      let o = pool[fid];
+      fields[fid] = { oid: fid, o: pool[fid], info: fieldInfoFunc(board.info, o.row, o.col) };
+    }
+    board.info.vertices = correctPolys(Object.values(fields).map(x => x.info.poly), 1);
+    let dhelp = {}; 
+    let corners = {};
+    for (const fid in fields) {
+      let f = fields[fid];
+      let i = 0;
+      for (const cid of getElements(f.o.corners)) {
+        if (cid && nundef(dhelp[cid])) {
+          let pt = f.info.poly[i];
+          corners[cid] = { oid: cid, o: pool[cid], info: { shape: 'circle', memType: 'corner', x: pt.x, y: pt.y, w: 1, h: 1 } };
+          dhelp[cid] = true;
+        }
+        i += 1;
       }
-    };
-    this.input.focus();
-    super.activate();
-  }
-  eval() {
-    let correctPrefix = this.correctPrefix = getCorrectPrefix(this.goal.label, this.input.value);
-    return correctPrefix == this.goal.label;
-  }
-  getHint() {
-    let oldHintLength = isdef(this.hintLength) ? this.hintLength : 0;
-    if (nundef(this.hintLength)) this.hintLength = 0;
-    this.input.value = this.correctPrefix;
-    let progress = this.correctPrefix.length > this.nCorrect;
-    if (this.correctPrefix.length > this.nCorrect) {
-      this.hintLength = 1;
-      this.nCorrect = this.correctPrefix.length;
-    } else if (this.hintLength < this.goal.label.length - this.nCorrect) this.hintLength += 1;
-    if (this.hintLength == 0) this.hintLength = 1;
-    let wr = substringOfMinLength(this.goal.label, this.correctPrefix.length, this.hintLength);
-    let sp = oldHintLength == this.hintLength && !progress ? this.lastHintPrompt : null;
-    return [wr, sp];
+    }
+    dhelp = {}; 
+    let edges = {};
+    for (const fid in fields) {
+      let f = fields[fid];
+      for (const eid of getElements(f.o.edges)) {
+        if (eid && nundef(dhelp[eid])) {
+          let el = pool[eid];
+          let n1 = corners[el.corners[0]._obj];
+          let n2 = corners[el.corners[1]._obj];
+          let [x1, y1, x2, y2] = [n1.info.x, n1.info.y, n2.info.x, n2.info.y];
+          edges[eid] = { oid: eid, o: el, info: { shape: 'line', memType: 'edge', x1: x1, y1: y1, x2: x2, y2: y2, x: (x1 + x2) / 2, y: (y1 + y2) / 2, thickness: 1, w: 1, h: 1 } };
+          dhelp[eid] = true;
+        }
+      }
+    }
+    return { board: board, fields: fields, corners: corners, edges: edges };
   }
 }
 class ABattle {
@@ -6281,7 +1993,7 @@ class ABattle {
   }
   calcMaxUnitTypePerFaction() {
     let unitTypeCountPerFaction = {};
-    let byTypeAndFaction = new Counter(this.b.fire_order, x => x.unit.type + '_' + x.owner);
+    let byTypeAndFaction = new CounterClass(this.b.fire_order, x => x.unit.type + '_' + x.owner);
     for (let g of cartesian(this.allUnitTypes, this.factions)) {
       let type = stringBefore(g, '_');
       let faction = stringAfter(g, '_');
@@ -6795,7 +2507,7 @@ class ABattleSea {
   }
   calcMaxUnitTypePerFaction() {
     let unitTypeCountPerFaction = {};
-    let byTypeAndFaction = new Counter(this.b.fire_order, x => x.unit.type + '_' + x.owner);
+    let byTypeAndFaction = new CounterClass(this.b.fire_order, x => x.unit.type + '_' + x.owner);
     for (let g of cartesian(this.allUnitTypes, this.factions)) {
       let type = stringBefore(g, '_');
       let faction = stringAfter(g, '_');
@@ -7619,100 +3331,6 @@ class Activator {
     removeEvents(this.ui, 'click');
   }
 }
-class AddonClass extends LiveObject {
-  constructor(k, dbInfo, userInfo) {
-    super(k);
-    copyKeys(dbInfo, this);
-    copyKeys(userInfo, this);
-    this.running = false;
-    this.uiState = this.immediateStart ? LiveObject.States.ready : LiveObject.States.none;
-    this.startTime = Date.now();
-    this.callback = this.div = this.dContent = null;
-  }
-  //#region internal
-  _createDivs() {
-    this.dInstruction = mDiv(this.dContent);
-    this.dMain = mDiv(this.dContent);
-    this.dHint = mDiv(this.dContent); this.dHint.innerHTML = 'hallo'; this.dHint.style.opacity = 0;
-  }
-  _createScreen() {
-    show(mBy('dAddons'));
-    let bg = colorTrans('silver', .25);
-    let d = mScreen(mBy('dAddons'), { bg: bg, display: 'flex', layout: 'fvcc' });
-    let dContent = mDiv(d, { display: 'flex', layout: 'fvcs', fg: 'contrast', fz: 24, bg: 'silver', patop: 50, pabottom: 50, matop: -50, w: '100vw' });
-    return [d, dContent];
-  }
-  //#endregion
-  checkEndCondition() {
-    let c = this.endsWhen;
-    let res = false;
-    if (isdef(c) && this[c.prop] == c.value) res = true;
-    console.log('condition:', res, 'tNext', this.tNext)
-    return res;
-  }
-  exit() {
-    hide('dAddons');
-    this.tNext *= this.tFactor;
-    this.startTime = Date.now();
-    this.clear();
-    this.callback();
-  }
-  init() {
-    [this.div, this.dContent] = this._createScreen();
-    this._createDivs();
-    this.setRunning();
-    let caption = this.presentInit();
-    mButton(isdef(caption) ? caption : 'Got it!', this.prompt.bind(this), this.dContent, { fz: 32, matop: 10 });
-  }
-  isTimeForAddon() {
-    switch (this.uiState) {
-      case LiveObject.States.none: this.getReady(this.tNext); return false;
-      case LiveObject.States.gettingReady: return false;
-      case LiveObject.States.ready: return true;
-      case LiveObject.States.running: return Date.now() - this.startTime >= this.tNext;
-    }
-  }
-  presentInit() { console.log('presenting initial information'); }
-  presentPrompt() { console.log('prompting user to do something') }
-  prompt() {
-    clearElement(this.dContent);
-    this.trialsNeeded = 0;
-    this._createDivs();
-    this.presentPrompt();
-    this.activate();
-  }
-  processInput() {
-    if (!this.uiActivated) return;
-    this.uiActivated = false;
-    let isCorrect = this.eval(...arguments);
-    if (isCorrect) {
-      this.positive();
-      this.exit();
-    } else {
-      this.negative();
-      this.trialPrompt();
-    }
-  }
-  positive() {
-    this.trialNumber = null;
-    delete this.dHint;
-  }
-  negative() {
-    if (nundef(this.trialNumber)) this.trialNumber = 1; else this.trialNumber += 1;
-  }
-  run() {
-    show('dAddons');
-    if (this.running) { this.prompt(); } else this.init();
-  }
-  trialPrompt() {
-    this.trialsNeeded += 1;
-    let [wr, sp] = this.getHint();
-    this.hintLength = wr.length;
-    if (isdef(sp)) sayRandomVoice(sp);
-    this.dHint.innerHTML = 'Hint: ' + wr; this.dHint.style.opacity = 1;
-    this.activate();
-  }
-}
 class ADecisiongen {
   constructor(assets, map, cards, units, sender) {
     this.assets = assets;
@@ -8211,12 +3829,12 @@ class AGraph {
   getPosition(id) {
     let node = this.getNode(id);
     let pos = node.renderedPosition();
-    return pos;
+    return pos; 
   }
   getSize(id) {
     let node = this.getNode(id);
     let pos = node.bb();
-    return pos;
+    return pos; 
   }
   getProp(id, prop) { return this.cy.getElementById(id).data(prop); }
   getDegree(id) { return this.cy.getElementById(id).degree(); }
@@ -8744,79 +4362,6 @@ class AnimationQueue{
   enqueue(anim){
   }
   start(){
-  }
-}
-class APasscode extends AddonClass {
-  constructor(k, dbInfo, userInfo) {
-    super(k, dbInfo, userInfo);
-    this.needNewPasscode = true;
-  }
-  presentInit() {
-    let keys = getRandomKeysFromGKeys(1); 
-    let options = { rows: 1 };
-    this.pictures = getPics(null, {}, options, keys);
-    this.goal = this.pictures[0];
-    this.passcode = this.goal.label;
-    let dParent = this.dContent;
-    let d_title = mDiv(dParent);
-    showInstruction(this.goal.label, Settings.language == 'E' ? 'the passcode is' : 'das Codewort ist', d_title, true);
-    let d_pics = mDiv(dParent);
-    presentItems(this.pictures, d_pics, options.rows);
-    this.TOList.push(setTimeout(anim1, 300, this.goal, 500));
-  }
-  presentPrompt() {
-    let keys = getRandomKeysIncluding(this.numPics, this.goal.key, 'all');
-    let iGoal = keys.indexOf(this.goal.key);
-    let options = { rows: 2, showLabels: true };
-    this.pictures = getPics(this.processInput.bind(this), undefined, { rows: 2, showLabels: true }, keys);
-    this.goal = this.pictures[iGoal];
-    showInstruction('', 'click ' + (Settings.language == 'E' ? 'the passcode' : 'das Codewort'), this.dInstruction, true);
-    presentItems(this.pictures, this.dMain, options.rows);
-  }
-  eval(ev) {
-    ev.cancelBubble = true;
-    let item = findItemFromEvent(this.pictures, ev);
-    Selected = { pic: item, feedbackUI: item.div, sz: getBounds(item.div).height };
-    Selected.reqAnswer = this.goal.label;
-    Selected.answer = item.label;
-    if (item.label == this.goal.label) { return true; } else { return false; }
-  }
-  getHint() {
-    let hintLength, spoken;
-    if (this.trialNumber > this.passcode.length * 2) {
-      hintLength = this.passcode.length;
-      spoken = 'click ' + this.passcode.toUpperCase() + '!!!';
-    } else if (this.trialNumber > this.passcode.length * 2 - 1) {
-      hintLength = this.passcode.length;
-      spoken = (Settings.language == 'E' ? 'REMEMBER ' : 'MERKE DIR ') + this.passcode.toUpperCase() + '!!!';
-    } else if (this.trialNumber > this.passcode.length) {
-      hintLength = (this.trialNumber - this.passcode.length);
-      let letters = this.passcode.substring(0, hintLength);
-      let letters1 = letters.split();
-      spoken = (Settings.language == 'E' ? 'the passcode starts with' : 'das Codewort beginnt mit') + ' ' + letters1.join(', ');
-    } else {
-      hintLength = this.trialNumber;
-      spoken = null;
-    }
-    return [this.passcode.substring(0, hintLength), spoken];
-  }
-}
-class APassword extends AAddress {
-  presentInit() {
-    this.goal = null;
-    Speech.setLanguage('E');
-    let msg = 'create a new password!';
-    this.msgPrompt = 'enter your password';
-    this.lastHintPrompt = 'please complete entering password!';
-    stdInstruction(msg, this.dInstruction, msg, { voice: 'zira' });
-    this.input = stdInputVal(this.dMain, { w: 600, fz: 24 }, 'hallo');
-    this.input.id = this.defaultFocusElement = 'inputAddon';
-    window.onclick = () => mBy(this.defaultFocusElement).focus();
-    return 'set password';
-  }
-  presentPrompt() {
-    if (nundef(this.goal)) this.goal = { label: this.input.value.trim() };
-    super.presentPrompt();
   }
 }
 class ASender {
@@ -9350,24 +4895,16 @@ class Banner {
   }
 }
 class Board {
-  constructor(dParent, rows, cols, handler, cellStyle) {
+  constructor(rows, cols, handler, cellStyle) {
     let styles = isdef(cellStyle) ? cellStyle : { margin: 4, w: 150, h: 150, bg: 'white', fg: 'black' };
-    this.rows = valf(rows, 3);
-    this.cols = valf(cols, 3);
-    let dgrid = this.div = mGrid(this.rows, this.cols, dParent);
-    this.items = [];
-    let index = 0;
-    for (let i = 0; i < this.rows; i++) {
-      for (let j = 0; j < this.cols; j++) {
-        let item = { row: i, col: j, index: index };
-        let d = mDiv(dgrid, styles);
-        mCenterCenterFlex(d);
-        d.onclick = valf(handler, ev => console.log('clicked on item', item));
-        iAdd(item, { div: d });
-        this.items.push(item);
-        index += 1;
-      }
-    }
+    this.rows = rows;
+    this.cols = cols;
+    let items = this.items = iGrid(this.rows, this.cols, dTable, styles);
+    items.map(x => {
+      let d = iDiv(x);
+      mCenterFlex(d);
+      d.onclick = handler;
+    });
   }
   get(ir, c) {
     if (isdef(c)) {
@@ -9386,7 +4923,7 @@ class Board {
     for (let i = 0; i < arr.length; i++) {
       let item = this.items[i];
       let val = arr[i];
-      if (!empty_func(val)) {
+      if (!EmptyFunc(val)) {
         addLabel(item, val, { fz: 60, fg: colors[val] });
       } else item.label = val;
     }
@@ -9402,8 +4939,8 @@ class Board2D {
   constructor(rows, cols, dParent, cellStyles, boardStyles, handler) {
     cellStyles = this.cellStyles = isdef(cellStyles) ? cellStyles : { margin: 4, w: 150, h: 150, bg: 'white', fg: 'black' };
     boardStyles = this.boardStyles = isdef(boardStyles) ? boardStyles : { bg: 'silver', fg: 'black' };
-    this.rows = valf(rows, 3);
-    this.cols = valf(cols, 5);
+    this.rows = rows;
+    this.cols = cols;
     this.dParent = dParent;
     let dBoard = this.dBoard = mDiv(dParent);
     let items = this.items = this.fill(dBoard, this.rows, this.cols, null, cellStyles);
@@ -9447,7 +4984,7 @@ class Board2D {
     for (let i = 0; i < arr.length; i++) {
       let item = this.items[i];
       let val = arr[i];
-      if (!empty_func(val)) {
+      if (!EmptyFunc(val)) {
         addLabel(item, val, { fz: 60, fg: colors[val] });
       } else item.label = val;
     }
@@ -9870,53 +5407,6 @@ class CCanvas {
     return n > 0;
   }
 }
-class CCanvasNoClear extends CCanvas {
-  clear() { }
-}
-class CCanvasPlot extends CCanvas {
-  clear() {
-    cClear(this.cv, this.cx);
-    this.draw_axes();
-  }
-  draw_axes() {
-    let ctx = this.cx;
-    ctx.beginPath();
-    ctx.strokeStyle = "rgb(128,128,128)";
-    ctx.moveTo(this.minx, 0); ctx.lineTo(this.maxx, 0);  
-    ctx.moveTo(0, this.miny); ctx.lineTo(0, this.maxy);  
-    ctx.stroke();
-  }
-  draw() {
-    this.clear();
-    for (const item of this.items) {
-      if (isdef(item.func)) this.plot(item.func, item.color, item.thickness);
-      else {
-        super.draw_item(item);
-      }
-    }
-  }
-  pp(x, y, label = 'hallo', styles = {}) {
-    addKeys({ fg:'silver', bg: 'silver', w: 3, h: 3 }, styles)
-    cEllipse(x, y, styles.w, styles.h, { bg: styles.bg }, 0, this.cx);
-    addKeys({x:x, y:y, offy: 'below 4', offx: 'center', family: 'arial narrow', fz: 20},styles);
-    draw_text(this, label, styles);
-  }
-  plot(func, color, thick, filled = false) {
-    let cx = this.cx;
-    var xx, yy, dx = 4, x0 = 0, y0 = 0, scale = this.scale = 40;
-    var imax = Math.round(this.maxx / dx);
-    var imin = Math.round(this.minx / dx);
-    cx.beginPath();
-    cx.lineWidth = thick;
-    cx.strokeStyle = cx.fillStyle = color;
-    for (var i = imin; i <= imax; i++) {
-      xx = dx * i; yy = scale * func(xx / scale);
-      if (i == imin) cx.moveTo(x0 + xx, y0 - yy);
-      else cx.lineTo(x0 + xx, y0 - yy);
-    }
-    cx.stroke(); if (filled) cx.fill();
-  }
-}
 class CItemWalker {
   constructor(name, options = {}) {
     options.label = name;
@@ -9992,39 +5482,6 @@ class ControllerSolitaire {
       setBadgeLevel(this.g.level);
       this.startLevel();
     } else { this.startRound(); }
-  }
-}
-class ControllerSolitaireMinimal extends ControllerSolitaire {
-  clear() { if (isdef(this.timer)) this.timer.clear(); }
-  startLevel() {
-    Settings.updateGameValues(this.player, this.g);
-    this.g.start_Level();
-    this.startRound();
-  }
-  prompt() {
-    QContextCounter += 1;
-    showStats(false); 
-    this.g.trialNumber = 0;
-    this.g.prompt();
-  }
-  activateUi() {
-    Selected = null;
-    uiActivated = true;
-    if (isdef(this.timer)) this.timer.start(); 
-    this.g.activate();
-  }
-  gotoNext(nextLevel) {
-    onclick = null;
-    removeMarkers();
-    clearTimeouts();
-    if (isdef(this.timer)) this.timer.clear();
-    if (Score.levelChange && nextLevel <= this.g.maxLevel) {
-      this.g.level = nextLevel;
-      setBadgeLevel(this.g.level);
-      this.startLevel();
-    } else {
-      this.startRound();
-    }
   }
 }
 class ControllerTTT {
@@ -10111,17 +5568,59 @@ class CountdownTimer {
     } else this.elem.innerHTML = 'timeover';
   }
 }
-class Counter extends Map {
-  constructor(iter, key = null) {
-    super();
-    this.key = key || (x => x);
-    for (let x of iter) {
-      this.add(x);
+class CTimer {
+  constructor(elem, msTick, onTick, msTotal, onElapsed) {
+    this.elem = elem;
+    this.msTotal = this.msLeft = msTotal;
+    this.onTick = onTick;
+    this.onElapsed = onElapsed;
+    this.interval = msTick;
+    this.running = false;
+    this.paused = false;
+    this.game = G.name;
+    this.button = mButton('click', this.togglePause.bind(this), this.elem, { transition: 'all 1s ease', display: 'inline-block', fz: 20, rounding: 12, bg: GREEN, w: 260 }, 'mybutton');
+    this.TO = null;
+  }
+  togglePause() { if (this.paused) this.continue(); else this.pause(); }
+  clear() { this.stop(); clearElement(this.elem); }
+  continue() {
+    if (!this.running) this.start();
+    else if (!this.paused) return;
+    else { this.paused = false; this.TO = setInterval(this.tickHandler.bind(this), this.interval); }
+  }
+  tickHandler() {
+    this.msLeft -= this.interval;
+    let [ms, unit] = [this.msLeft, this.msTotal / 6];
+    this.msElapsed = this.msTotal - this.msLeft;
+    this.button.innerHTML = timeConversion(Math.max(this.msLeft, 0), 'sh');
+    let bg = ms > unit * 4 ? GREEN : ms > unit * 2 ? YELLOW : ms > unit ? 'orange' : RED;
+    this.button.style.background = bg;
+    if (isdef(this.onTick)) this.onTick();
+    if (this.msLeft <= 0) {
+      this.stop();
+      if (isdef(this.onElapsed)) {
+        console.assert(G.name == this.game,'game not the same!!! '+G.name + ' ' +this.game);
+        this.onElapsed();
+      }
     }
   }
-  add(x) {
-    x = this.key(x);
-    this.set(x, (this.get(x) || 0) + 1);
+  start() {
+    if (this.running) this.stop();
+    this.started = new Date().now;
+    this.msLeft = this.msTotal;
+    this.msElapsed = 0;
+    this.running = true;
+    this.TO = setInterval(this.tickHandler.bind(this), this.interval);
+  }
+  stop() {
+    if (!this.running) return;
+    clearInterval(this.TO);
+    this.running = false;
+  }
+  pause() {
+    if (this.paused || !this.running) return;
+    clearInterval(this.TO);
+    this.paused = true;
   }
 }
 class CTimer_dep {
@@ -10179,35 +5678,39 @@ class CTimer_dep {
     this.paused = true;
   }
 }
-class Deck1 extends Array {
-  initTest(n, shuffled = true) { range(0, n).map(x => this.push(Card52.getItem(x))); if (shuffled) this.shuffle(); }
-  initEmpty() { }
-  init52(shuffled = true, jokers = 0) {
-    range(0, 51 + jokers).map(x => this.push(Card52.getItem(x)));
-    if (shuffled) this.shuffle();
+class DeckClass {
+  constructor(f) { this.data = []; if (isdef(f)) if (isString(f)) this['init' + f](); else if (isList(f)) this.init(f); }
+  init(arr) { this.data = arr; }
+  initEmpty() { this.data = []; }
+  initNumber(n, shuffled = true) { this.initTest(n, shuffled); }
+  initTest(n, shuffled = true) { this.data = range(0, n - 1); if (shuffled) this.shuffle(); }
+  init52(shuffled = true, jokers = 0) { this.data = range(0, 51 + jokers); if (shuffled) this.shuffle(); }
+  init52_double(shuffled = true, jokers = 0) { this.data = range(0, 103 + jokers); if (shuffled) this.shuffle(); }
+  init52_no_suits(n = 4, shuffled = true, jokers = 0) { this.data = range(0, 13 * n + jokers - 1); if (shuffled) this.shuffle(); }
+  initRandomHand52(n) { this.data = choose(range(0, 51), n); }
+  addTop(i) { this.data.push(i); return this; }
+  addBottom(i) { this.data.unshift(i); return this; }
+  bottom() { return this.data[0]; }
+  cards() { return this.data; }
+  count() { return this.data.length; }
+  clear() { this.data = []; }
+  deal(n) { return this.data.splice(0, n); }
+  dealDeck(n) { let d1 = new DeckClass(); d1.init(this.data.splice(0, n)); return d1; }
+  popTop() { return this.data.pop(); }
+  popBottom() { return this.data.shift(); }
+  remTop() { this.data.pop(); return this; }
+  remBottom() { this.data.shift(); return this; }
+  remove(i) { removeInPlace(this.data, i); return this; }
+  removeAtIndex(i) { return this.data.splice(i, 1)[0]; }
+  removeFromIndex(i, n) { return this.data.splice(i, n); }
+  setData(arr, shuffled = false) { this.data = arr; if (shuffled) this.shuffle(); }
+  sort() {
+    this.data.sort((a, b) => Number(a) - Number(b));
+    return this;
   }
-  add(otherDeck) { while (otherDeck.length > 0) { this.unshift(otherDeck.pop()); } return this; }
-  count() { return this.length; }
-  static transferTopFromToBottom(d1, d2) { let c = d1.pop(); d2.putUnderPile(c); return c; }
-  deal(n) { return this.splice(0, n); }
-  getIndices() { return this.map(x => x.i); }
-  log() { console.log(this); }
-  putUnderPile(x) { this.push(x); }
-  putOnTop(x) { this.unshift(x); }
-  showDeck(dParent, splay, ovPercent = 0, faceUp = undefined, contStyles = {}) {
-    if (isdef(faceUp)) { if (faceUp == true) this.turnFaceUp(); else this.turnFaceDown(); }
-    splayout(this, dParent, contStyles, ovPercent, splay);
-  }
-  shuffle() { shuffle(this); }
-  topCard() { return this[this.length - 1]; }
-  turnFaceUp() {
-    if (isEmpty(this) || this[0].faceUp) return;
-    this.map(x => Card52.turnFaceUp(x));
-  }
-  turnFaceDown() {
-    if (isEmpty(this) || !this[0].faceUp) return;
-    this.map(x => Card52.turnFaceDown(x));
-  }
+  shuffle() { shuffle(this.data); return this; }
+  top() { return arrLast(this.data); }
+  toString() { return this.data.toString(); }
 }
 class DeckMS {
   constructor(oid, o) {
@@ -10540,1090 +6043,44 @@ class G2Player {
   eval() { } 
   activate() { }
 }
-class GAbacus extends Game {
-  constructor(name, o) { super(name, o); }
-  startGame() { this.successFunc = successThumbsUp; this.failFunc = failThumbsDown; this.correctionFunc = this.showCorrectSequence.bind(this); }
-  showCorrectSequence() { let t = correctBlanks(); if (this.level <= 1 && (this.step <= 3 || this.op != 'mult')) showSayHint(3); return t + 1000; }
-  start_Level() { if (!isList(this.steps)) this.steps = [this.steps]; this.numPics = 2; }
-  prompt() {
-    mLinebreak(dTable, 2);
-    showHiddenThumbsUpDown(110);
-    mLinebreak(dTable);
-    this.seq = makeExpSequence();
-    let panel = mDiv(dTable, { bg: '#00000080', padding: 20, rounding: 10 });
-    [this.words, this.letters] = showEquation(this.seq, panel);
-    setNumberSequenceGoal();
-    mLinebreak(dTable, 30);
-    let wr = (this.language == 'E' ? 'calculate' : "rechne");
-    let spOp = this.oop.sp; if (this.language == 'D') spOp = DD[spOp];
-    let sp = this.operand + ' ' + spOp + ' ' + this.step + ' ?';
-    show_instruction(wr, dTitle, sp);
-    if (this.level <= 1 && this.showHint && (this.step <= 3 || this.op != 'mult'))
-      hintEngineStart(getOperationHintString, [0, 1], 5000 + this.level * 1000);
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    if (this.level <= 1 && this.showHint && (this.step <= 3 || this.op != 'mult')) hintEngineStart(getOperationHintString, [0, 1], 5000 + this.level * 1000);
-    TOMain = setTimeout(() => getWrongChars().map(x => unfillChar(x)), 500);
-    return 600;
-  }
-  activate() { addKeyup('G', this.interact.bind(this)); }
-  interact(ev) {
-    if (!isNumber(ev.key) && ev.key != '-') return;
-    clearFleetingMessage();
-    if (!canAct()) return;
-    let sel = Selected = onKeyWordInput(ev);
-    if (nundef(sel)) return;
-    let lastInputCharFilled = sel.target;
-    console.assert(sel.isMatch == (lastInputCharFilled.letter == sel.ch), lastInputCharFilled, sel.ch);
-    if (sel.isMatch && sel.isVeryLast) {
-      deactivateFocusGroup();
-      this.controller.evaluate.bind(this.controller)(true);
-    } else if (sel.isMatch && sel.isLastOfGroup) {
-      sel.target.isBlank = false;
-      sel.target.group.hasBlanks = false;
-      removeInPlace(Goal.blankWords, sel.target.group);
-      removeInPlace(Goal.blankChars, sel.target);
-      deactivateFocusGroup();
-      console.log('haaaaaaaaaaaalo', Goal.isFocus)
-    } else if (sel.isMatch) {
-      removeInPlace(Goal.blankChars, sel.target);
-      sel.target.isBlank = false;
-    } else if (sel.isVeryLast) {
-      Selected.words = getInputWords();
-      Selected.answer = getInputWordString();
-      Selected.req = getCorrectWordString();
-      deactivateFocusGroup();
-      this.controller.evaluate.bind(this.controller)(false);
-    } else if (sel.isLastOfGroup) {
-      Selected.words = getInputWords();
-      Selected.answer = getInputWordString();
-      Selected.req = getCorrectWordString();
-      deactivateFocusGroup();
-      this.controller.evaluate.bind(this.controller)(false);
-    } else {
-      if (!this.silent) { writeSound(); playSound('incorrect1'); }
-      deactivateFocusGroup();
-      showFleetingMessage('does NOT fit: ' + Selected.ch, 0, { fz: 24 });
-      setTimeout(() => unfillCharInput(Selected.target), 500);
-    }
-  }
-  eval(isCorrect) { return isCorrect; }
-}
-class GameTimed extends Game{
-  constructor(name, o) { super(name, o); }
-  clear() { clearInterval(this.TOI); super.clear(); this.timer = null; }
-  makeTimer() {
-    this.timer = true;
-    if (nundef(this.msTotal)) this.msTotal = 5000;
-    if (nundef(this.msInterval)) this.msInterval = 100;
-    let w = this.wTimerOuter = 200;
-    this.dTimeOuter = mDiv(dTable, { w: w, h: 25, border: 'white', rounding: 10, position: 'relative' });
-    [this.wTimer, this.r, this.g] = [0, 0, 255];
-    this.dTimeInner = mDiv(this.dTimeOuter, { h: 25, w: this.wTimer, rounding: 10, bg: `rgb(${this.r},${this.g},0)`, position: 'absolute', left: 0, top: 0 });
-    this.dTimeDisplay = mDiv(this.dTimeOuter, { patop: 2, align: 'center', h: 25, w: w, position: 'absolute', left: 0, top: 0 });
-    mLinebreak(dTable);
-    this.dPause = mDiv(dTable, { cursor: 'pointer', fz: 12, hpadding: 30, vpadding: 10 }, null, 'click to pause');
-    this.dPause.onclick = () => this.pause();
-  }
-  pause() {
-    if (nundef(this.timer)) return;
-    clearInterval(this.TOI);
-    this.dPause.innerHTML = 'click to resume...';
-    this.dPause.onclick = () => this.resume();
-  }
-  resume() {
-    if (nundef(this.timer)) return;
-    this.dPause.innerHTML = 'click to pause...';
-    this.dPause.onclick = () => this.pause();
-    this.TOI = setInterval(this.onTick.bind(this), this.msInterval);
-  }
-  activate() {
-    if (nundef(this.timer)) return;
-    this.msLeft = valf(this.msTotal, 10000);
-    this.dTimeDisplay.innerHTML = timeConversion(this.msLeft, 'sh');
-    this.TOI = setInterval(this.onTick.bind(this), this.msInterval);
-  }
-  onTick() {
-    this.msLeft -= this.msInterval;
-    this.wTimer += this.wTimerOuter * this.msInterval / this.msTotal;
-    let inc_color = 255 * this.msInterval / this.msTotal; 
-    this.r += inc_color; this.g -= inc_color;
-    mStyle(this.dTimeInner, { w: this.wTimer, bg: `rgb(${this.r},${this.g},0)` });
-    this.dTimeDisplay.innerHTML = timeConversion(this.msLeft, 'sh');
-    if (this.msLeft < 100) {
-      clearInterval(this.TOI);
-      this.dPause.style.opacity = 0;
-      this.onTimeup();
-    }
-  }
-}
-class GameTimed1 extends Game{
-  constructor(name, o) { super(name, o); }
-  clear() { clearInterval(this.TOI); super.clear(); }
-  makeTimer() {
-    if (nundef(this.msTotal)) this.msTotal = 5000;
-    if (nundef(this.msInterval)) this.msInterval = 100;
-    let w = this.wTimerOuter = 200;
-    this.dTimeOuter = mDiv(dTable, { w: w, h: 25, border: 'white', rounding: 10, position: 'relative' });
-    [this.wTimer, this.r, this.g] = [0, 0, 255];
-    this.dTimeInner = mDiv(this.dTimeOuter, { h: 25, w: this.wTimer, rounding: 10, bg: `rgb(${this.r},${this.g},0)`, position: 'absolute', left: 0, top: 0 });
-    this.dTimeDisplay = mDiv(this.dTimeOuter, { patop: 2, align: 'center', h: 25, w: w, position: 'absolute', left: 0, top: 0 });
-    mLinebreak(dTable);
-    this.dPause = mDiv(dTable, { cursor: 'pointer', fz: 12, hpadding: 30, vpadding: 10 }, null, 'click to pause');
-    this.dPause.onclick = () => this.pause();
-  }
-  pause() {
-    clearInterval(this.TOI);
-    this.dPause.innerHTML = 'click to resume...';
-    this.dPause.onclick = () => this.resume();
-  }
-  resume() {
-    this.dPause.innerHTML = 'click to pause...';
-    this.dPause.onclick = () => this.pause();
-    this.TOI = setInterval(this.onTick.bind(this), this.msInterval);
-  }
-  activate() {
-    this.msLeft = valf(this.msTotal, 10000);
-    this.dTimeDisplay.innerHTML = timeConversion(this.msLeft, 'sh');
-    this.TOI = setInterval(this.onTick.bind(this), this.msInterval);
-  }
-  onTick() {
-    this.msLeft -= this.msInterval;
-    this.wTimer += this.wTimerOuter * this.msInterval / this.msTotal;
-    let inc_color = 255 * this.msInterval / this.msTotal; 
-    this.r += inc_color; this.g -= inc_color;
-    mStyle(this.dTimeInner, { w: this.wTimer, bg: `rgb(${this.r},${this.g},0)` });
-    this.dTimeDisplay.innerHTML = timeConversion(this.msLeft, 'sh');
-    if (this.msLeft < 100) {
-      clearInterval(this.TOI);
-      this.dPause.style.opacity = 0;
-      this.onTimeup();
-    }
-  }
-}
-class GAnagram_PCOnly extends Game {
+class Game {
   constructor(name, o) {
-    super(name, o);
-    if (this.language == 'C') {
-      this.realLanguage = this.language;
-      this.language = chooseRandom('E', 'S', 'F', 'D');
-    }
+    this.name = name;
+    copyKeys(o, this);
+    this.maxLevel = isdef(this.levels) ? Object.keys(this.levels).length - 1 : 0;
+    this.id = name;
+    this.color = getColorDictColor(this.color);
   }
-  clear() { super.clear(); if (isdef(this.language)) this.language = this.language; }
+  clear() { clearTimeout(this.TO); clearFleetingMessage(); }
+  startGame() { }
   start_Level() {
-    this.keys = setKeysG(this, filterWordByLengthG, 10);
-    if (this.keys.length < 10) { this.keys = setKeysG(this, filterWordByLengthG, 10, 'all'); }
+    this.keys = setKeysG(this, filterWordByLengthG, 25);
+    console.assert(nundef(this.numPics) || this.keys.length >= this.numPics, 'WAAAAAAAAAAAS? nMin in setKeys nicht richtig!!!!! ' + this.numPics + ' ' + this.keys.length)
   }
+  startRound() { }
   prompt() {
-    myShowPics(null, {}, {});
-    if (this.hidden) {
-      let d = iDiv(Pictures[0]);
-      animate(d, 'aniAppearMinute', 100000);
-    }
+    myShowPics(this.controller.evaluate.bind(this.controller));
     setGoal();
-    showInstruction(this.showWord ? Goal.label : '', this.language == 'E' ? 'drag letters to form' : "forme", dTitle, true);
-    mLinebreak(dTable, 25);
-    let fz = 120; let word = Goal.label.toUpperCase(); let wlen = word.length;
-    let dpEmpty = createLetterInputsX(word, dTable, { pabottom: 5, bg: 'grey', display: 'inline-block', fz: fz, w: fz, h: fz * 1.1, margin: 4 }); 
-    let inputs = blankInputs(dpEmpty, range(0, wlen - 1), false);
-    for (let i = 0; i < inputs.length; i++) {
-      let l = iDiv(inputs[i]);
-      l.ondragover = ev => ev.preventDefault();
-      l.ondrop = event => { event.preventDefault(); var data = event.dataTransfer.getData("Text"); event.target.innerHTML = data; }
-      makeDraggableInner(l);
-      mClass(l, 'dropzone');
-      l.id = 'input' + i;
-    }
-    this.inputs = inputs;
-    let x = mLinebreak(dTable, 50);
-    fz = 60; word = Goal.label.toUpperCase();
-    let dp = createLetterInputsX(word, dTable, { bg: 'silver', display: 'inline-block', fz: fz, w: fz, h: fz * 1.1, margin: 4 }); 
-    scrambleInputs(dp);
-    let letters = Array.from(dp.children);
-    for (let i = 0; i < letters.length; i++) {
-      let l = letters[i];
-      l.setAttribute('draggable', true);
-      makeDraggableInner(l);
-      l.id = 'letter' + i;
-    }
-    this.letters = letters;
-    mLinebreak(dTable, 50);
-    this.bDone = mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
-    if (this.hidden) showFleetingMessage('category: ' + Pictures[0].info.subgroup, 5000);
-    else if (!this.showWord) { showLabelPercentHintAfter(50, 6000); }
+    show_instruction(`click <b>${Goal.label.toUpperCase()}</b>`, dTitle, `click ${Goal.label}`);
     this.controller.activateUi.bind(this.controller)();
   }
   trialPrompt() {
     sayTryAgain();
-    setTimeout(() => {
-      this.inputs.map(x => iDiv(x).innerHTML = '_')
-    }, 1500);
+    if (this.showHint) shortHintPic();
     return 10;
   }
-  eval() {
-    let s = this.inputs.map(x => iDiv(x).innerHTML);
-    let w = s = s.join('');
-    let word = Goal.label.toUpperCase();
-    Selected = { answer: w, reqAnswer: word, feedbackUI: iDiv(Goal) };
-    return w == word;
+  activate() { }
+  interact() { }
+  eval(ev) {
+    ev.cancelBubble = true;
+    let item = findItemFromEvent(Pictures, ev);
+    Selected = { pic: item, feedbackUI: iDiv(item), sz: getRect(iDiv(item)).h };
+    Selected.reqAnswer = Goal.label;
+    Selected.answer = item.label;
+    if (item.label == Goal.label) { return true; } else { return false; }
   }
-}
-class GAnagramBROKEN extends Game {
-  constructor(name, o) {
-    super(name, o);
-    if (this.language == 'C') {
-      this.realLanguage = this.language;
-      this.language = chooseRandom('E', 'S', 'F', 'D');
-    }
-  }
-  clear() { super.clear(); if (isdef(this.language)) this.language = this.language; }
-  start_Level() {
-    this.keys = setKeysG(this, filterWordByLengthG, 10);
-    if (this.keys.length < 10) { this.keys = setKeysG(this, filterWordByLengthG, 10, 'all'); }
-  }
-  prompt() {
-    myShowPics(null, {}, {});
-    if (this.hidden) {
-      let d = iDiv(Pictures[0]);
-      animate(d, 'aniAppearMinute', 100000);
-    }
-    setGoal();
-    let w = this.showWord ? Goal.label : '';
-    let wr = `drag letters to form ${w}`;
-    let sp = `forme ${w}`;
-    show_instruction(wr, dTitle, sp);
-    mLinebreak(dTable, 22);
-    let word = Goal.label.toUpperCase();
-    let wlen = word.length;
-    let wTable = getRect(mBy('table')).w;
-    let wmax = wTable / wlen;
-    let gap = 4;
-    let fzMax = wTable / wlen - 3 * gap;
-    let fz = Math.min(70, fzMax);
-    let dpEmpty = createLetterInputsX(word, dTable, { pabottom: 5, bg: 'grey', display: 'inline-block', fz: fz, w: fz, h: fz * 1.1, margin: gap }); 
-    let inputs = blankInputs(dpEmpty, range(0, wlen - 1), false);
-    for (let i = 0; i < inputs.length; i++) {
-      let l = iDiv(inputs[i]);
-      ipadd(l);
-      mClass(l, 'dropzone');
-      l.id = 'input' + i;
-    }
-    this.inputs = inputs;
-    let x = mLinebreak(dTable, 35);
-    fz = Math.min(60, fzMax);
-    let dp = createLetterInputsX(word, dTable, { bg: 'silver', display: 'inline-block', fz: fz, w: fz, h: fz * 1.1, margin: 4 }); 
-    scrambleInputs(dp);
-    let letters = Array.from(dp.children);
-    for (let i = 0; i < letters.length; i++) {
-      let l = letters[i];
-      l.setAttribute('draggable', true);
-      ipadd(l);
-      l.id = 'letter' + i;
-    }
-    this.letters = letters;
-    mLinebreak(dTable, 35);
-    this.bDone = mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
-    if (this.hidden) showFleetingMessage('category: ' + Pictures[0].info.subgroup, 5000);
-    else if (!this.showWord) { showLabelPercentHintAfter(50, 6000); }
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    sayTryAgain();
-    setTimeout(() => {
-      this.inputs.map(x => iDiv(x).innerHTML = '_')
-    }, 1500);
-    return 10;
-  }
-  eval() {
-    let s = this.inputs.map(x => iDiv(x).innerHTML);
-    let w = s = s.join('');
-    let word = Goal.label.toUpperCase();
-    Selected = { answer: w, reqAnswer: word, feedbackUI: iDiv(Goal) };
-    return w == word;
-  }
-  onTimeup() { this.controller.evaluate(); }
 }
 class GAristo { }
-class GC4 extends GTTT {
-  startGame() {
-    super.startGame();
-  }
-  createBoard() {
-    this.board = new Board(this.rows, this.cols, this.controller.uiInteract.bind(this.controller), { margin: 6, w: 60, h: 60, bg: 'white', fg: 'black', rounding: '50%' });
-  }
-  setStartPosition() {
-    let positions = [
-      [[0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0]],
-      [[0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      ['O', 'X', 0, 0, 0, 0, 0],
-      ['O', 'X', 0, 0, 0, 0, 0]],
-      [[0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      ['O', 'X', 0, 0, 0, 0, 0],
-      ['O', 'X', 0, 0, 0, 0, 0],
-      ['O', 'X', 0, 0, 0, 0, 0]],
-      [[0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 'O', 0, 0, 0],
-      ['O', 'X', 0, 'O', 0, 0, 0],
-      ['O', 'X', 0, 'O', 0, 0, 0]],
-      [[0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, "X", 0, 0, 0],
-      ["X", 0, 0, "O", 0, 0, 0],
-      ["O", "X", 0, "O", 0, 0, 0],
-      ["O", "X", "O", "O", 0, 0, 0]],
-      [[0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0],
-      ["X", 0, 0, 0, 0, 0, 0],
-      ["X", 0, 0, 0, "O", "O", 0]],
-    ];
-    this.iPosition = 4;
-    if (isdef(this.iPosition)) {
-      let idx = this.iPosition + 1; idx = idx % positions.length; this.iPosition = idx;
-    } else this.iPosition = 0;
-    let state = nundef(this.startPosition) || this.startPosition == 'empty' ? positions[0]
-      : this.startPosition == 'random' ? chooseRandom(positions)
-        : positions[this.iPosition];
-    this.board.setState(state, { X: this.ai.color, O: this.human.color });
-  }
-  checkFinal(state) {
-    if (nundef(state)) state = this.getState();
-    let isTie = false;
-    let isWin = checkWinnerC4(state, this.rows, this.cols, this.stride);
-    if (!isWin) { isTie = checkBoardFull(state); }
-    return isWin ? 2 : isTie ? 1 : 0;
-  }
-  checkLegal(tile) {
-    let col = tile.col;
-    let topmost = this.board.items[col];
-    if (EmptyFunc(topmost.label)) return true; else return false;
-  }
-  findBottomEmptyTileInColumn(col) {
-    let x = lastCond(this.board.items, x => x.col == col && EmptyFunc(x.label));
-    return x;
-  }
-  interact(ev) {
-    let tile = evToItemC(ev);
-    let legal = this.checkLegal(tile);
-    if (!legal) { console.log('illegal move!'); return; } 
-    let pl = this.plTurn;
-    let bottomMost = this.findBottomEmptyTileInColumn(tile.col);
-    addLabel(bottomMost, pl.sym, { fz: 60, fg: pl.color });
-    this.controller.evaluate(tile);
-  }
-  getAvailableMoves(state) {
-    let moves = [];
-    for (let c = 0; c < G.cols; c++) {
-      for (let r = G.rows - 1; r >= 0; r--) {
-        let i = r * G.cols + c;
-        if (EmptyFunc(state[i])) { moves.push(i); break; }
-      }
-    }
-    shuffle(moves)
-    return moves;
-  }
-  evalState(node, depth) {
-    let x = checkWinnerC4(node);
-    if (checkBoardFull(node) || x) {
-      let res = { reached: true, val: (!x ? 0 : (10 - depth) * (x == MAXIMIZER.sym ? 1 : -1)) };
-      return res;
-    }
-    return { reached: false };
-  }
-}
-class GCats extends Game {
-  constructor(name, o) { super(name, o); }
-  startGame() { this.correctionFunc = showCorrectPictureLabels; this.failFunc = failSomePictures; }
-  dropHandler(source, target, isCopy = true) {
-    let dSource = iDiv(source);
-    let dTarget = iDiv(target);
-    if (!isCopy) {
-      mAppend(dTarget, dSource);
-    } else {
-      let dNew = mText(dSource.innerHTML, dTarget, { wmin: 100, fz: 20, padding: 4, margin: 4, display: 'inline-block' });
-      addDDSource(dNew, false);
-    }
-    if (isOverflown(dTarget)) {
-      let d = dTarget.parentNode;
-      let r = getRect(d);
-      let w = r.w + 100;
-      mSize(d, w, r.h);
-      console.log('overflow!!!!', r.w, '=>', w)
-    }
-  }
-  prompt() {
-    let items;
-    let data = this.keysByCat = genCats(this.numCats);
-    this.keylists = [], this.catsByKey = {};
-    for (const cat in data) {
-      this.keylists.push({ keys: data[cat], cat: cat });
-      for (const k of data[cat]) {
-        this.catsByKey[k] = cat;
-      }
-    }
-    this.cats = Object.keys(this.keysByCat);
-    this.allKeys = Object.keys(this.catsByKey);
-    this.options = {}; _extendOptions(this.options);
-    if (this.pickRandom == false) {
-      items = Pictures = getNItemsPerKeylist(this.numPics, this.keylists, this.options);
-    } else {
-      let keys = choose(this.allKeys, this.numPics * this.numCats);
-      items = Pictures = genItemsFromKeys(keys, this.options);
-      items.map(x => x.cat = this.catsByKey[x.key]);
-    }
-    shuffle(items);
-    let wr = this.language == 'E' ? 'drag pictures to categories' : "ordne die bilder in kategorien";
-    show_instruction(wr, dTitle, wr);
-    mLinebreak(dTable);
-    let dArea = mDiv(dTable, { display: 'flex', 'flex-wrap': 'wrap' });
-    let containers, dWordArea;
-    containers = this.containers = createContainers(this.cats, dArea, { w: 'auto', wmin: 150, wmax: 300, hmin: 250, fz: 24, fg: 'contrast' }); 
-    mLinebreak(dTable);
-    dWordArea = this.dWordArea = mDiv(dTable, { h: 70, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
-    for (const item of items) { let d = miPic(item, dWordArea); iAdd(item, { div: d }); }
-    enableDD(items, containers, this.dropHandler.bind(this), false);
-    mLinebreak(dTable, 50);
-    mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    sayTryAgain();
-    TOMain = setTimeout(() => {
-      for (const p of Pictures) {
-        if (!p.isCorrect) {
-          mAppend(this.dWordArea, iDiv(p));
-          if (this.trialNumber == 1) miAddLabel(p, { bg: '#00000080', margin: 4, fz: 20 });
-        }
-      }
-    }, 1000);
-    return 1200;
-  }
-  eval() {
-    this.piclist = Pictures;
-    Selected = { piclist: this.piclist, feedbackUI: this.piclist.map(x => iDiv(x)), sz: getRect(iDiv(this.piclist[0])).h };
-    let isCorrect = true;
-    for (const p of Pictures) {
-      let label = p.label;
-      let d = iDiv(p);
-      let cont = d.parentNode;
-      for (const c of this.containers) {
-        if (iDiv(c) == cont) {
-          p.classified = true;
-          if (p.cat == c.label) p.isCorrect = true;
-          else { p.isCorrect = isCorrect = false; }
-          break;
-        }
-      }
-      if (!p.classified) p.isCorrect = isCorrect = false;
-    }
-    return isCorrect;
-  }
-}
-class GChess extends G2Player {
-  clear() { super.clear(); if (isdef(this.game)) { this.game.reset(); } }
-  startGame() {
-    super.startGame();
-    this.createBoard();
-    this.game = new Chess();
-    this.setStartPosition();
-    let c = this.game.turn();
-    if (c == 'b') { this.plTurn.color = 'black'; this.plOpp.color = 'white'; } else { this.plTurn.color = 'white'; this.plOpp.color = 'black'; }
-    showFleetingMessage(`You play ${this.human.color}`)
-  }
-  createBoard() {
-    let d = mDiv(dTable, { h: 500, w: 500 }, 'dChessBoard');
-    let config = {
-      pieceTheme: '../alibs/chessBoard/img/chesspieces/wikipedia/{piece}.png',
-      draggable: true,
-      onDragStart: this.onDragStart.bind(this),
-      onDrop: this.onDrop.bind(this),
-      onSnapEnd: this.onSnapEnd.bind(this),
-    }
-    this.board = ChessBoard('dChessBoard', config);
-    mLinebreak(dTable);
-  }
-  setStartPosition() {
-    let positions = [
-      'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 
-      // //'8/8/8/8/8/8/8/8 b KQkq - 0 1', //black starts
-    ];
-    if (nundef(this.iPosition)) this.iPosition = 0;
-    let state = nundef(this.startPosition) || this.startPosition == 'empty' ? positions[0] : this.startPosition == 'random' ? chooseRandom(positions) : positions[this.iPosition];
-    if (!isString(state)) state = arrToFen(state.arr, state.plStart);
-    this.game.load(state); //'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1');
-    this.board.position(this.game.fen());
-    let idx = this.iPosition + 1; idx = idx % positions.length; this.iPosition = idx;
-  }
-  prompt() {
-    let msg = this.plTurn == this.ai && !this.manual ? `Ai (${this.ai.color.toUpperCase()}) thinking...`
-      : `player: ${this.plTurn.color.toUpperCase()}`;
-    showInstruction(this.game.in_check() ? '- CHECK!!!' : '', msg, dTitle, false);
-    this.controller.activateUi();
-  }
-  activate() {
-    let pl = this.plTurn;
-    let autoplay = false;
-    if (autoplay || pl == this.ai) {
-      if (this.ai == pl) { uiActivated = false; aiActivated = true; }
-      this.TO = setTimeout(() => {
-        let color = this.game.turn();
-        if (color === 'b') { var move = getBestMove(this.game, color, globalSum)[0]; }
-        else { var move = getBestMove(this.game, color, -globalSum)[0]; }
-        globalSum = evaluateBoard(move, globalSum, 'b');
-        this.game.move(move);
-        this.board.position(this.game.fen());
-        this.controller.evaluate();
-      }, 100);
-    } else { aiActivated = false; uiActivated = true; }
-  }
-  getTurnColor() { return this.getPlayer(this.game.turn() == 'b' ? 'black' : 'white'); }
-  getOppColor() { return this.getPlayer(this.game.turn() == 'b' ? 'white' : 'black'); }
-  getPlayer(color) { return firstCond(this.players, x => x.color == color); }
-  changePlayer() { this.plTurn = this.game.turn() == 'b' ? this.getPlayer('black') : this.getPlayer('white'); }
-  onDragStart(source, piece, position, orientation) {
-    if (this.game.game_over() || !uiActivated) return false;
-    if ((this.game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-      (this.game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-      return false
-    }
-  }
-  onDrop(source, target) {
-    var move = this.game.move({
-      from: source,
-      to: target,
-      promotion: 'q' 
-    });
-    if (move === null) return 'snapback';
-    this.controller.evaluate();
-  }
-  onSnapEnd() { this.board.position(this.game.fen()) }
-  eval() {
-    this.info = null;
-    let over = this.gameOver = this.game.game_over();
-    if (this.game.in_draw()) { this.tie = true; console.log('in_draw'); this.info = '(draw)'; }
-    if (this.game.in_stalemate()) { this.tie = true; console.log('in_stalemate'); this.info = '(stalemate)'; }
-    if (this.game.in_threefold_repetition()) { this.tie = true; console.log('in_threefold_repetition'); this.info = '(threefold repetition)'; }
-    if (this.game.in_checkmate()) {
-      this.tie = false;
-      this.winner = this.getOppColor();
-      console.log('in_checkmate');
-      this.info = `(${this.winner.color.toUpperCase()})`;
-    }
-  }
-}
-class GColoku extends Game {
-  startGame() {
-    this.correctionFunc = () => {
-      if (this.qName == 'isThisSudokuCorrect') {
-        mStyle(Goal.buttonCorrect, { bg: 'green' });
-        animate(Goal.buttonCorrect, 'komisch', 1000);
-        if (!Goal.correct) {
-          animateColorScale(Goal.correctionFeedbackUI, Goal.item.color, 1.5, 1500);
-          this.dComment.innerHTML = 'rule broken! duplicate in ' + Goal.err.type;
-        } else {
-          this.dComment.innerHTML = 'this coloku is correct!';
-        }
-      } else {
-        this.dWordArea.remove();
-        this.bDone.remove();
-        if (Goal.err) {
-          this.dComment.innerHTML = 'rule broken! duplicate in ' + Goal.err.type;
-          animateColorScale(Goal.correctionFeedbackUI, Goal.item.color, 1.5, 1500);
-        } else {
-          this.dComment.innerHTML = 'Coloku is incomplete!!!!';
-        }
-      }
-      return 20000;
-    };
-    this.failFunc = () => {
-      if (this.qName == 'isThisSudokuCorrect') {
-        if (Goal.choice == Goal.correctChoice) { mStyle(Goal.buttonClicked, { bg: 'green' }); mCheckit(Goal.feedbackUI, 100); }
-        else { mXit(Goal.buttonClicked, 100); }
-      } else {
-        mXit(this.dGrid, 200);
-      }
-    }
-    this.successFunc = () => {
-      if (this.qName == 'isThisSudokuCorrect') {
-        if (Goal.choice == Goal.correctChoice) { mStyle(Goal.buttonClicked, { bg: 'green' }); mCheckit(Goal.feedbackUI, 100); }
-        else { mXit(Goal.buttonClicked, 100); }
-      } else {
-        mCheckit(this.dGrid, 200);
-      }
-    }
-  }
-  prompt() {
-    this.trials = 1;
-    let [rows, cols] = [this.rows, this.cols];
-    this.dGrid = mGrid(rows, cols, dTable, { position: 'relative', w: 400, h: 400, gap: 8, bg: 'white' });
-    let o = getSudokuPatternFromDB(rows, cols);
-    let [pattern, minPuzzle] = [this.pattern, this.minPuzzle] = [o.pattern, o.puzzle];
-    mLinebreak(dTable, 20);
-    this.dChoices = mDiv(dTable);
-    mLinebreak(dTable);
-    this.dComment = mDiv(dTable);
-    mLinebreak(dTable);
-    let qName = this.qName = this.level == 0 && coin() && PROJECTNAME == 'belinda' ? 'isThisSudokuCorrect' : 'solve';
-    this[qName]();
-    this.controller.activateUi.bind(this.controller)();
-  }
-  fillGrid(pattern) {
-    let items = this.items = [];
-    let [rows, cols, dGrid] = [this.rows, this.cols, this.dGrid];
-    let colors = this.colors = rows == 4 ? [RED, YELLOW, BLUE, GREEN]
-      : rows == 6 ? [RED, YELLOW, BLUE, GREEN, PURPLE, ORANGE]
-        : [BLUEGREEN, PURPLE, ORANGE, RED, YELLOW, BLUE, GREEN, LIGHTBLUE, OLIVE];
-    shuffle(colors);
-    for (let r = 0; r < rows; r++) {
-      let arr = [];
-      for (let c = 0; c < cols; c++) {
-        let nch = pattern[r][c];
-        let color = isNumber(nch) ? colors[pattern[r][c]] : null;
-        let d = mDiv(dGrid, { bg: color }, getUID());
-        let item = { row: r, col: c, id: d.id, color: color, val: nch };
-        iAdd(item, { div: d });
-        arr.push(item);
-      }
-      items.push(arr);
-    }
-    return items;
-  }
-  makeLines() {
-    let [wline, dGrid, sz] = [2, this.dGrid, this.rows];
-    let gSize = getSize(dGrid);
-    let rh = sz != 9 ? makeRect((gSize.w - wline) / 2, 0, wline, gSize.h) : makeRect((gSize.w - wline) / 3, 0, wline, gSize.h);
-    let rv = sz == 4 ? makeRect(0, (gSize.h - wline) / 2, gSize.w, wline) : makeRect(0, (gSize.h - wline) / 3, gSize.w, wline);
-    let vLine = mDiv(dGrid, { bg: this.color, position: 'absolute', left: rh.l, top: rh.t, w: rh.w, h: rh.h });
-    if (sz == 9) vLine = mDiv(dGrid, { bg: this.color, position: 'absolute', left: rh.l * 2, top: rh.t, w: rh.w, h: rh.h });
-    let hLine = mDiv(dGrid, { bg: this.color, position: 'absolute', left: rv.l, top: rv.t, w: rv.w, h: rv.h });
-    if (sz != 4) vLine = mDiv(dGrid, { bg: this.color, position: 'absolute', left: rv.l, top: 2 * rv.t, w: rv.w, h: rv.h });
-  }
-  setGoal(pattern) {
-    let err = checkSudokuRule(pattern);
-    let incomplete = false;
-    for (const el of arrFlatten(pattern)) {
-      if (!isNumber(el)) { incomplete = true; break; }
-    }
-    let answer = (err == null) && !incomplete; 
-    Goal = { correct: answer, err: err, incomplete: incomplete };
-  }
-  isThisSudokuCorrect() {
-    this.trials = 1;
-    let [pattern, rows, cols, dGrid] = [this.pattern, this.rows, this.cols, this.dGrid];
-    destroySudokuRule(pattern, rows, cols);
-    this.setGoal(pattern);
-    let items = this.fillGrid(pattern);
-    this.makeLines();
-    let wsp = {
-      D: 'ist dieses coloku korrekt?',
-      E: 'is this coloku correct?',
-      S: 'es este coloku correcto?',
-      F: 'est ce que ce coloku est exacte?',
-    };
-    let sp = wsp[this.language];
-    show_instruction(sp, dTitle, sp);
-    showFleetingMessage('rule: each color must be unique in every row, column and quadrant!', 15000);
-    let correct, incorrect;
-    if (Goal.correct) { correct = { num: 1, text: 'yes' }; incorrect = [{ num: 0, text: 'no' }]; }
-    else { correct = { num: 0, text: 'no' }; incorrect = [{ num: 1, text: 'yes' }]; }
-    let feedbackUI = Goal.correctionFeedbackUI = Goal.correct ? this.dGrid : iDiv(this.items[Goal.err.row][Goal.err.col]);
-    createMultipleChoiceElements(correct, incorrect, this.dChoices, feedbackUI, {});
-    Goal.item = Goal.correct ? this.items[0] : this.items[Goal.err.row][Goal.err.col];
-  }
-  solve() {
-    let [rrand, crand] = [randomNumber(0, this.rows - 1), randomNumber(0, this.cols - 1)];
-    let puzzle = this.puzzle = jsCopy(this.pattern);
-    let [min, rows, cols] = [this.minPuzzle, this.rows, this.cols];
-    let combis = [];
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        if (min[r][c] === ' ') combis.push({ row: r, col: c });
-      }
-    }
-    let combisToRemove = choose(combis, this.numMissing);
-    for (const o of combisToRemove) {
-      puzzle[o.row][o.col] = ' ';
-    }
-    this.fillGrid(puzzle);
-    this.makeLines();
-    let sp = 'solve this coloku!'
-    show_instruction(sp, dTitle, sp);
-    let itemlist = this.itemlist = arrFlatten(this.items);
-    let containers = this.containers = itemlist.filter(x => x.val === ' ');
-    let dWordArea = this.dWordArea = mDiv(dTable, { h: 70, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
-    let colorItems = this.colorItems = [];
-    for (const color of this.colors) {
-      let colorItem = { id: getUID(), color: color };
-      let d = mDiv(dWordArea, { w: 40, h: 40, bg: color, margin: 10, cursor: 'pointer' }, colorItem.id);
-      iAdd(colorItem, { div: d });
-      colorItems.push(colorItem);
-    }
-    enableDD(colorItems, containers, this.dropHandler.bind(this), true);
-    mLinebreak(dTable, 50);
-    this.bDone = mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
-  }
-  dropHandler(source, target, isCopy = true) {
-    let dSource = iDiv(source);
-    let dTarget = iDiv(target);
-    mStyle(dTarget, { bg: source.color });
-    target.color = source.color;
-    target.val = this.colors.indexOf(source.color);
-  }
-  evalIsCorrect() {
-    Selected = { feedbackUI: Goal.buttonClicked };
-    return Goal.buttonClicked == Goal.buttonCorrect;
-  }
-  evalSolve() {
-    let [items, pattern, rows, cols] = [this.items, this.pattern, this.rows, this.cols];
-    let pat = items.map(x => x.map(y => y.val));
-    this.setGoal(pat);
-    if (Goal.err) {
-      Goal.correctionFeedbackUI = iDiv(this.items[Goal.err.row][Goal.err.col]);
-      Goal.item = this.items[Goal.err.row][Goal.err.col];
-    }
-    Selected = { feedbackUI: this.dGrid };
-    return Goal.correct;
-  }
-  eval() {
-    clearFleetingMessage();
-    return this.qName == 'solve' ? this.evalSolve() : this.evalIsCorrect();
-  }
-  onTimeup() { this.controller.evaluate(); }
-}
-class GElim extends Game {
-  constructor(name, o) { super(name, o); }
-  startGame() {
-    this.correctionFunc = () => { writeSound(); playSound('incorrect1'); return this.spokenFeedback ? 1800 : 300; };
-    this.successFunc = () => { Goal.pics.map(x => iDiv(x).style.opacity = .3); successPictureGoal(); }
-  }
-  start_Level() {
-    super.start_Level();
-    this.keys = this.keys.filter(x => containsColorWord(x));
-  }
-  prompt() {
-    this.piclist = [];
-    let colorKeys = this.numColors > 1 ? choose(this.colors, this.numColors) : null;
-    let showRepeat = this.numRepeat > 1;
-    let rows = this.numColors > 1 ? this.numColors : undefined;
-    myShowPics(this.interact.bind(this), { bg: 'white' },
-      {
-        showRepeat: showRepeat, colorKeys: colorKeys, numRepeat: this.numRepeat,
-        contrast: this.contrast, rows: rows
-      });
-    let [sSpoken, sWritten, piclist] = logicMulti(Pictures);
-    this.piclist = piclist;
-    Goal = { pics: this.piclist, sammler: [] };
-    show_instruction(sWritten, dTitle, sSpoken, { fz: 22, voice: 'zira' });
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    sayTryAgain();
-    let msg = this.language == 'D' ? 'noch einmal!' : 'try again!'
-    showFleetingMessage(msg, 0, { margin: -8, fz: 22 }, true);
-    return 1000;
-  }
-  activate() {
-    for (const p of this.piclist) { if (p.isSelected) toggleSelectionOfPicture(p); }
-    this.piclist = [];
-  }
-  interact(ev) {
-    ev.cancelBubble = true;
-    if (!canAct()) return;
-    let pic = findItemFromEvent(Pictures, ev);
-    writeSound(); playSound('hit');
-    if (Goal.pics.includes(pic)) {
-      removePicture(pic);
-      Goal.sammler.push(pic);
-    }
-    if (Goal.pics.length == Goal.sammler.length) this.controller.evaluate.bind(this.controller)(true);
-    else if (!Goal.pics.includes(pic)) { this.lastPic = pic; this.controller.evaluate.bind(this.controller)(false); }
-  }
-  eval(isCorrect) {
-    Selected = { piclist: this.piclist, feedbackUI: isCorrect ? Goal.pics.map(x => iDiv(x)) : iDiv(this.lastPic) };
-    return isCorrect;
-  }
-}
-class GGuess extends IClass{
-  setup(){
-  }
-  updatePlayer(pl){
-  }
-  updateOptions(pl){
-    this.options = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
-    console.log(this.options);
-  }
-}
-class GHouse extends Game {
-  constructor(name, o) { super(name, o); }
-  startGame() {
-    this.correctionFunc = () => {
-      mStyle(Goal.buttonCorrect, { bg: 'green' });
-      animate(Goal.buttonCorrect, 'komisch', 1000);
-      mStyle(this.dGraph, { opacity: 1 });
-      return 20000;
-    };
-    this.failFunc = () => {
-      if (Goal.choice == Goal.correctChoice) { mStyle(Goal.buttonClicked, { bg: 'green' }); mCheckit(Goal.feedbackUI, 100); }
-      else { mXit(Goal.buttonClicked, 100); }
-      mStyle(this.dGraph, { opacity: 1 });
-    }
-    this.successFunc = () => {
-      if (Goal.choice == Goal.correctChoice) { mStyle(Goal.buttonClicked, { bg: 'green' }); mCheckit(Goal.feedbackUI, 100); }
-      else { mXit(Goal.buttonClicked, 100); }
-      mStyle(this.dGraph, { opacity: 1 });
-    }
-  }
-  prompt() {
-    if (isdef(this.graph)) this.graph.clear();
-    this.trials = 1;
-    let n = randomNumber(this.minRooms, this.maxRooms); 
-    //#region selectQuestion
-    let qFuncs = [this.areRoomsConnected.bind(this)];
-    if (n > 5) qFuncs.push(this.isThereAPath.bind(this));
-    let q = this.q = this.level > 1 ? arrLast(qFuncs) : chooseRandom(qFuncs); 
-    //#endregion
-    //#region make house
-    let s = n;
-    let wTotal = n < 4 || n > 12 ? 700 : n > 10 ? 600 : 500;
-    let dGridOuter = mDiv(dTable, { wmin: wTotal, hmin: 400 });
-    let house = this.house = iHouse(dGridOuter, s, { w: wTotal, h: 400 });
-    let rooms = this.rooms = house.rooms.map(x => Items[x]);
-    this.addLabelsToRooms();
-    //#endregion
-    //#region add doors
-    let dirs = coin() ? ['n', 'w'] : ['s', 'e'];
-    let doors = this.doors = [];
-    for (const r of rooms) {
-      let dir = coin() ? dirs[0] : dirs[1];
-      let door = iDoor(r.id, dir);
-      doors.push(door);
-    }
-    if (q.name.includes('Path')) hideOuterDoors(house);
-    //#endregion
-    //#region prep container for multiple choices
-    mLinebreak(dTable, 20);
-    this.dChoices = mDiv(dTable);
-    mLinebreak(dTable);
-    //#endregion
-    //#region make graph container
-    let r = getRect(dGridOuter); 
-    mStyle(dGridOuter, { position: 'relative' });
-    let dGraph = this.dGraph = mDiv(dGridOuter, { box: true, align: 'left', position: 'absolute', bg: '#ffffff80', top: 0, left: 0, w: r.w, h: r.h });
-    //#endregion
-    let innerStyles = { box: true, align: 'left', position: 'absolute', bg: '#ffffff80', top: 0, left: 0, w: r.w, h: r.h };
-    let g1 = this.graph = new UIGraph(dGraph, { edge: { bg: 'blue' }, outer: { align: 'left', w: wTotal, h: 400 }, inner: innerStyles });
-    convertToGraphElements(g1, house);
-    g1.presetLayout();
-    g1.reset();
-    mStyle(dGraph, { opacity: 0 });
-    q();
-    this.controller.activateUi.bind(this.controller)();
-  }
-  //#region qFuncs
-  isThereAPath() {
-    let house = this.house;
-    let corners = getCornerRoomsDict(house); 
-    let clist = Object.values(corners);  
-    let g = this.graph;
-    let id = g.getNodeWithMaxDegree(clist); 
-    let cornerRoomIds = g.sortNodesByDegree(clist).map(x => x.id());
-    let [r1, r2] = [Items[cornerRoomIds[0]], Items[cornerRoomIds[1]]]; 
-    if (r1 == r2 || areNeighbors(r1, r2) && cornerRoomIds.length > 2) r2 = Items[cornerRoomIds[2]];
-    if (!r1.isW && (r2.isW || !r1.N)) [r1, r2] = [r2, r1];
-    let roomFrom = r1.id; 
-    let funcs = this.dijkstra = g.getShortestPathsFrom(roomFrom);  
-    let roomTo = r2.id; 
-    for (const k in corners) {
-      if (k != 'NW') {
-        let dist = funcs.distanceTo('#' + corners[k]);
-        if (dist != Infinity && dist >= 3) {
-          roomTo = corners[k];
-          break;
-        } 
-      }
-    }
-    if (!roomTo) { roomTo = corners.SE; }
-    //#region spoken and written instruction
-    this.roomFrom = roomFrom;
-    this.roomTo = roomTo;
-    let sp1 = {
-      D: ['gibt es einen weeg von', 'gibt es einen weg von'],
-      E: ['is there a path from', 'is there a path from'],
-      S: ['hay un camino de', 'hay un camino de'],
-      F: ["y a 'til un chemin de", "y a 'til un chemin de"],
-    };
-    let sp2 = {
-      D: ['zu', 'zu'],
-      E: ['to', 'to'],
-      S: ['a', 'a'],
-      F: ['!. a! ', 'à'],
-    };
-    let fill1 = [`. "${Items[roomFrom].id.toUpperCase()}"! `, ` ${Items[roomFrom].id} `];
-    let fill2 = [`. "${Items[roomTo].id.toUpperCase()}"`, ` ${Items[roomTo].id}`];
-    let l = 'E'; 
-    let sp = sp1[l][0] + fill1[0] + sp2[l][0] + fill2[0] + '?';
-    let wr = sp1[l][1] + fill1[1] + sp2[l][1] + fill2[1] + '?';
-    let voice = this.language == 'E' ? coin() ? 'ukMale' : 'zira' : this.language;
-    //#endregion
-    show_instruction(wr, dTitle, sp, { voice: voice });
-    let answer = funcs.distanceTo('#' + roomTo) != Infinity;
-    let correct, incorrect;
-    if (answer) { correct = { num: 1, text: 'yes' }; incorrect = [{ num: 0, text: 'no' }]; }
-    else { correct = { num: 0, text: 'no' }; incorrect = [{ num: 1, text: 'yes' }]; }
-    createMultipleChoiceElements(correct, incorrect, this.dChoices, iDiv(this.house), {});
-  }
-  howMany() {
-    let wr = this.language == 'E' ? 'how many units are there in this house?' : "wieviele wohneinheiten hat dieses haus?";
-    show_instruction(wr, dTitle, wr);
-    let numUnits = this.graph.getNumComponents(); 
-    let otherChoices = [
-      numUnits * 2,
-      Math.round(numUnits / 2),
-      numUnits + randomNumber(1, 10)
-    ];
-    let di = {};
-    for (let i = 0; i < otherChoices.length; i++) {
-      let n = otherChoices[i];
-      while (n == numUnits || isdef(di[n])) { n += 1; } 
-      di[n] = true;
-      otherChoices[i] = n;
-    }
-    createMultipleChoiceElements({ num: numUnits, text: numUnits },
-      otherChoices.map(x => ({ num: x, text: x })), this.dChoices, iDiv(this.house), {});
-  }
-  areRoomsConnected() {
-    let wr = this.language == 'E' ? 'are all rooms connected?' : "sind alle zimmer verbunden?";
-    showInstruction(wr, dTitle, wr);
-    let numUnits = this.graph.getNumComponents(); 
-    let correct, incorrect;
-    if (numUnits == 1) { correct = { num: 1, text: 'yes' }; incorrect = [{ num: 0, text: 'no' }]; }
-    else { correct = { num: 0, text: 'no' }; incorrect = [{ num: 1, text: 'yes' }]; }
-    createMultipleChoiceElements(correct, incorrect, this.dChoices, iDiv(this.house), {});
-  }
-  //#region helpers
-  showPath() {
-    mStyle(this.dGraph, { opacity: 1 });
-  }
-  //#region add stuff to house
-  addLabelsToRooms() {
-    let roomlist = ['bedroom', 'livingroom', 'bathroom', 'kitchen'];
-    sortByFunc(this.rooms, x => x.rect.w * x.rect.h);
-    this.rooms.map(x => addLabel(x, x.ch, {}));
-  }
-  addOneDoorPerRoom(directions) {
-    for (const r of this.rooms) {
-      let door = makeRandomDoor(r, this.house, directions); this.doors.push(door);
-    }
-  }
-  addWallFinderByMouseClick() {
-    dTable.onclick = ev => {
-      console.log(ev.clientX, ev.clientY);
-      let w = findWall(ev.clientX, ev.clientY, this.walls);
-      console.log('found wall', w)
-    }
-  }
-  addFurnitureItems() {
-    let keys = ['bed', 'bathtub', 'chair', 'couch and lamp', 'toilet', 'door', 'table'];
-    let items = Pictures = genItemsFromKeys(keys);
-    console.assert(arrLast(items).key == 'table', 'NOOOOOOO');
-    let itable = arrLast(items);
-    shuffle(items);
-    let dWordArea = this.dWordArea = mDiv(dTable, { h: 70, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
-    for (const item of items) { let d = miPic(item, dWordArea); iAdd(item, { div: d }); }
-    mStyle(iDiv(itable), { fg: BROWN });
-    enableDD(items, rooms, this.dropHandler.bind(this), false);
-  }
-  //#endregion
-  eval() {
-    clearFleetingMessage();
-    Selected = { reqAnswer: G.correctAnswer, answer: Goal.choice.text, feedbackUI: Goal.buttonClicked };
-    return (Goal.buttonClicked == Goal.buttonCorrect);
-  }
-}
-class GKrieg extends G2Player {
-  write() { write('game', ...arguments); }
-  startGame() {
-    this.write('start game')
-    super.startGame();
-    let back = this.back = new GKriegBack();
-    this.setStartPosition();
-    this.front = new GKriegFront(130, dTable);
-    this.front.presentState(this.back.get_state());
-    mLinebreak(dTable, 50);
-    this.moveButton = mButton('Move!', this.interact.bind(this), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
-  }
-  setStartPosition() {
-    this.back.load(null); 
-  }
-  prompt() {
-    this.write('prompt')
-    let msg = this.plTurn == this.ai ? 'Ai thinking...' : 'Deterministic: click Move!';
-    showInstruction('', msg, dTitle, false);
-    this.controller.activateUi();
-  }
-  activate() {
-    let pl = this.plTurn;
-    let autoplay = false;
-    let manual = true;
-    if (!manual && (autoplay || pl == this.ai)) {
-      if (this.ai == pl) uiActivated = false;
-      setTimeout(this.interact.bind(this), 500);
-    } else {
-      this.moveButton.style.opacity = 1;
-    }
-  }
-  interact() {
-    if (!canAct()) { console.log('NOPE!!!!', 'ai', aiActivated, 'ui', uiActivated); return; }
-    this.controller.deactivateUi();
-    this.write('interact');
-    let back = this.back;
-    back.make_random_move();
-    this.front.animatePlayerMove(back.turn(), this.onPlayerMoveCompleted.bind(this));
-  }
-  onPlayerMoveCompleted() {
-    let back = this.back;
-    this.front.presentState(this.back.get_state());
-    let x = this.back.resolve();
-    if (isdef(x)) {
-      this.moveButton.style.opacity = .3;
-      this.TO = setTimeout(() => { this.front.animateResolve(x, () => { GC.evaluate(x) }) },  
-        1000
-      );
-    } else this.controller.evaluate(x);
-  }
-  changePlayer() {
-    this.write('change player')
-    this.back.swap_turn();
-    this.plTurn = this.players[this.back.player().index];
-    this.opp = this.players[this.back.opponent().index];
-  }
-  eval(x) {
-    let back = this.back;
-    this.write('eval', x)
-    if (isdef(x)) this.front.presentState(this.back.get_state());
-    if (back.is_out_of_cards()) {
-      this.moveButton.remove();
-      this.gameOver = true;
-      let w = back.winner();
-      if (isdef(w)) this.winner = this.players[w.index];
-      this.bannerPos = -480;
-    }
-  }
-}
 class GKriegBack {
   load(state) {
     this.history = [];
@@ -11857,103 +6314,6 @@ class GKriegFront {
     }
   }
 }
-class GMaze extends Game {
-  constructor(name, o) { super(name, o); }
-  clear() { super.clear(); if (isdef(this.cy)) { this.cy.destroy(); } }
-  startGame() {
-    this.correctionFunc = () => {
-      mStyle(Goal.buttonCorrect, { bg: 'green' });
-      animate(Goal.buttonCorrect, 'komisch', 1000);
-      if (Goal.correctChoice.text == 'yes') this.maze.breadCrumbs(this.path); else this.maze.colorComponents();
-      return 20000;
-    };
-    this.failFunc = () => {
-      if (Goal.choice == Goal.correctChoice) { mStyle(Goal.buttonClicked, { bg: 'green' }); mCheckit(Goal.feedbackUI, 100); }
-      else { mXit(Goal.buttonClicked, 100); }
-    }
-    this.successFunc = () => {
-      if (Goal.choice == Goal.correctChoice) { mStyle(Goal.buttonClicked, { bg: 'green' }); mCheckit(Goal.feedbackUI, 100); }
-      else { mXit(Goal.buttonClicked, 100); }
-    }
-  }
-  startRound() { if (isdef(this.cy)) this.cy.destroy(); clearElement(dTable); } 
-  prompt() {
-    this.trials = 1;
-    let maze = this.maze = new MazeGraph(dTable, this.rows, this.cols, this.sz, this.gap);
-    this.cy = maze.cy;
-    mLinebreak(dTable, 20);
-    this.dChoices = mDiv(dTable);
-    mLinebreak(dTable);
-    this.isThereAPath(maze);
-    this.controller.activateUi.bind(this.controller)();
-  }
-  isThereAPath(maze) {
-    let cellStart = maze.getTopLeftCell();
-    mCellContent(iDiv(cellStart), { w: '50%', h: '50%', fz: '60%', bg: 'green', fg: 'white', rounding: '50%' }, 'A');
-    let cellGoal = maze.getBottomRightCell();
-    mCellContent(iDiv(cellGoal), { w: '50%', h: '50%', fz: '60%', bg: 'red', fg: 'white', rounding: '50%' }, 'B');
-    [this.roomFrom, this.roomTo] = [cellStart.nodeId, cellGoal.nodeId];
-    //#region spoken and written instruction
-    let sp1 = {
-      D: ['gibt es einen weeg von', 'gibt es einen weg von'],
-      E: ['is there a path from', 'is there a path from'],
-      S: ['hay un camino de', 'hay un camino de'],
-      F: ["y a 'til un chemin de", "y a 'til un chemin de"],
-    };
-    let sp2 = {
-      D: ['zu', 'zu'],
-      E: ['to', 'to'],
-      S: ['a', 'a'],
-      F: ['!. a! ', 'à'],
-    };
-    let fill1 = [`. "A"! `, ` A `];
-    let fill2 = [`. "B"`, ` B`];
-    let l = this.language;
-    let sp = sp1[l][0] + fill1[0] + sp2[l][0] + fill2[0] + '?';
-    let wr = sp1[l][1] + fill1[1] + sp2[l][1] + fill2[1] + '?';
-    let voice = this.language == 'E' ? coin() ? 'ukMale' : 'zira' : this.language;
-    show_instruction(wr, dTitle, sp, { voice: voice });
-    //#endregion
-    let path = this.path = maze.getShortestPathFromTo(this.roomFrom, this.roomTo);
-    console.assert(path.length < Infinity, 'WAAAAAAAAAAAAAAS?');
-    if (coin(this.level > 2 ? 50 : 40)) maze.cutPath(this.path, .5, .75);
-    let len = maze.getLengthOfShortestPath(this.roomFrom, this.roomTo); 
-    let answer = len != Infinity;
-    let correct, incorrect;
-    if (answer) { correct = { num: 1, text: 'yes' }; incorrect = [{ num: 0, text: 'no' }]; }
-    else { correct = { num: 0, text: 'no' }; incorrect = [{ num: 1, text: 'yes' }]; }
-    createMultipleChoiceElements(correct, incorrect, this.dChoices, maze.dMaze, {});
-  }
-  eval() {
-    clearFleetingMessage();
-    Selected = { reqAnswer: G.correctAnswer, answer: Goal.choice.text, feedbackUI: Goal.buttonClicked };
-    return (Goal.buttonClicked == Goal.buttonCorrect);
-  }
-}
-class GMem extends Game {
-  constructor(name, o) { super(name, o); }
-  clear() { clearTimeout(this.TO); showMouse(); }
-  prompt() {
-    this.trials = 1;
-    myShowPics(this.interact.bind(this),
-      { border: '3px solid #ffffff80' },
-      {});
-    setGoal();
-    let wr = (this.language == 'E' ? 'remember ' : 'merke dir ') + (this.level > 2 ? (this.language == 'E' ? 'all' : 'alle') : Goal.label);
-    show_instruction(wr, dTitle, wr);
-    let secs = calcMemorizingTime(this.numPics, this.level > 2);
-    hideMouse();
-    TOMain = setTimeout(() => turnCardsAfter(secs), 300, this.level >= 5); 
-  }
-  interact(ev) {
-    ev.cancelBubble = true;
-    if (!canAct()) return;
-    let pic = findItemFromEvent(Pictures, ev);
-    turnFaceUpSimple(pic);
-    if (this.trialNumber == this.trials - 1) turnFaceUpSimple(Goal);
-    TOMain = setTimeout(() => this.controller.evaluate.bind(this.controller)(ev), 300);
-  }
-}
 class GMinimalGame {
   constructor(name, o) {
     this.name = name;
@@ -11966,714 +6326,6 @@ class GMinimalGame {
   clear() { }
   prompt() { }
   activate() { }
-}
-class GMissingLetter extends Game {
-  constructor(name, o) { super(name, o); }
-  start_Level() {
-    super.start_Level();
-    this.maxPosMissing = this.posMissing == 'start' ? this.numMissing - 1 : 100;
-  }
-  prompt() {
-    myShowPics(() => fleetingMessage('just enter the missing letter!'));
-    setGoal();
-    if (this.instruction == 'all') {
-      let wr = (this.language == 'E' ? 'complete ' : "ergänze ") + `<b>${Goal.label.toUpperCase()}</b>`;
-      let sp = (this.language == 'E' ? 'complete ' : "ergänze ") + `${Goal.label}`;
-      show_instruction(wr, dTitle, sp);
-    } else if (this.instruction == 'spokenGoal') {
-      let wr = this.language == 'E' ? 'complete the word' : "ergänze das wort";
-      let sp = (this.language == 'E' ? 'complete' : "ergänze") + ' ' + Goal.label;
-      show_instruction(wr, dTitle, sp);
-    } else {
-      let wr = this.language == 'E' ? 'complete the word' : "ergänze das wort";
-      show_instruction(wr, dTitle, wr);
-    }
-    mLinebreak(dTable, 20);
-    let style = { margin: 6, fg: 'white', display: 'inline', bg: 'transparent', align: 'center', border: 'transparent', outline: 'none', family: 'Consolas', fz: 80 };
-    let d = createLetterInputs(Goal.label.toUpperCase(), dTable, style); 
-    let indices = getIndicesCondi(Goal.label, (x, i) => isAlphaNum(x) && i <= this.maxPosMissing);
-    this.nMissing = Math.min(indices.length, this.numMissing);
-    let ilist = choose(indices, this.nMissing); sortNumbers(ilist);
-    this.inputs = [];
-    for (const idx of ilist) {
-      let inp = d.children[idx];
-      inp.innerHTML = '_';
-      mClass(inp, 'blink');
-      this.inputs.push({ letter: Goal.label[idx].toUpperCase(), div: inp, index: idx });
-    }
-    mLinebreak(dTable);
-    let msg = this.composeFleetingMessage();
-    let ms = this.instruction == 'all' ? 3000 : this.instruction == 'spokenGoal' ? 9000 : 15000;
-    showFleetingMessage(msg, ms);
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    let selinp = Selected.inp;
-    sayTryAgain();
-    TOMain = setTimeout(() => {
-      let d = selinp.div;
-      d.innerHTML = '_';
-      mClass(d, 'blink');
-    }, 1200);
-    showFleetingMessage(this.composeFleetingMessage(), 3000);
-    return 1500;
-  }
-  activate() {
-    addKeyup('G', ev => {
-      if (!isLetter(ev.key)) return;
-      clearFleetingMessage();
-      if (!canAct()) return;
-      let charEntered = ev.key.toString();
-      if (!isAlphaNum(charEntered)) return;
-      Selected = { lastLetterEntered: charEntered.toUpperCase() };
-      if (this.nMissing == 1) {
-        let d = Selected.feedbackUI = this.inputs[0].div;
-        Selected.positiveFeedbackUI = iDiv(Goal);
-        Selected.lastIndexEntered = this.inputs[0].index;
-        Selected.inp = this.inputs[0];
-        d.innerHTML = Selected.lastLetterEntered;
-        mRemoveClass(d, 'blink');
-        let result = buildWordFromLetters(mParent(d));
-        this.controller.evaluate.bind(this.controller)(result);
-      } else {
-        let ch = charEntered.toUpperCase();
-        for (const inp of this.inputs) {
-          if (inp.letter == ch) {
-            Selected.lastIndexEntered = inp.index;
-            Selected.inp = inp;
-            let d = Selected.feedbackUI = inp.div;
-            d.innerHTML = ch;
-            mRemoveClass(d, 'blink');
-            removeInPlace(this.inputs, inp);
-            this.nMissing -= 1;
-            break;
-          }
-        }
-        if (nundef(Selected.lastIndexEntered)) {
-          showFleetingMessage('you entered ' + Selected.lastLetterEntered);
-          sayRandomVoice('try a different letter!', 'anderer Buchstabe!')
-        }
-        showFleetingMessage(this.composeFleetingMessage(), 3000);
-      }
-    })
-  }
-  eval(word) {
-    let answer = normalize(word, this.language);
-    let reqAnswer = normalize(Goal.label, this.language);
-    Selected.reqAnswer = reqAnswer;
-    Selected.answer = answer;
-    if (answer == reqAnswer) return true;
-    else if (this.language == 'D' && fromUmlaut(answer) == fromUmlaut(reqAnswer)) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-  composeFleetingMessage() {
-    let lst = this.inputs;
-    let msg = lst.map(x => x.letter).join(',');
-    let edecl = lst.length > 1 ? 's ' : ' ';
-    let ddecl = lst.length > 1 ? 'die' : 'den';
-    let s = (this.language == 'E' ? 'Type the letter' + edecl : 'Tippe ' + ddecl + ' Buchstaben ');
-    return s + msg;
-  }
-}
-class GMissingNumber extends Game {
-  constructor(name, o) { super(name, o); }
-  startGame() {
-    this.successFunc = successThumbsUp;
-    this.failFunc = failThumbsDown;
-    this.correctionFunc = this.showCorrectSequence.bind(this);
-  }
-  showCorrectSequence() { return numberSequenceCorrectionAnimation(getNumSeqHint); }
-  start_Level() {
-    if (!isList(this.steps)) this.steps = [this.steps];
-    this.numPics = 2;
-    this.labels = false;
-  }
-  prompt() {
-    mLinebreak(dTable, 12);
-    showHiddenThumbsUpDown(110);
-    mLinebreak(dTable);
-    this.step = chooseRandom(this.steps);
-    this.op = chooseRandom(this.ops);
-    this.oop = OPS[this.op];
-    this.seq = createNumberSequence(this.seqLen, this.minNum, this.maxNum, this.step, this.op);
-    [this.words, this.letters] = showNumberSequence(this.seq, dTable);
-    setNumberSequenceGoal();
-    mLinebreak(dTable);
-    let instr1 = (this.language == 'E' ? 'complete the sequence' : "ergänze die reihe");
-    show_instruction(instr1, dTitle, instr1);
-    if (this.showHint) {
-      hintEngineStart(getNumSeqHintString, [0, 1, 2, 3, 4], 5000 + this.level * 1000);
-    }
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    let hintlist = this.trialNumber >= 4 ? [this.trialNumber] : range(this.trialNumber, 4);
-    if (this.showHint) hintEngineStart(getNumSeqHintString, hintlist, 3000 + this.level * 1000);
-    TOMain = setTimeout(() => getWrongChars().map(x => unfillChar(x)), 500);
-    return 600;
-  }
-  activate() { addKeyup('G', this.interact.bind(this)); }
-  interact(ev) {
-    if (!isNumber(ev.key) && ev.key != '-') return;
-    clearFleetingMessage();
-    if (!canAct()) return;
-    let sel = Selected = onKeyWordInput(ev);
-    if (nundef(sel)) return;
-    let lastInputCharFilled = sel.target;
-    console.assert(sel.isMatch == (lastInputCharFilled.letter == sel.ch), lastInputCharFilled, sel.ch);
-    if (sel.isMatch && sel.isVeryLast) {
-      deactivateFocusGroup();
-      this.controller.evaluate.bind(this.controller)(true);
-    } else if (sel.isMatch && sel.isLastOfGroup) {
-      sel.target.isBlank = false;
-      sel.target.group.hasBlanks = false;
-      removeInPlace(Goal.blankWords, sel.target.group);
-      removeInPlace(Goal.blankChars, sel.target);
-      deactivateFocusGroup();
-      console.log('haaaaaaaaaaaalo', Goal.isFocus)
-    } else if (sel.isMatch) {
-      removeInPlace(Goal.blankChars, sel.target);
-      sel.target.isBlank = false;
-    } else if (sel.isVeryLast) {
-      Selected.words = getInputWords();
-      Selected.answer = getInputWordString();
-      Selected.req = getCorrectWordString();
-      deactivateFocusGroup();
-      this.controller.evaluate.bind(this.controller)(false);
-    } else if (sel.isLastOfGroup) {
-      Selected.words = getInputWords();
-      Selected.answer = getInputWordString();
-      Selected.req = getCorrectWordString();
-      deactivateFocusGroup();
-      this.controller.evaluate.bind(this.controller)(false);
-    } else {
-      if (!this.silent) { writeSound(); playSound('incorrect1'); }
-      deactivateFocusGroup();
-      showFleetingMessage('does NOT fit: ' + Selected.ch, 0, { fz: 24 });
-      setTimeout(() => unfillCharInput(Selected.target), 500);
-    }
-  }
-  eval(isCorrect) { return isCorrect; }
-}
-class GNamit extends Game {
-  constructor(name, o) { super(name, o); }
-  startGame() { this.correctionFunc = showCorrectPictureLabels; this.failFunc = failSomePictures; }
-  prompt() {
-    this.showLabels = false;
-    myShowPics(null, {}, { rows: 1 });
-    Pictures.map(x => x.correctLabel = x.label);
-    Goal = { pics: Pictures };
-    let wr = this.language == 'E' ? 'drag labels to pictures' : "ordne die texte den bildern zu";
-    show_instruction(wr, dTitle, wr);
-    mLinebreak(dTable);
-    mLinebreak(dTable, 50);
-    let keys = Pictures.map(x => x.key);
-    shuffle(keys);
-    G.showLabels = true;
-    let titems = this.letters = myShowLabels(null, undefined, { rows: 1, showLabels: true }, keys);
-    titems.map(x => iDiv(x).style.cursor = 'pointer');
-    mLinebreak(dTable, 50);
-    enableDD(this.letters, Pictures, this.dropHandler.bind(this), true, false, null);
-    mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 32, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
-    this.controller.activateUi.bind(this.controller)();
-  }
-  dropHandler(source, target, isCopy = true) {
-    let dSource = iDiv(source);
-    let dTarget = iDiv(target);
-    console.log('dropped', source, 'onto', target);
-    let label = iLabel(target);
-    console.log('label', label);
-    let div = iDiv(target);
-    console.log('div', div);
-    addLabel(target, source.label, {});
-  }
-  trialPrompt() {
-    this.failFunc();
-    sayTryAgain();
-    TOMain = setTimeout(() => { removeMarkers(); Pictures.map(x => removeLabel(x)) }, 1200);
-    return 1500;
-  }
-  eval() {
-    console.log('eval in Namit!!!!!')
-    this.piclist = Pictures;
-    Selected = { piclist: this.piclist, feedbackUI: this.piclist.map(x => iDiv(x)), sz: getRect(iDiv(this.piclist[0])).h };
-    let isCorrect = true;
-    for (const p of Pictures) {
-      let correctLabel = p.correctLabel;
-      console.log('correctLabel', correctLabel, p.label);
-      let dLabel = iLabel(p);
-      console.log('dLabel', dLabel);
-      if (nundef(dLabel) || p.label != correctLabel) p.isCorrect = isCorrect = false;
-      else p.isCorrect = true;
-    }
-    return isCorrect;
-  }
-}
-class GPasscode extends Game {
-  constructor(name, o) { super(name, o); this.needNewPasscode = true; }
-  clear() { clearTimeout(this.TO); clearTimeCD(); }
-  startGame() {
-    this.incrementLevelOnPositiveStreak = this.samplesPerGame;
-    this.decrementLevelOnNegativeStreak = this.samplesPerGame;
-  }
-  start_Level() { this.needNewPasscode = true; }
-  prompt() {
-    this.trials = 1;
-    if (this.needNewPasscode) {
-      this.timeout = 1000;
-      this.needNewPasscode = false;
-      let keys = getRandomKeysFromGKeys(this.passcodeLength);
-      myShowPics(null,
-        { border: '3px solid #ffffff80' },
-        { numRepeat: this.numRepeat, sameBackground: true }, keys);
-      Goal = Pictures[0];
-      this.wort = (this.language == 'E' ? 'the passcode' : 'das Codewort');
-      showInstruction(Goal.label, this.wort + (this.language == 'E' ? ' is' : ' ist'), dTitle, true);
-      TOMain = setTimeout(anim1, 300, Goal, 500, showGotItButton);
-    } else {
-      this.timeout *= 2;
-      doOtherStuff();
-    }
-  }
-  eval(x) {
-    CountdownTimer.cancel();
-    let isCorrect = super.eval(x);
-    if (!isCorrect) this.needNewPasscode = true;
-    return isCorrect;
-  }
-}
-class GPremem extends Game {
-  constructor(name, o) { super(name, o); this.piclist = []; }
-  prompt() {
-    this.piclist = [];
-    this.showLabels = false;
-    myShowPics(this.interact.bind(this), { border: '3px solid #ffffff80' }, {});
-    let wr = this.language == 'E' ? 'click any picture' : 'click irgendein Bild';
-    show_instruction(wr, dTitle, wr);
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    for (const p of this.piclist) { toggleSelectionOfPicture(p); }
-    this.piclist = [];
-    show_instruction('try again: click any picture', dTitle, 'try again: click any picture');
-    return 10;
-  }
-  interact(ev) {
-    ev.cancelBubble = true;
-    if (!canAct()) return;
-    let pic = findItemFromEvent(Pictures, ev);
-    if (!isEmpty(this.piclist) && this.piclist.length < this.numRepeat - 1 && this.piclist[0].label != pic.label) return;
-    toggleSelectionOfPicture(pic, this.piclist);
-    if (isEmpty(this.piclist)) {
-      let wr = this.language == 'E' ? 'click any picture' : 'click irgendein Bild';
-      show_instruction(wr, dTitle, wr);
-    } else if (this.piclist.length < this.numRepeat - 1) {
-      let wr = (this.language == 'E' ? 'click another ' : 'click ein andres Bild mit ');
-      show_instruction(wr + `<b>${pic.label.toUpperCase()}</b>`, dTitle, wr + pic.label);
-    } else if (this.piclist.length == this.numRepeat - 1) {
-      let picGoal = firstCond(Pictures, x => x.label == pic.label && !x.isSelected);
-      setGoal(picGoal.index);
-      let wr = (this.language == 'E' ? 'click the ' + (this.numRepeat == 2 ? 'other ' : 'last ')
-        : 'click das ' + (this.numRepeat == 2 ? 'andere ' : 'letzte ') + ' Bild mit')
-      show_instruction(wr + `<b>${picGoal.label.toUpperCase()}</b>`, dTitle, wr + picGoal.label);
-    } else {
-      this.controller.evaluate.bind(this.controller)(this.piclist);
-    }
-  }
-  eval(piclist) {
-    Selected = { piclist: piclist, feedbackUI: piclist.map(x => iDiv(x)), sz: getRect(iDiv(piclist[0])).h };
-    let req = Selected.reqAnswer = piclist[0].label;
-    Selected.answer = piclist[piclist.length - 1].label;
-    if (Selected.answer == req) { return true; } else { return false; }
-  }
-}
-class GProg extends Game {
-  constructor(name, o) { super(name, o); }
-  prompt() {
-    let c = this.card = cRound(dTable); 
-    let d = c.visual = iDiv(c);
-    visualPropertySetter(this.card);
-    visualAttributeSetter(this.card);
-    d.innerHTML = 'HALLO';
-    mStyle(d, { fg: 'blue' });
-    mLinebreak(dTable, 25);
-    this.ta = this.createTextArea();
-    this.ta.value = `mCenterCenterFlex(card.visual);`; 
-    mLinebreak(dTable, 25);
-    mButton('run', this.runCode.bind(this), dTable, { bg: 'skyblue', fg: 'black', fz: 32 }, 'mybutton');
-  }
-  runCode() {
-    let code = this.ta.value;
-    let prelim = ''; 
-    prelim = 'let card = this.card;'; 
-    code = prelim + code;
-    eval(code);
-  }
-  createTextArea() {
-    let dCode = mDiv(dTable, {});
-    let ta = this.ta = mCreate('textarea');
-    mAppend(dCode, ta);
-    ta.setAttribute('rows', 10);
-    ta.setAttribute('cols', 60);
-    mStyle(ta, { family: 'courier', padding: 10 });
-    return ta;
-  }
-}
-class GProg0 extends Game {
-  constructor(name, o) { super(name, o); }
-  startGame(fen) {
-  }
-  prompt() {
-    let c = this.card0 = cLandscape(dTable);
-    this.card1 = iDiv(c).style;
-    this.card2 = iDiv(c);
-    this.card3 = iDiv(c);
-    show_instruction('write code what rank and suit this card should have', dTitle);
-    mLinebreak(dTable, 25);
-    let dCode = mDiv(dTable, {});
-    let ta = this.ta = mCreate('textarea');
-    mAppend(dCode, ta);
-    ta.setAttribute('rows', 10);
-    ta.setAttribute('cols', 60);
-    mStyle(ta, { family: 'courier', padding: 10 });
-    ta.value = `mStyle(iDiv(G.card0),{bg:'pink'})`; 
-    ta.value = `this.card1.background = 'yellow'`; 
-    ta.value = `this.card2.style.background = 'yellow'`; 
-    ta.value = `this.set('background','red');`; 
-    ta.value = `this.set(this.card1,'background','red');`; 
-    ta.value = `set(card1,'background','red');`; 
-    ta.value = `card.background = 'red';`; 
-    ta.value = `card.color = 'red';`; 
-    ta.value = `card.color = 'red';`; 
-    mLinebreak(dTable, 25);
-    mButton('run', this.runCode.bind(this), dTable, { bg: 'skyblue', fg: 'black', fz: 32 }, 'mybutton');
-    console.log('type of style', typeof this.card1);
-  }
-  set(o, prop, val) {
-    o[prop] = val;
-  }
-  runCode() {
-    let code = this.ta.value;
-    let prelim = ''; 
-    prelim = 'let card = this.card1; '; 
-    prelim = `
-    var card = new ProgObject(this.card0);
-    console.log('card',card);
-    `;
-    prelim = `
-    var obj = {};
-    Object.defineProperty(obj, prop, {
-        get: function() {return this.card1; },
-        set: function(val) { this.card1.val = val; }
-    });
-    `
-    code = prelim + code;
-    console.log('code', code);
-    eval(code);
-  }
-}
-class GProg1 extends Game {
-  constructor(name, o) { super(name, o); }
-  prompt() {
-    let c = this.card = cLandscape(dTable);
-    let d = this.visual = iDiv(c);
-    this.style = d.style;
-    let propertyGiver1 = (o, prop, setter) => {
-      Object.defineProperty(o, prop, {
-        get: function () { return this.val; },
-        set: function (val) { this.val = val; setter(val); }
-      });
-    };
-    let visualPropertySetter1 = (o) => {
-      propertyGiver1(o, 'bg', x => { mStyle(G.visual, { 'bg': x }); }); 
-    }
-    visualPropertySetter1(this.card);
-    d.innerHTML = 'HALLO';
-    mStyle(d, { fg: 'blue' });
-    mLinebreak(dTable, 25);
-    let dCode = mDiv(dTable, {});
-    let ta = this.ta = mCreate('textarea');
-    mAppend(dCode, ta);
-    ta.setAttribute('rows', 10);
-    ta.setAttribute('cols', 60);
-    mStyle(ta, { family: 'courier', padding: 10 });
-    ta.value = `card.bg = 'red'; console.log(card.bg);`; 
-    mLinebreak(dTable, 25);
-    mButton('run', this.runCode.bind(this), dTable, { bg: 'skyblue', fg: 'black', fz: 32 }, 'mybutton');
-    console.log('type of style', typeof this.card1);
-  }
-  runCode() {
-    let code = this.ta.value;
-    let prelim = ''; 
-    prelim = 'let [card,visual,style] = [this.card,this.visual,this.style]; '; 
-    code = prelim + code;
-    console.log('code', code);
-    eval(code);
-  }
-}
-class GReversi extends GTTT {
-  createBoard() {
-    this.board = new Board(this.rows, this.cols, this.controller.uiInteract.bind(this.controller), { margin: 6, w: 60, h: 60, bg: 'white', fg: 'black', rounding: '50%' });
-  }
-  setStartPosition() {
-    let positions = [
-      [[0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0],
-      [0, 0, 'O', 'X', 0, 0],
-      [0, 0, 'X', 'O', 0, 0],
-      [0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0]],
-    ];
-    if (isdef(this.iPosition)) {
-      let idx = this.iPosition + 1; idx = idx % positions.length; this.iPosition = idx;
-    } else this.iPosition = 0;
-    if (this.startPosition == 'empty' || this.rows != 6 || this.cols != 6) {
-      let pos = bCreateEmpty(this.rows, this.cols);
-      let r1 = this.rows / 2 - 1, r2 = this.rows / 2, c1 = this.cols / 2 - 1, c2 = this.cols / 2;
-      pos[r1 * this.cols + c1] = pos[r2 * this.cols + c2] = 'O';
-      pos[r1 * this.cols + c2] = pos[r2 * this.cols + c1] = 'X';
-      positions[0] = pos;
-    }
-    let state = nundef(this.startPosition) || this.startPosition == 'empty' ? positions[0]
-      : this.startPosition == 'random' ? chooseRandom(positions)
-        : positions[this.iPosition];
-    this.board.setState(state, { X: this.ai.color, O: this.human.color });
-  }
-  startGame() {
-    super.startGame();
-    this.setStartPosition();
-  }
-  checkLegal(tile) {
-    let state = this.getState();
-    if (!EmptyFunc(tile.label)) return false;
-    let nei = bNei(state, tile.index, this.rows, this.cols, true);
-    for (const n of nei) {
-      if (!n) continue;
-      let t = state[n];
-      if (!EmptyFunc(t)) return true;
-    }
-    console.log('ILLEGAL MOVE! tile', tile.index, 'does not have neighbor!')
-    return false;
-  }
-  interact(ev) {
-    let tile = evToItemC(ev);
-    if (!this.checkLegal(tile)) return; 
-    let pl = this.plTurn;
-    addLabel(tile, pl.sym, { fz: 60, fg: pl.color });
-    let state = this.getState();
-    let iCapt = bCapturedPieces(pl.sym, state, tile.index, this.rows, this.cols);
-    for (const i of iCapt) {
-      let item = this.board.get(i);
-      modLabel(item, this.plTurn.sym, { fg: this.plTurn.color });
-    }
-    this.controller.evaluate(tile);
-  }
-  activate() {
-    let pl = this.plTurn;
-    let autoplay = false;
-    if (autoplay || pl == this.ai) {
-      if (this.ai == pl) uiActivated = false;
-      setTimeout(() => AIMinimax(this, this.afterComputerMove.bind(this)), 200);
-    }
-  }
-  checkFinal(state, pl1, pl2) {
-    if (nundef(state)) state = this.getState();
-    if (nundef(pl1)) pl1 = this.plTurn;
-    if (nundef(pl2)) pl2 = this.plOpp;
-    return GReversi.checkEnd(state, pl1, pl2);
-  }
-  static checkEnd(state, pl1, pl2) {
-    let hasPl1 = false, hasPl2 = false, s1 = pl1.sym, s2 = pl2.sym, hasEmpty = false;
-    for (const s of state) {
-      if (!hasPl1 && s == s1) hasPl1 = true;
-      else if (!hasPl2 && s == s2) hasPl2 = true;
-      else if (!hasEmpty && EmptyFunc(s)) hasEmpty = true;
-      if (hasPl1 && hasPl2 && hasEmpty) return false;
-    }
-    let winner = !hasPl2 ? pl1 : !hasPl1 ? pl2 : 0;
-    let full = !hasEmpty;
-    if (full) {
-      let n1 = arrCount(state, x => x == s1);
-      let n2 = arrCount(state, x => x == s2);
-      if (!winner && n1 != n2) {
-        if (n1 > n2) winner = pl1; else winner = pl2;
-      }
-    }
-    return winner ? { reached: true, winner: winner } : full ? { reached: true, winner: null } : { reached: false };
-  }
-  heuristic(state, plMax, plMin) {
-    let vmax = 0, vmin = 0;
-    vmax = vmax + arrCount(state, x => x == plMax.sym);
-    vmin = vmin + arrCount(state, x => x == plMin.sym);
-    return vmax - vmin;
-  }
-  heureval(state) {
-    let heurinfo = GReversi.heuristic(state, MAXIMIZER, MINIMIZER);
-    let val = heurinfo.val; 
-    return val;
-  }
-  eval() {
-    this.moveCounter += 1;
-    let info = this.checkFinal();
-    this.gameOver = info.reached;
-    if (this.gameOver) {
-      this.winner = info.winner;
-      this.tie = !info.winner;
-      if (this.winner) {
-        this.loser = this.winner == this.ai ? this.human : this.ai;
-        let state = this.getState();
-        let nWinner = arrCount(state, x => x == this.winner.sym);
-        let nLoser = arrCount(state, x => x == this.loser.sym);
-        this.info = '(' + nWinner + ':' + nLoser + ')';
-      }
-    }
-  }
-  getAvailableMoves(state) {
-    let moves = [];
-    for (let i = 0; i < state.length; i++) {
-      if (EmptyFunc(state[i])) {
-        let nei = bNei(state, i, G.rows, G.cols, true);
-        let iFull = firstCond(nei, x => !EmptyFunc(state[x]));
-        if (iFull != null) moves.push(i);
-      }
-    }
-    return moves;
-  }
-  evalState(state, depth) {
-    let info = GReversi.checkEnd(state, MAXIMIZER, MINIMIZER);
-    let val = info.reached && info.winner ? (100 - depth) * (info.winner == MAXIMIZER ? 1 : -1) : 0;
-    return { reached: info.reached, val: val };
-  }
-  applyMove(state, move, player) {
-    arrReplaceAtInPlace(state, move, player.sym);
-    let iCapt = bCapturedPieces(player.sym, state, move, G.rows, G.cols);
-    for (const i of iCapt) { state[i] = player.sym; }
-  }
-}
-class GRiddle extends Game {
-  constructor(name, o) { super(name, o); }
-  startGame() {
-    this.successFunc = successThumbsUp; this.failFunc = failThumbsDown;
-    this.correctionFunc = () => {
-      mStyle(Goal.buttonCorrect, { bg: 'green' });
-      animate(Goal.buttonCorrect, 'komisch', 1000);
-      return 20000;
-    };
-  }
-  prompt() {
-    this.trials = 1;
-    show_instruction('Solve the Riddle:', dTitle, 'Solve the Riddle:');
-    let wp = this.wp = getRandomWP(this.minIndex, this.maxIndex);
-    let haveResult = wp.isTextResult = instantiateNames(wp);
-    if (!haveResult) instantiateNumbers(wp);
-    mLinebreak(dTable, 2);
-    showHiddenThumbsUpDown(90);
-    mLinebreak(dTable);
-    let dArea = this.textArea = mDiv(dTable, { w: '70%' });
-    let d = mText(wp.text, dArea, { fz: 28 });
-    mLinebreak(dTable, 20);
-    let dResult = this.dResult = mDiv(dTable);
-    Goal = { label: wp.result.text };
-    this.createMultipleChoiceElements();
-    mLinebreak(dTable);
-    this.controller.activateUi.bind(this.controller)();
-  }
-  createMultipleChoiceElements() {
-    let wp = this.wp;
-    let choices = [], nums = [], texts = [];
-    if (wp.isTextResult == true) {
-      texts = Object.values(wp.diNames);
-      for (let i = 0; i < texts.length; i++) { choices.push({ number: 0, text: texts[i] }); }
-      Goal.correctChoice = firstCond(choices, x => x.text == Goal.label);
-    } else if (wp.isFractionResult == true) {
-      let res = wp.result.number; 
-      if (res.n / res.d > 2) {
-        wp.result.isMixed = true;
-        wp.result.mixed = getMixedNumber(res.n, res.d);
-      }
-      nums = get3FractionVariants(res);
-      texts = nums.map(x => getTextForFractionX(x.n, x.d));
-      wp.result.text = texts[0];
-      for (let i = 0; i < texts.length; i++) { choices.push({ number: nums[i], text: texts[i] }); }
-      Goal.correctChoice = firstCond(choices, x => x.text == wp.result.text);
-    } else {
-      let res = wp.result.number;
-      nums = [res, res + randomNumber(1, 25), res / randomNumber(2, 5), res * randomNumber(2, 5)];
-      texts = nums.map(x => (Math.round(x * 100) / 100));
-      for (let i = 0; i < texts.length; i++) { choices.push({ number: nums[i], text: texts[i] }); }
-      Goal.correctChoice = choices[0];
-    }
-    shuffle(choices);
-    if (coin()) shuffle(choices);
-    Goal.choices = choices;
-    let dParent = this.dResult;
-    let idx = 0;
-    for (const ch of choices) {
-      ////'&frac57;', //'&frac12;', 
-      let dButton = mButton(ch.text, this.onClickChoice.bind(this), dParent, { wmin: 100, fz: 36, margin: 20, rounding: 4, vpadding: 4, hpadding: 10 }, ['toggleButtonClass']);
-      dButton.id = 'bChoice_' + idx; idx += 1;
-      if (ch.text == wp.result.text) {
-        Goal.choice = ch.toString();
-        Goal.buttonCorrect = dButton; 
-      }
-    }
-  }
-  onClickChoice(ev) {
-    let id = evToClosestId(ev);
-    let b = mBy(id);
-    let index = Number(stringAfter(id, '_'));
-    Goal.choice = Goal.choices[index];
-    Goal.buttonClicked = b;
-    if (Goal.choice == Goal.correctChoice) { mStyle(b, { bg: 'green' }); mCheckit(this.textArea, 100); }
-    else { mXit(b, 100); }
-    this.controller.evaluate.bind(this.controller)();
-  }
-  eval() {
-    clearFleetingMessage();
-    Selected = { delay: 5000, reqAnswer: this.wp.result.number, answer: Goal.choice.number, feedbackUI: Goal.buttonClicked };
-    if (this.wp.isTextResult) { Selected.reqAnswer = this.wp.result.text; Selected.answer = Goal.choice.text; }
-    return (Goal.buttonClicked == Goal.buttonCorrect);
-  }
-  createInputElements() {
-    this.inputBox = addNthInputElement(this.dResult, 0);
-    this.defaultFocusElement = this.inputBox.id;
-    onclick = () => mBy(this.defaultFocusElement).focus();
-    mBy(this.defaultFocusElement).focus();
-  }
-  activate() { }
-  eval_dep(ev) {
-    console.log('#', this.trialNumber, 'of', this.trials);
-    clearFleetingMessage();
-    Selected = {};
-    let answer = normalize(this.inputBox.value, 'E');
-    let reqAnswer = normalize(this.wp.result.text, 'E');
-    console.log('answer', answer, 'req', reqAnswer);
-    let isCorrect = answer == reqAnswer;
-    Selected = { reqAnswer: reqAnswer, answer: answer, feedbackUI: isCorrect ? Goal.buttonClicked : Goal.buttonCorrect };
-    return (answer == reqAnswer);
-  }
-  trialPrompt_dep() {
-    sayTryAgain();
-    let n = this.trialNumber; 
-    showFleetingMessage('try again!', 0, {}, true);
-    this.inputBox = addNthInputElement(this.dResult, this.trialNumber);
-    this.defaultFocusElement = this.inputBox.id;
-    mLinebreak(dTable);
-    return 10;
-  }
-  activate_input() {
-    this.inputBox.onkeyup = ev => {
-      if (!canAct()) return;
-      if (ev.key === "Enter") {
-        ev.cancelBubble = true;
-        this.controller.evaluate.bind(this.controller)(ev);
-      }
-    };
-    this.inputBox.focus();
-  }
 }
 class gridY {
   constructor({
@@ -12763,626 +6415,6 @@ class gridY {
   }
   isValid(r, c) {
     return r in this.fields && c in this.fields[r];
-  }
-}
-class GSayPic extends Game {
-  constructor(name, o) { super(name, o); }
-  clear() { Speech.stopRecording(); }
-  prompt() {
-    myShowPics();
-    setGoal();
-    let wr = (this.language == 'E' ? 'say: ' : "sage: ");
-    show_instruction(wr + `<b>${Goal.label.toUpperCase()}</b>`, dTitle); 
-    animate(dInstruction, 'pulse800' + bestContrastingColor(this.color, ['yellow', 'red']), 900);
-    mLinebreak(dTable, 25);
-    MicrophoneUi = mMicrophone(dTable, this.color);
-    MicrophoneHide();
-    TOMain = setTimeout(this.controller.activateUi.bind(this.controller), 200);
-  }
-  trialPrompt(nTrial) {
-    sayRandomVoice(nTrial < 2 ? 'speak UP!!!' : 'Louder!!!', 'LAUTER!!!');
-    animate(dInstruction, 'pulse800' + bestContrastingColor(this.color, ['yellow', 'red']), 500);
-    return 600;
-  }
-  activate() {
-    if (Speech.isSpeakerRunning()) {
-      TOMain = setTimeout(this.activate.bind(this), 200);
-    } else {
-      TOMain = setTimeout(() => Speech.startRecording(this.language, this.controller.evaluate.bind(this.controller)), 100);
-    }
-  }
-  eval(isfinal, speechResult, confidence, sessionId) {
-    if (sessionId != SessionId) {
-      alert('NOT THIS BROWSER!!!!!!'); return undefined;
-    }
-    let answer = Goal.answer = normalize(speechResult, this.language);
-    let reqAnswer = Goal.reqAnswer = normalize(Goal.label, this.language);
-    Selected = { reqAnswer: reqAnswer, answer: answer, feedbackUI: iDiv(Goal) };
-    if (isEmpty(answer)) return false;
-    else return isSimilar(answer, reqAnswer) || isList(Goal.info.valid) && firstCond(Goal.info.valid, x => x.toUpperCase() == answer.toUpperCase());
-  }
-}
-class GSentence extends Game {
-  constructor(name, o) {
-    super(name, o);
-    this.prevLanguage = this.language;
-    this.language = 'E';
-  }
-  startGame() {
-    this.correctionFunc = () => {
-      let sent = this.sentenceList[0].join(' ');
-      this.dWordArea.innerHTML = `<h1>${sent}</h1>`;
-      if (this.spokenFeedback) sayRandomVoice(sent);
-      return 3000;
-    }
-    this.successFunc = () => { mCheckit(this.dWordArea, 120); };
-  }
-  clear() { super.clear(); this.language = this.prevLanguage; }
-  start_Level() {
-    this.sentences = [];
-    for (const s of EnglishSentences) {
-      let slist = isList(s) ? s : [s];
-      slist = slist.map(x => x.split(' '));
-      if (slist[0].length <= this.maxWords && slist[0].length >= this.minWords) this.sentences.push(slist);
-    }
-  }
-  dropHandler(source, target, isCopy = false, clearTarget = false) {
-    let prevTarget = source.target;
-    source.target = target;
-    let dSource = iDiv(source);
-    let dTarget = iDiv(target);
-    if (clearTarget) {
-      let ch = dTarget.children[0];
-      let chSource = firstCond(Pictures, x => iDiv(x) == ch);
-      if (chSource) {
-        if (isdef(prevTarget)) {
-          mAppend(iDiv(prevTarget), ch);
-          chSource.target = prevTarget;
-        } else {
-          mAppend(this.dWordArea, ch);
-          delete chSource.target;
-        }
-      }
-      clearElement(dTarget);
-    }
-    if (isCopy) {
-      let dNew = mText(dSource.innerHTML, dTarget, { wmin: 100, fz: 20, padding: 4, margin: 4, display: 'inline-block' });
-      addDDSource(dNew, isCopy, clearTarget);
-    } else {
-      mAppend(dTarget, dSource);
-    }
-  }
-  prompt() {
-    show_instruction('form a correct sentence', dTitle, 'form a correct sentence');
-    mLinebreak(dTable);
-    let sl = this.sentenceList = chooseRandom(this.sentences);
-    let words = this.sentenceList[0];
-    let fz = 32;
-    let h = fz * 1.25, wmin = fz * 1.25;
-    let items = Pictures = [];
-    let containers = this.containers = [];
-    let options = _simpleOptions({ fz: fz, bg: 'transparent', fg: 'white', showPic: false, showLabels: true }, { wmin: wmin });
-    let dArea = mDiv(dTable, { h: 150, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
-    mLinebreak(dTable);
-    let dWordArea = this.dWordArea = mDiv(dTable, { h: 70, wmin: 20, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
-    let i = 0;
-    for (const word of words) {
-      let item = { label: word, index: i };
-      let container = { label: word, index: i };
-      i += 1;
-      let d = makeItemDiv(item, options);
-      let dCont = mDiv(dArea, { wmin: wmin + 12, hmin: h + 10, bg: colorTrans('beige', .25), fg: 'black', margin: 12 });
-      container.div = dCont;
-      items.push(item);
-      containers.push(container);
-    }
-    shuffle(items);
-    items.map(x => { mAppend(dWordArea, iDiv(x)); mStyle(iDiv(x), { h: h, w: 'auto' }); });
-    enableDD(items, containers, this.dropHandler.bind(this), false, true);
-    mLinebreak(dTable, 50);
-    mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    sayTryAgain();
-    showFleetingMessage('Try again!', 0, { fg: 'white' });
-    TOMain = setTimeout(() => { Pictures.map(x => mAppend(this.dWordArea, iDiv(x))); }, 1200);
-    return 1500;
-  }
-  eval() {
-    let words = [];
-    for (const cont of this.containers) {
-      let d = iDiv(cont);
-      let ch = d.firstChild;
-      if (ch && isdef(ch.firstChild)) {
-        words.push(ch.firstChild.innerHTML);
-      } else break;
-    }
-    let answer = words.join(' ');
-    let isCorrect = false;
-    for (const sent of this.sentenceList) {
-      let variant = sent.join(' ');
-      if (answer == variant) isCorrect = true;
-    }
-    Selected = { piclist: Pictures, feedbackUI: Pictures.map(x => iDiv(x)), sz: getRect(iDiv(Pictures[0])).h + 10 };
-    return isCorrect;
-  }
-}
-class GSentence1 extends Game {
-  constructor(name, o) {
-    super(name, o);
-    this.prevLanguage = this.language;
-    this.language = 'E';
-  }
-  startGame() {
-    this.correctionFunc = showCorrectPictureLabels;
-    this.failFunc = failSomePictures;
-    this.successFunc = () => { mCheckit(this.dWordArea, 120); };
-  }
-  clear() { super.clear(); this.language = this.prevLanguage; }
-  start_Level() {
-    this.sentences = EnglishSentences.map(x => x.split(' ')).filter(x => x.length <= this.maxWords);
-  }
-  dropHandler(source, target, isCopy = false, clearTarget = false) {
-    let prevTarget = source.target;
-    source.target = target;
-    let dSource = iDiv(source);
-    let dTarget = iDiv(target);
-    if (clearTarget) {
-      let ch = dTarget.children[0];
-      let chSource = firstCond(Pictures, x => iDiv(x) == ch);
-      if (chSource) {
-        if (isdef(prevTarget)) {
-          mAppend(iDiv(prevTarget), ch);
-          chSource.target = prevTarget;
-        } else {
-          mAppend(this.dWordArea, ch);
-          delete chSource.target;
-        }
-      }
-      clearElement(dTarget);
-    }
-    if (isCopy) {
-      let dNew = mText(dSource.innerHTML, dTarget, { wmin: 100, fz: 20, padding: 4, margin: 4, display: 'inline-block' });
-      addDDSource(dNew, isCopy, clearTarget);
-    } else {
-      mAppend(dTarget, dSource);
-    }
-  }
-  prompt() {
-    let words = this.sentence = chooseRandom(this.sentences);
-    showInstruction('', 'drag words into blanks', dTitle, true);
-    mLinebreak(dTable);
-    let fz = 32;
-    let h = fz * 1.25, wmin = fz * 1.25;
-    let items = Pictures = [];
-    let containers = [];
-    let options = _simpleOptions({ fz: fz, bg: 'transparent', fg: 'white', showPic: false, showLabels: true }, { wmin: wmin });
-    let dArea = mDiv(dTable, { h: 150, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
-    mLinebreak(dTable);
-    let dWordArea = this.dWordArea = mDiv(dTable, { h: 70, wmin: 20, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
-    let i = 0;
-    for (const word of words) {
-      let item = { label: word, index: i };
-      let container = { label: word, index: i };
-      i += 1;
-      let d = makeItemDiv(item, options);
-      let dCont = mDiv(dArea, { wmin: wmin + 12, hmin: h + 10, bg: colorTrans('beige', .25), fg: 'black', margin: 12 });
-      container.div = dCont;
-      items.push(item);
-      containers.push(container);
-    }
-    shuffle(items);
-    items.map(x => { mAppend(dWordArea, iDiv(x)); mStyleX(iDiv(x), { h: h, w: 'auto' }); });
-    enableDD(items, containers, this.dropHandler.bind(this), false, true);
-    mLinebreak(dTable, 50);
-    mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    sayTryAgain();
-    showFleetingMessage('Try again!', 0, { fg: 'white' });
-    TOMain = setTimeout(() => { Pictures.map(x => mAppend(this.dWordArea, iDiv(x))); }, 1200);
-    return 1500;
-  }
-  eval() {
-    let i = 0;
-    let isCorrect = true;
-    for (const p of Pictures) {
-      let cont = p.target;
-      if (nundef(cont)) p.isCorrect = isCorrect = false;
-      else if (p.index != cont.index) p.isCorrect = isCorrect = false;
-      else p.isCorrect = true;
-    }
-    Selected = { piclist: Pictures, feedbackUI: Pictures.map(x => iDiv(x)), sz: getRect(iDiv(Pictures[0])).h + 10 };
-    return isCorrect;
-  }
-}
-class GSpotit extends GameTimed {
-  constructor(name, o) { super(name, o); }
-  startGame() { this.correctionFunc = showCorrectUis; }
-  start_Level() {
-    super.start_Level();
-    this.colarr = _calc_hex_col_array(this.rows, this.cols);
-    let perCard = arrSum(this.colarr);
-    this.nShared = (this.numCards * (this.numCards - 1)) / 2;
-    this.nUnique = perCard - this.numCards + 1;
-    this.numKeysNeeded = this.nShared + this.numCards * this.nUnique;
-    this.keys = setKeysG(this, (_, x) => !x.includes(' '), this.numKeysNeeded + 1);
-  }
-  deal() {
-    let keys = choose(this.keys, this.numKeysNeeded);
-    let dupls = keys.slice(0, this.nShared); 
-    let uniqs = keys.slice(this.nShared);
-    let infos = [];
-    for (let i = 0; i < this.numCards; i++) {
-      let keylist = uniqs.slice(i * this.nUnique, (i + 1) * this.nUnique);
-      let info = { id: getUID(), shares: {}, keys: keylist, rows: this.rows, cols: this.cols, colarr: this.colarr };
-      infos.push(info);
-    }
-    let iShared = 0;
-    for (let i = 0; i < this.numCards; i++) {
-      for (let j = i + 1; j < this.numCards; j++) {
-        let c1 = infos[i];
-        let c2 = infos[j];
-        let dupl = dupls[iShared++];
-        c1.keys.push(dupl);
-        c1.shares[c2.id] = dupl;
-        c2.shares[c1.id] = dupl;
-        c2.keys.push(dupl);
-      }
-    }
-    for (const info of infos) { shuffle(info.keys); }
-    return infos;
-  }
-  interact(ev) {
-    ev.cancelBubble = true;
-    if (!canAct()) { console.log('no act'); return; }
-    let keyClicked = evToProp(ev, 'key');
-    let id = evToId(ev);
-    if (isdef(keyClicked) && isdef(Items[id])) {
-      this.pause();
-      let item = Items[id];
-      if (Object.values(item.shares).includes(keyClicked)) {
-        let otherCard = spotitFindCardSharingSymbol(item, keyClicked);
-        let cardSymbol = ev.target;
-        let otherSymbol = spotitFindSymbol(otherCard, keyClicked);
-        Selected = { isCorrect: true, feedbackUI: [cardSymbol, otherSymbol] };
-      } else {
-        let cardSymbol = ev.target;
-        Selected = { isCorrect: false, feedbackUI: [cardSymbol], correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 1500 };
-      }
-      this.controller.evaluate.bind(this.controller)();
-    }
-  }
-  getSharedSymbols() {
-    let result = [];
-    for (const item of this.items) {
-      for (const id in item.shares) {
-        let k = item.shares[id];
-        let ui = iGetl(item, k);
-        result.push(ui);
-      }
-    }
-    return result;
-  }
-  eval() { return Selected.isCorrect; }
-  prompt() {
-    this.trials = 1;
-    show_instruction('find common symbol', dTitle);
-    mLinebreak(dTable, 25);
-    let infos = this.deal(); 
-    let items = this.items = [];
-    for (const info of infos) {
-      let item = spotitCard(info, dTable, { margin: 10 }, this.interact.bind(this));
-      items.push(item);
-    }
-    this.controller.activateUi.bind(this.controller)();
-  }
-  activate(){}
-  onTimeup() {
-    Selected = { isCorrect: false, correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 2000 };
-    this.controller.evaluate.bind(this.controller)();
-  }
-}
-class GSpotit1 extends GameTimed1 {
-  constructor(name, o) { super(name, o); }
-  startGame() { this.correctionFunc = showCorrectUis; }
-  start_Level() {
-    this.colarr = _calc_hex_col_array(this.rows, this.cols);
-    let perCard = arrSum(this.colarr);
-    this.nShared = (this.numCards * (this.numCards - 1)) / 2;
-    this.nUnique = perCard - this.numCards + 1;
-    this.numKeysNeeded = this.nShared + this.numCards * this.nUnique;
-    this.keys = setKeysG(this, (_, x) => !x.includes(' '), this.numKeysNeeded + 1);
-  }
-  deal() {
-    let keys = choose(this.keys, this.numKeysNeeded);
-    let dupls = keys.slice(0, this.nShared); 
-    let uniqs = keys.slice(this.nShared);
-    let infos = [];
-    for (let i = 0; i < this.numCards; i++) {
-      let keylist = uniqs.slice(i * this.nUnique, (i + 1) * this.nUnique);
-      let info = { id: getUID(), shares: {}, keys: keylist, rows: this.rows, cols: this.cols, colarr: this.colarr };
-      infos.push(info);
-    }
-    let iShared = 0;
-    for (let i = 0; i < this.numCards; i++) {
-      for (let j = i + 1; j < this.numCards; j++) {
-        let c1 = infos[i];
-        let c2 = infos[j];
-        let dupl = dupls[iShared++];
-        c1.keys.push(dupl);
-        c1.shares[c2.id] = dupl;
-        c2.shares[c1.id] = dupl;
-        c2.keys.push(dupl);
-      }
-    }
-    for (const info of infos) { shuffle(info.keys); }
-    return infos;
-  }
-  interact(ev) {
-    ev.cancelBubble = true;
-    if (!canAct()) { console.log('no act'); return; }
-    let keyClicked = evToProp(ev, 'key');
-    let id = evToId(ev);
-    if (isdef(keyClicked) && isdef(Items[id])) {
-      this.pause();
-      let item = Items[id];
-      if (Object.values(item.shares).includes(keyClicked)) {
-        let otherCard = spotitFindCardSharingSymbol(item, keyClicked);
-        let cardSymbol = ev.target;
-        let otherSymbol = spotitFindSymbol(otherCard, keyClicked);
-        Selected = { isCorrect: true, feedbackUI: [cardSymbol, otherSymbol] };
-      } else {
-        let cardSymbol = ev.target;
-        Selected = { isCorrect: false, feedbackUI: [cardSymbol], correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 1500 };
-      }
-      this.controller.evaluate.bind(this.controller)();
-    }
-  }
-  getSharedSymbols() {
-    let result = [];
-    for (const item of this.items) {
-      for (const id in item.shares) {
-        let k = item.shares[id];
-        let ui = iGetl(item, k);
-        result.push(ui);
-      }
-    }
-    return result;
-  }
-  eval() { return Selected.isCorrect; }
-  prompt() {
-    this.trials = 1;
-    show_instruction('find common symbol', dTitle);
-    this.makeTimer();
-    mLinebreak(dTable, 25);
-    let infos = this.deal(); 
-    let items = this.items = [];
-    for (const info of infos) {
-      let item = spotitCard(info, dTable, { margin: 10 }, this.interact.bind(this));
-      items.push(item);
-    }
-    this.controller.activateUi.bind(this.controller)();
-  }
-  onTimeup() {
-    Selected = { isCorrect: false, correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 2000 };
-    this.controller.evaluate.bind(this.controller)();
-  }
-}
-class GSteps extends Game {
-  constructor(name, o) { super(name, o); }
-  startGame() { this.correctionFunc = showCorrectWords; }
-  start_Level() {
-    super.start_Level();
-    this.keys = this.keys.filter(x => containsColorWord(x));
-  }
-  prompt() {
-    this.piclist = [];
-    let colorKeys = this.numColors > 1 ? choose(this.colors, this.numColors) : null;
-    let bg = this.numColors > 1 || this.numRepeat > 1 ? 'white' : 'random';
-    let rows = this.numColors > 1 ? this.numColors : undefined;
-    let showRepeat = this.numRepeat > 1;
-    myShowPics(this.interact.bind(this), { bg: bg },
-      { rows: rows, showRepeat: showRepeat, colorKeys: colorKeys, numRepeat: this.numRepeat, contrast: this.contrast });
-    setMultiGoal(this.numSteps);
-    let cmd = 'click';
-    let spoken = [], written = [], corr = [];
-    for (let i = 0; i < this.numSteps; i++) {
-      let goal = Goal.pics[i];
-      let sOrdinal = getOrdinal(goal.iRepeat);
-      [written[i], spoken[i], corr[i]] = getOrdinalColorLabelInstruction(cmd, sOrdinal, goal.color, goal.label);
-      goal.correctionPhrase = corr[i];
-      cmd = 'then';
-    }
-    let sWritten = this.showVisualInstruction ? written.join('; ') : 'listen to instruction!';
-    show_instruction(sWritten, dTitle, spoken.join('. '), { fz: 20 });
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    sayTryAgain();
-    showFleetingMessage(this.message, 0);
-    return 1000;
-  }
-  activate() {
-    for (const p of this.piclist) { toggleSelectionOfPicture(p); }
-    this.piclist = [];
-  }
-  interact(ev) {
-    ev.cancelBubble = true;
-    if (!canAct()) { console.log('no act'); return; }
-    let pic = findItemFromEvent(Pictures, ev);
-    toggleSelectionOfPicture(pic, this.piclist);
-    if (this.piclist.length == Goal.pics.length) {
-      clearFleetingMessage();
-      Selected = { piclist: this.piclist }; this.controller.evaluate.bind(this.controller)();
-    }
-  }
-  eval() {
-    Selected = { piclist: this.piclist, feedbackUI: this.piclist.map(x => iDiv(x)), sz: getRect(iDiv(this.piclist[0])).h };
-    let isCorrect = true;
-    this.message = this.language == 'D' ? 'beachte die REIHENFOLGE!' : 'mind the ORDER!';
-    for (let i = 0; i < this.piclist.length; i++) {
-      let p = this.piclist[i];
-      if (!Goal.pics.includes(p)) this.message = this.language == 'D' ? 'noch einmal!' : 'try again!';
-      if (this.piclist[i] != Goal.pics[i]) isCorrect = false;
-    }
-    return isCorrect;
-  }
-}
-class GStory extends Game {
-  constructor(name) { super(name); }
-  prompt() {
-    let showLabels = G.showLabels == true && Settings.labels == true;
-    myShowPics(evaluate, {}, { showLabels: showLabels });
-    setGoal();
-    showInstruction(Goal.label, 'click', dTitle, true);
-    activateUi();
-  }
-}
-class GSwap extends Game {
-  constructor(name, o) {
-    super(name, o);
-    if (this.language == 'C') { this.prevLanguage = this.language; this.language = chooseRandom('E', 'D'); }
-    ensureDictionary();
-  }
-  startGame() { this.correctionFunc = showCorrectLabelSwapping; } 
-  clear() { super.clear(); if (isdef(this.prevLanguage)) this.language = this.prevLanguage; }
-  start_Level() {
-    this.keys = setKeysG(this, filterWordByLengthG, 25);
-    if (this.keys.length < 25) { this.keys = setKeysG(this, filterWordByLengthG, 25, 'all'); }
-    this.trials = 2;
-  }
-  dropHandler(source, target, isCopy = false, clearTarget = false) {
-    let prevTarget = source.target;
-    source.target = target;
-    let dSource = iDiv(source);
-    let dTarget = iDiv(target);
-    if (clearTarget) {
-      let ch = dTarget.children[0];
-      let chSource = firstCond(Pictures, x => iDiv(x) == ch);
-      if (chSource) {
-        if (isdef(prevTarget)) {
-          mAppend(iDiv(prevTarget), ch);
-          chSource.target = prevTarget;
-        } else {
-          mAppend(this.dWordArea, ch);
-          delete chSource.target;
-        }
-      }
-      clearElement(dTarget);
-    }
-    if (isCopy) {
-      let dNew = mText(dSource.innerHTML, dTarget, { wmin: 100, fz: 20, padding: 4, margin: 4, display: 'inline-block' });
-      addDDSource(dNew, isCopy, clearTarget);
-    } else {
-      mAppend(dTarget, dSource);
-    }
-  }
-  prompt() {
-    show_instruction('swap letter to form words', dTitle, 'swap letter to form words');
-    mLinebreak(dTable);
-    let fz = 32;
-    let options = _simpleOptions({ language: this.language, w: 200, h: 200, keySet: this.keys, luc: 'u', fz: fz, bg: 'random', fg: 'white', showLabels: true });
-    let n = 2;
-    let items = gatherItems(n, options); 
-    let style = { margin: 3, cursor: 'pointer', fg: 'white', display: 'inline', bg: '#00000020', align: 'center', border: 'transparent', outline: 'none', family: 'Consolas', fz: 80 };
-    for (const item of items) {
-      let d1 = item.container = mDiv(dTable, { hmin: 250 });
-      let d = iLetters(item.label, d1, style); 
-      iAdd(item, { div: d }); 
-      let letters = item.letters = [];
-      for (let i = 0; i < arrChildren(d).length; i++) {
-        let ch = d.children[i];
-        let l = {
-          itemId: item.id, div: ch, i: i, letter: ch.innerHTML,
-          swapInfo: item.swaps[i],
-          state: 'swapped',
-          isBlinking: false, fg: 'white', bg: 'transparent'
-        };
-        letters.push(l);
-        ch.onclick = () => { startBlinking(l, item.letters, true) };
-      }
-      mStyle(d, { margin: 35 });
-      delete item.swaps;
-    }
-    showPictureHints(Pictures, 'container');
-    mLinebreak(dTable, 50);
-    this.buttonDone = mButton('Done!', () => {
-      if (!canAct()) return;
-      for (let i = 0; i < Pictures.length; i++) {
-        let p = Pictures[i];
-        let blinking = getBlinkingLetter(p);
-        if (!blinking) {
-          let msg = 'You need to pick 1 letter to swap in EACH word!!!';
-          Speech.say(msg);
-          sayRandomVoice(msg);
-          showFleetingMessage('You need to pick 1 letter to swap in EACH word!!!', 0, { fz: 30 });
-          return;
-        }
-      }
-      this.controller.evaluate.bind(this.controller)();
-    }, dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    if (this.trialNumber % 2 == 0) showPictureHints(Pictures, 'container'); else showTextHints(Pictures, 'container', 'origLabel');
-    TOMain = setTimeout(() => {
-      for (const p of Pictures) {
-        for (const l of p.letters) {
-          l.state = 'swapped';
-          if (isdef(l.swapInfo)) {
-            iDiv(l).innerHTML = p.label[l.i];
-          }
-        }
-      }
-    }, 1500);
-    return 1800;
-  }
-  activate() {
-    if (this.trialNumber >= 1) { sayTryAgain(); showFleetingMessage('Try again!'); }
-    else { showFleetingMessage('click one letter in each word!'); }
-  }
-  eval() {
-    let n = Pictures.length;
-    let blinkInfo = this.blinkInfo = [];
-    clearFleetingMessage();
-    for (let i = 0; i < n; i++) {
-      let p = Pictures[i];
-      let blinking = getBlinkingLetter(p);
-      blinkInfo.push({ i: i, blinking: blinking });
-    }
-    for (let i = 0; i < n; i++) { let l = blinkInfo[i].blinking; if (!l) continue; stopBlinking(l); }
-    for (const blinki of blinkInfo) { if (!blinki.blinking) { return false; } }
-    let isCorrect = true;
-    for (let i = 0; i < n; i++) {
-      let b1 = blinkInfo[i].blinking;
-      let b2 = blinkInfo[(i + 1) % blinkInfo.length].blinking;
-      let item = Items[b1.itemId];
-      let item2 = Items[b2.itemId];
-      let l = item.letters[b1.i];
-      let sw = l.swapInfo;
-      if (nundef(sw)) { sw = l.swapInfo = { correct: { itemId: item.id, index: b1.i, l: b1.letter } }; }
-      sw.temp = { itemId: item2.id, index: b2.i, l: b2.letter };
-      item.testLabel = replaceAtString(item.label, b1.i, b2.letter);
-      iDiv(l).innerHTML = b2.letter;
-      l.state = 'temp';
-    }
-    for (const p of Pictures) { if (p.testLabel != p.origLabel) { isCorrect = false; } }
-    let feedbackList = [];
-    for (let i = 0; i < n; i++) {
-      let item = Pictures[i];
-      let d;
-      if (isCorrect) d = iDiv(item.letters[item.iLetter]);
-      else {
-        let iLetter = blinkInfo[i].blinking.i;
-        if (item.iLetter != iLetter) d = iDiv(item.letters[iLetter]);
-      }
-      if (isdef(d)) feedbackList.push(d);
-    }
-    Selected = { piclist: Pictures, feedbackUI: feedbackList, sz: getRect(iDiv(Pictures[0])).h, delay: 800 };
-    return isCorrect;
   }
 }
 class gText {
@@ -13697,212 +6729,6 @@ class gText {
     return this;
   }
 }
-class GTouchColors extends Game {
-  constructor(name, o) { super(name, o); }
-  start_Level() {
-    super.start_Level();
-    this.keys = this.keys.filter(x => containsColorWord(x));
-  }
-  prompt() {
-    let colorKeys = choose(this.colors, this.numColors);
-    let rows = this.numColors;
-    let showLabels = this.lang == 'C' || this.showLabels;
-    console.log('showLabels', showLabels);
-    myShowPics(this.controller.evaluate.bind(this.controller), { bg: 'white' }, { showLabels: showLabels, colorKeys: colorKeys, rows: rows });
-    if (this.shuffle == true) {
-      let dParent = iDiv(Pictures[0]).parentNode;
-      shuffleChildren(dParent);
-    }
-    setGoal(randomNumber(0, Pictures.length - 1));
-    let [written, spoken] = getOrdinalColorLabelInstruction('click'); 
-    show_instruction(written, dTitle, spoken);
-    this.controller.activateUi.bind(this.controller)();
-  }
-  eval(ev) {
-    ev.cancelBubble = true;
-    let item = findItemFromEvent(Pictures, ev);
-    Selected = { answer: item.label, reqAnswer: Goal.label, pic: item, feedbackUI: iDiv(item) };
-    if (item == Goal) { return true; } else { return false; }
-  }
-}
-class GTouchPic extends Game {
-  constructor(name, o) { super(name, o); }
-  prompt() {
-    myShowPics(this.controller.evaluate.bind(this.controller), {}, { showLabels: (this.lang == 'C' || this.showLabels) });
-    setGoal();
-    let wr = 'click ';
-    show_instruction(wr + `<b>${Goal.label.toUpperCase()}</b>`, dTitle, Goal.label);
-    this.controller.activateUi.bind(this.controller)();
-  }
-}
-class GTTT extends G2Player {
-  startGame() {
-    super.startGame();
-    this.createBoard();
-    this.human.sym = 'O';
-    this.ai.sym = 'X';
-    this.setStartPosition();
-  }
-  createBoard() {
-    this.rows = this.cols = this.boardSize;
-    this.board = new Board(this.rows, this.cols, this.controller.uiInteract.bind(this.controller));
-  }
-  setStartPosition() {
-    return;
-    let positions = [
-      new Array(9).fill(null),
-      ['X', 'X', null, 'O', null, null, 'O', null, null],
-      [null, 'X', null, 'X', null, 'O', null, 'O', null],
-      [null, null, null, null, 'X', 'O', null, 'O', null],
-    ];
-    if (isdef(this.iPosition)) {
-      let idx = this.iPosition + 1; idx = idx % positions.length; this.iPosition = idx;
-    } else this.iPosition = 0;
-    let state = nundef(this.startPosition) || this.startPosition == 'empty' ? positions[0]
-      : this.startPosition == 'random' ? chooseRandom(positions)
-        : positions[this.iPosition];
-    this.board.setState(state, { X: this.ai.color, O: this.human.color });
-  }
-  prompt() {
-    let msg = this.plTurn == this.ai ? 'Ai thinking...' : 'click an empty field!';
-    showInstruction('', msg, dTitle, false);
-    this.controller.activateUi();
-  }
-  activate() {
-    let pl = this.plTurn;
-    let autoplay = false;
-    if (autoplay || pl == this.ai) {
-      if (this.ai == pl) uiActivated = false;
-      setTimeout(() => AIMinimax(this, this.afterComputerMove.bind(this)), 200);
-    }
-  }
-  interact(ev) {
-    let tile = evToItemC(ev);
-    if (isdef(tile.label)) return; 
-    let pl = this.plTurn;
-    addLabel(tile, pl.sym, { fz: 60, fg: pl.color });
-    this.controller.evaluate(tile);
-  }
-  afterComputerMove(iMove) {
-    let tile = this.board.items[iMove];
-    this.interact({ target: iDiv(tile) });
-  }
-  eval() {
-    let done = this.checkFinal();
-    this.gameOver = done > 0;
-    if (this.gameOver) { this.winner = done > 1 ? this.plTurn : null; this.tie = done == 1; }
-  }
-  checkFinal(state) {
-    if (nundef(state)) state = this.getState();
-    let isTie = false;
-    let isWin = checkWinnerTTT(state);
-    if (!isWin) { isTie = checkBoardFull(state) || !checkPotentialTTT(state); }
-    return isWin ? 2 : isTie ? 1 : 0;
-  }
-  getState() { return this.board.getState(); }
-  applyMove(state, move, player) { arrReplaceAtInPlace(state, move, player.sym); }
-  undoMove(state, move, player) { arrReplaceAtInPlace(state, move, ' '); }
-  getAvailableMoves(state) {
-    let moves = [];
-    for (let i = 0; i < state.length; i++) {
-      if (EmptyFunc(state[i])) moves.push(i);
-    }
-    shuffle(moves);
-    return moves;
-  }
-  heuristic1(node, depth) { }
-  evalState(node, depth) {
-    let x = checkWinnerTTT(node);
-    if (checkBoardFull(node) || x) {
-      return { reached: true, val: (!x ? 0 : (10 - depth) * (x == MAXIMIZER.sym ? 1 : -1)) };
-    }
-    return { reached: false };
-  }
-  evalStateL(node, depth) {
-    let key = node.join('');
-    let val = DMM[key];
-    let x = isdef(val) ? val : checkWinnerTTT(node);
-    DMM[key] = x;
-    if (checkBoardFull(node) || x) {
-      return { reached: true, val: (!x ? 0 : (10 - depth) * (x == MAXIMIZER.sym ? 1 : -1)) };
-    }
-    return { reached: false };
-  }
-  evalStateL2(node, depth) {
-    let full = checkBoardFull(node);
-    if (full) {
-      let key = JSON.stringify(node);
-      let x = DMM[key];
-      if (nundef(x)) DMM[key] = x = checkWinnerTTT(node);
-      return { reached: true, val: (!x ? 0 : (10 - depth) * (x == MAXIMIZER.sym ? 1 : -1)) };
-    } else {
-      let x = checkWinnerTTT(node);
-      if (x) return { reached: true, val: (!x ? 0 : (10 - depth) * (x == MAXIMIZER.sym ? 1 : -1)) };
-      return { reached: false };
-    }
-  }
-}
-class GWritePic extends Game {
-  constructor(name, o) { super(name, o); }
-  startGame() {
-    this.correctionFunc = showCorrectWordInTitle;
-    onkeydown = ev => {
-      if (!canAct()) return;
-      if (isdef(this.inputBox)) { this.inputBox.focus(); }
-    }
-  }
-  start_Level() {
-    this.keys = setKeysG(this, filterWordByLengthG, 25);
-    if (this.keys.length < 25) { this.keys = setKeysG(this, filterWordByLengthG, 25, 'all'); }
-  }
-  prompt() {
-    let showLabels = this.showLabels == true && this.labels == true;
-    myShowPics(() => mBy(this.defaultFocusElement).focus(), {}, { showLabels: showLabels });
-    setGoal();
-    if (this.instruction == 'all') {
-      let wr = (this.language == 'E' ? 'type ' : "schreib' ");
-      show_instruction(wr + `<b>${Goal.label.toUpperCase()}</b>`, dTitle, wr + Goal.label);
-    } else if (this.instruction == 'spokenGoal') {
-      let wr = this.language == 'E' ? 'type the correct word' : "schreib' das passende wort";
-      let sp = (this.language == 'E' ? 'type' : "schreib'") + ' ' + Goal.label;
-      show_instruction(wr, dTitle, sp);
-    } else {
-      let wr = this.language == 'E' ? 'type the correct word' : "schreib' das passende wort";
-      show_instruction(wr, dTitle, wr);
-    }
-    mLinebreak(dTable, 20);
-    this.inputBox = addNthInputElement(dTable, this.trialNumber);
-    this.defaultFocusElement = this.inputBox.id;
-    this.controller.activateUi.bind(this.controller)();
-  }
-  trialPrompt() {
-    sayTryAgain();
-    let n = this.trialNumber == 1 ? 1 : (this.trialNumber + Math.floor((Goal.label.length - this.trialNumber) / 2));
-    showFleetingMessage(Goal.label.substring(0, n));
-    mLinebreak(dTable);
-    this.inputBox = addNthInputElement(dTable, this.trialNumber);
-    this.defaultFocusElement = this.inputBox.id;
-    return 10;
-  }
-  activate() {
-    this.inputBox.onkeyup = ev => {
-      if (!canAct()) return;
-      if (ev.key === "Enter") {
-        ev.cancelBubble = true;
-        this.controller.evaluate.bind(this.controller)(ev);
-      } 
-    };
-    this.inputBox.focus();
-  }
-  eval(ev) {
-    let answer = normalize(this.inputBox.value, this.language);
-    let reqAnswer = normalize(Goal.label, this.language);
-    let correctPrefix = this.correctPrefix = getCorrectPrefix(Goal.label, this.inputBox.value);
-    Selected = { reqAnswer: reqAnswer, answer: answer, feedbackUI: iDiv(Goal) };
-    if (answer == reqAnswer) { showFleetingMessage(Goal.label); return true; }
-    else { return false; }
-  }
-}
 class hexgridY {
   constructor({
     bid = 'gridY',
@@ -14011,46 +6837,6 @@ class hexgridY {
   isValid(r, c) {
     return r in this.fields && c in this.fields[r];
   }
-}
-class IClass extends LiveObject {
-  constructor(k, U, G, T) {
-    super(k);
-    this.player = {};
-    copyKeys(U, this.player);
-    copyKeys(G, this);
-    copyKeys(T, this);
-    this.running = false;
-    this.uiState = this.immediateStart ? LiveObject.States.ready : LiveObject.States.none;
-    this.startTime = Date.now();
-    this.div = null;
-  }
-  loop() {
-    this.update(); 
-    this.present(); 
-    this.activate();
-  }
-  getState() {
-    return { players: this.players, table: this.table, options: this.options, turn: this.turn };
-  }
-  setState(s) {
-    this.players = s.players;
-    this.table = s.table;
-    this.options = s.options;
-    this.turn = s.turn;
-  }
-  present() {
-    console.log('state', this.getState());
-  }
-  update() {
-    for (const pl of this.players) this.updatePlayer(pl);
-    this.updateTable(); 
-    this.updateTurn();  
-    this.updateOptions(this.player);
-  }
-  updateOptions() { this.options = {}; }
-  updatePlayer() { }
-  updateTable() { this.table = {}; }
-  updateTurn() { this.turn = chooseRandom(this.players).id; }
 }
 class ItemViewerClass {
   constructor(dParent, dButtons, keys) {
@@ -14325,41 +7111,6 @@ class Karte {
 }
 class KeySelection{
 }
-class Layout1 extends Array { 
-  constructor(id, shape='grid', rows=3, cols=3, options = {}) {
-    console.log(';;;;;;;;;',id,shape,rows,cols,options)
-    var fields = Array(rows)
-      .fill()
-      .map(() => Array(cols).fill(0)); 
-    super(...fields);
-    this.options = options; 
-    this.msBase = null; 
-    this.id = id;
-    this.rows = rows;
-    this.cols = cols;
-    this.shape = shape;
-  }
-  addRow(...values) {
-    this.push(values);
-  }
-  addCol(){
-    let i=0;let val = arguments;
-    for (const row of this) {
-      row.push(val[i]);
-    }
-    for (let index = this.length; index < val.length; index++) {
-      this.push([val[index]]);
-    }
-  }
-  getPos(r,c){return this.msBase.getPos;}
-  setCols(c){}
-  setRows(r){}
-  setShape(shape){}
-  isValidIndex(r,c){return this[r][c];}
-  render(){this.renderBase}
-  renderField(r,c){}
-  setOption(key,value){}
-}
 class LazyCache {
   constructor(resetStorage = false) {
     this.caches = {};
@@ -14441,211 +7192,6 @@ class MaxWidthPreserver {
     entry.minWidth = firstNumber(cs.width);
   }
   reset(id) { this.entries[id].elem.styles.minWidth = this.entries[id].minWidth = 0; }
-}
-class MazeGraph extends AGraph {
-  constructor(dParent, rows, cols, sz, gap = 4) {
-    super();
-    [this.cols, this.rows, this.sz, this.gap] = [cols, rows, sz, gap];
-    let m = this.m = this.createMaze(cols, rows, sz, gap);
-    let dMaze = this.dMaze = this.createDiv(dParent, cols, rows, sz, gap);
-    let szMaze = getSize(dMaze);
-    let dGraph = this.dGraph = mDiv(dParent, { align: 'left', w: szMaze.w, h: szMaze.h, bg: 'pink', maleft: 20 }, 'd_graph');
-    this.mazeId = dGraph.id = getUID();
-    let sb = this.sb = mDiv(dParent, { w: 40 }); mCenterCenterFlex(this.sb);
-    hide(dGraph); hide(sb);
-    this.items = this.createCellItems();
-  }
-  clear() { super.clear(); }
-  getTopLeftCell() { return this.getCell(0, 0); }
-  getTopRightCell() { return this.getCell(0, this.cols - 1); }
-  getBottomLeftCell() { return this.getCell(this.rows - 1, 0); }
-  getBottomRightCell() { return this.getCell(this.rows - 1, this.cols - 1); }
-  getCell(row, col) { return this.matrix[row][col]; }
-  getCommonId(row, col) { return '' + row + "-" + col; }
-  getCommonIdTable(row, col) { return 'td_' + this.getCommonId(row, col); }
-  getRCI(edgeId) {
-    let [r1, c1, r2, c2] = allNumbers(edgeId).map(x => Math.abs(x));
-    let i1, i2;
-    i1 = r1 < r2 ? 2 : r1 > r2 ? 0 : c1 < c2 ? 1 : 3;
-    i2 = i1 == 0 ? 2 : i1 == 1 ? 3 : i1 == 2 ? 0 : 1;
-    return [r1, c1, i1, r2, c2, i2];
-  }
-  getRelativeDirections(item1, item2) {
-    let [r1, c1, r2, c2] = [item1.row, item1.col, item2.row, item2.col];
-    let i1, i2;
-    i1 = r1 < r2 ? 2 : r1 > r2 ? 0 : c1 < c2 ? 1 : 3;
-    i2 = i1 == 0 ? 2 : i1 == 1 ? 3 : i1 == 2 ? 0 : 1;
-    return [i1, i2];
-  }
-  createCellItems() {
-    let items = [];
-    this.matrix = [];
-    for (let r = 0; r < this.rows; r++) {
-      this.matrix[r] = [];
-      for (let c = 0; c < this.cols; c++) {
-        let id = this.getCommonId(r, c);
-        let item = { id: id, nid: id, nodeId: id, cellId: this.getCommonIdTable(r, c), row: r, col: c, sz: this.sz, marr: this.m[r, c] };
-        delete Items[id];
-        iAdd(item, { div: mBy(this.getCommonIdTable(r, c)) });
-        items.push(item);
-        this.matrix[r][c] = item;
-      }
-    }
-    return items;
-  }
-  createDiv(dParent, cols, rows, sz, gap = 1) {
-    let [wCell, hCell] = [sz, sz];
-    let [wTotal, hTotal] = [cols * (wCell + gap) + gap, rows * (hCell + gap) + gap];
-    let dGridOuter = this.dMaze = mDiv(dParent, { wmin: wTotal, hmin: hTotal, position: 'relative' });
-    let m = this.m;
-    let [x, y] = [0, 0];
-    let sBorder = `${gap}px solid black`;
-    let noBorder = `${gap}px solid transparent`;
-    this.dCells = [];
-    for (var r = 0; r < m.length; r++) {
-      x = 0;
-      this.dCells[r] = [];
-      for (var c = 0; c < m[r].length; c++) {
-        let info = m[r][c];
-        let dCell = mDiv(dGridOuter, { w: wCell, h: hCell, position: 'absolute', top: y, left: x, bg: 'gray' });
-        dCell.id = this.getCommonIdTable(r, c);
-        dCell.style.borderTop = info[0] == 0 ? sBorder : noBorder;
-        dCell.style.borderRight = info[1] == 0 ? sBorder : noBorder;
-        dCell.style.borderBottom = info[2] == 0 ? sBorder : noBorder;
-        dCell.style.borderLeft = info[3] == 0 ? sBorder : noBorder;
-        x += wCell + gap;
-        this.dCells[r].push(dCell);
-      }
-      y += hCell + gap;
-    }
-    return dGridOuter;
-  }
-  createDiv_orig(dParent, cols, rows, sz, gap) {
-    let [wCell, hCell] = [sz, sz];
-    let [wTotal, hTotal] = [cols * (wCell + gap), rows * (hCell + gap)];
-    let dGridOuter = this.dMaze = mDiv(dParent, { wmin: wTotal, hmin: hTotal });
-    let m = this.m;
-    let id = 'tMaze';
-    setCSSVariable('--wCell', `${wCell}px`);
-    setCSSVariable('--hCell', `${hCell}px`);
-    let tMaze = createElementFromHtml(`
-      <table id="${id}">
-      <tbody></tbody>
-      </table>
-    `);
-    mAppend(dGridOuter, tMaze);
-    let sBorder = `${1}px solid black`;
-    for (var i = 0; i < m.length; i++) {
-      $('#tMaze > tbody').append("<tr>");
-      for (var j = 0; j < m[i].length; j++) {
-        var selector = this.getCommonIdTable(i, j);
-        $('#tMaze > tbody').append("<td id='" + selector + "'>&nbsp;</td>");
-        if (m[i][j][0] == 0) { $('#' + selector).css('border-top', sBorder); }
-        if (m[i][j][1] == 0) { $('#' + selector).css('border-right', sBorder); }
-        if (m[i][j][2] == 0) { $('#' + selector).css('border-bottom', sBorder); }
-        if (m[i][j][3] == 0) { $('#' + selector).css('border-left', sBorder); }
-      }
-      $('tMmaze > tbody').append("</tr>");
-    }
-    return dGridOuter;
-  }
-  createMaze(cols, rows, sz, gap) {
-    var dxy = sz + 2 * gap;
-    var offs = dxy / 2 + gap;
-    var totalCells = cols * rows;
-    var cells = new Array();
-    var unvis = new Array();
-    for (var i = 0; i < rows; i++) {
-      cells[i] = new Array();
-      unvis[i] = new Array();
-      for (var j = 0; j < cols; j++) {
-        cells[i][j] = [0, 0, 0, 0];
-        let pos = { x: offs + dxy * j, y: offs + dxy * i };
-        this.addNode({ id: this.getCommonId(i, j), row: i, col: j, center: pos }, pos);
-        unvis[i][j] = true;
-      }
-    }
-    var currentCell = [Math.floor(Math.random() * rows), Math.floor(Math.random() * cols)];
-    var path = [currentCell];
-    unvis[currentCell[0]][currentCell[1]] = false;
-    var visited = 1;
-    while (visited < totalCells) {
-      var pot = [[currentCell[0] - 1, currentCell[1], 0, 2],
-      [currentCell[0], currentCell[1] + 1, 1, 3],
-      [currentCell[0] + 1, currentCell[1], 2, 0],
-      [currentCell[0], currentCell[1] - 1, 3, 1]];
-      var neighbors = new Array();
-      for (var l = 0; l < 4; l++) {
-        if (pot[l][0] > -1 && pot[l][0] < rows && pot[l][1] > -1 && pot[l][1] < cols && unvis[pot[l][0]][pot[l][1]]) { neighbors.push(pot[l]); }
-      }
-      if (neighbors.length) {
-        let next = neighbors[Math.floor(Math.random() * neighbors.length)];
-        cells[currentCell[0]][currentCell[1]][next[2]] = 1;
-        cells[next[0]][next[1]][next[3]] = 1;
-        let row = currentCell[0];
-        let col = currentCell[1];
-        let row2 = next[0];
-        let col2 = next[1];
-        this.addEdge(this.getCommonId(row, col), this.getCommonId(row2, col2), {});
-        unvis[next[0]][next[1]] = false;
-        visited++;
-        currentCell = [next[0], next[1]];
-        path.push(currentCell);
-      }
-      else {
-        currentCell = path.pop();
-      }
-    }
-    return cells;
-  }
-  setItemBorder(item, dir) {
-    let prop = getBorderPropertyForDirection(dir);
-    iDiv(item).style[prop] = `${this.gap}px solid black`;
-  }
-  setItemColor(item, color) { mStyle(iDiv(item), { bg: color }); }
-  setItemContent(item, text) { iDiv(item).innerHTML = text; }
-  removeItemContent(item) { iDiv(item).innerHTML = ''; }
-  disconnectCells(nid1, nid2) {
-    this.removeEdge(this.getCommonEdgeId(nid1, nid2));
-    let [item1, item2] = [Items[nid1], Items[nid2]];
-    let [dir1, dir2] = this.getRelativeDirections(item1, item2);
-    this.setItemBorder(item1, dir1);
-    this.setItemBorder(item2, dir2);
-  }
-  cutPath(path, min, max) {
-    let edges = path.edges();
-    let len = edges.length;
-    let [imin, imax] = [Math.floor(len * min), Math.floor(len * max)];
-    let i = randomNumber(imin, imax);
-    let edge = edges[i];
-    let [nid1, nid2] = edge.connectedNodes().map(x => x.id());
-    this.disconnectCells(nid1, nid2);
-  }
-  breadCrumbs(path, color = 'sienna', sz = 10) {
-    for (const cell of path.nodes().map(x => Items[x.id()])) {
-      mCellContent(iDiv(cell), { w: sz, h: sz, bg: color, fg: 'white', rounding: '50%' });
-    }
-  }
-  colorComponents() {
-    let comps = this.getComponents();
-    let wheel = getColorWheel('red', comps.length);
-    let i = 0;
-    for (const comp of comps) {
-      this.breadCrumbs(comp, wheel[i]); i += 1;
-    }
-  }
-  showGraph() {
-    this.dGraph.style.opacity = 1;
-    if (this.hasVisual) { show(this.dGraph); return; }
-    this.addVisual(this.dGraph);
-    this.storeCurrentPositions();
-    this.addLayoutControls(this.sb, ['show', 'hide', 'prest', 'grid', 'klay', 'rand', 'euler', 'reset', 'store']);
-  }
-  hideGraph() {
-    if (isdef(this.dGraph) && this.hasVisual) {
-      this.dGraph.style.display = 'none';
-    }
-  }
 }
 class MK { }
 class MKManager{
@@ -15847,6 +8393,343 @@ class MOBJ {
   toString() { return 'id: ' + this.id + ', ' + this.domType + ', ' + this.x + ', ' + this.y + ', ' + this.w + ', ' + this.h + ', ' + this.bg + ', ' + this.fg + ', ' + this.children; }
   //#endregion
 }
+class MS {
+  constructor({ parent, id, type = 'g', domel = null, isa = {} } = {}) {
+    if (domel) {
+      if (domel.id == 'R_d_root') {
+        this.handlers = { click: {}, mouseenter: {}, mouseleave: {} }; this.parent = null; this.id = 'R_d_root'; this.type = 'div'; this.cat = 'd'; this.elem = domel; this.parts = { _: this.elem }; this.children = []; return;
+      }
+      this.id = domel.id;
+      this.type = getTypeOf(domel);
+      this.parent = UIS[domel.parentNode.id];
+    } else {
+      this.id = nundef(id) ? getUID() : id;
+      this.type = type;
+      this.parent = parent;
+    }
+    UIS[this.id] = this;
+    this.cat = MSCATS[this.type]; //'d' for dom els and 'g' for svg els
+    this.elem = domel ? domel
+      : this.cat == 'g' || this.type == 'svg' ? document.createElementNS('http://www.w3.org/2000/svg', this.type)
+        : document.createElement(this.type);
+    this.elem.ms = this; 
+    this.elem.id = this.id;
+    if (nundef(this.parent)) this.parent = ROOT; 
+    this.children = [];
+    this.posRef = this.parent; 
+    if (this.cat == 'd' && this.parent.cat == 'g') {
+      let ancestor = closestParent(parent.elem, 'div');
+      console.log('FOUND domParent:', ancestor);
+      this.posRef = this.parent;
+      this.parent = ancestor.ms;
+    } else if (this.parent.cat == 'd' && this.parent.type != 'svg' && this.cat == 'g') {
+      let msSvg = new MMS({ parent: this.parent, type: 'svg' }).setDefaults().attach();
+      this.parent = msSvg;
+      this.posRef = msSvg; 
+    }
+    if (domel) { addIf(this.parent.children, this); } 
+    this.x = 0; this.y = 0; this.w = 0; this.h = 0;
+    for (const d in isa) {
+      if (d == 'id') { continue; }
+      this[d] = isa[d];      
+    }
+    this.isa = Object.keys(isa); 
+    this.parts = { _: this.elem }; 
+    this.uis = []; 
+    this.handlers = { click: {}, mouseenter: {}, mouseleave: {} };
+  }
+  //#region events
+  _handler(ev) {
+    ev.stopPropagation();
+    if (!this.isEnabled) return;
+    let part = ev.currentTarget;
+    let partName = isdef(part.name) ? part.name : '_';
+    let eventName = ev.handleObj.origType;
+    let handler = this.handlers[eventName][partName];
+    if (isdef(handler)) { counters[eventName] += 1; counters.events += 1; handler(this, part); }
+  }
+  addHandler(evName, partName = '_', handler = null, autoEnable = true) {
+    let part = this.parts[partName];
+    if (nundef(part)) { part = this.elem; partName = '_'; } 
+    if (isdef(handler)) { this.handlers[evName][partName] = handler; }
+    $(part).off(evName).on(evName, this._handler.bind(this));
+    if (autoEnable) this.enable();
+  }
+  addClickHandler(partName = '_', handler = null, autoEnable = true) { this.addHandler('click', partName, handler, autoEnable); }
+  addMouseEnterHandler(partName = '_', handler = null, autoEnable = true) { this.addHandler('mouseenter', partName, handler, autoEnable); }
+  addMouseLeaveHandler(partName = '_', handler = null, autoEnable = true) { this.addHandler('mouseleave', partName, handler, autoEnable); }
+  removeEvents() {
+    $(this.elem).off();
+    if (S_showEvents) this.showEvents(this.elem);
+    for (const partName in this.parts) {
+      $(this.parts[partName]).off();
+      if (S_showEvents) this.showEvents(this.parts[partName]);
+    }
+  }
+  //#endregion
+  //#region done
+  clear(startProps = {}) {
+    let ids = this.children.map(x => x.id);
+    for (const id of ids) UIS[id].destroy();
+    for (const k in startProps) {
+      this.elem[k] = startProps[k];
+    }
+    console.log('children after clear', this.children);
+  }
+  destroy() {
+    $(this.elem).remove(); 
+    this.elem = null;
+    removeInPlace(this.parent.children, this);
+    delete UIS[this.id];
+  }
+  //#endregion
+  //#region work
+  title(s, key = 'title') {
+    if (this.parts[key]) {
+      this.parts[key].style.backgroundColor = randomColor();
+      return;
+    }
+    let t = document.createElement('div');
+    t.style.backgroundColor = 'dimgray';
+    this.titleColor = t.style.backgroundColor;
+    t.classList.add('tttitle');
+    t.innerHTML = s;
+    this.elem.appendChild(t);
+    this.parts[key] = t;
+    t.name = key;
+    this.attach();
+    return this;
+  }
+  table(o, keys, key = 'table') {
+    if (this.parts[key]) {
+      let oldTable = this.parts[key];
+      let t = tableElem(o, keys);
+      let t2 = t.innerHTML;
+      oldTable.innerHTML = t2;
+    } else {
+      let t = tableElem(o, keys);
+      this.elem.appendChild(t);
+      this.attach();
+      this.parts[key] = t;
+      t.name = key;
+    }
+    return this;
+  }
+  //#endregion
+  //#region TODO
+  attach() { if (!this.isAttached) { addIf(this.parent.children, this); this.parent.elem.appendChild(this.elem); } return this; } 
+  detach() { if (this.isAttached) { removeIf(this.parent.children, this); this.parent.elem.removeChild(this.elem); } return this; }
+  _onMouseEnter(ev) {
+    if (!this.isEnabled) return;
+    let partName = evToId(ev);
+    if (S_showEvents) {
+      counters.events += 1;
+    }
+    if (typeof this.mouseEnterHandler == 'function') {
+      if (S_showEvents) 
+        this.mouseEnterHandler(ev);
+    }
+  }
+  _onMouseLeave(ev) {
+    if (!this.isEnabled) return;
+    let partName = evToId(ev);
+    if (S_showEvents) {
+      counters.events += 1;
+    }
+    if (typeof this.mouseLeaveHandler == 'function') {
+      if (S_showEvents) 
+        this.mouseLeaveHandler(ev);
+    }
+  }
+  _getRect(x = 0, y = 0, w = 50, h = 25, bg, fg) {
+    let r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    r.setAttribute('width', w);
+    r.setAttribute('height', h);
+    r.setAttribute('x', x);
+    r.setAttribute('y', y);
+    if (isdef(bg)) r.setAttribute('fill', bg);
+    if (isdef(fg)) r.setAttribute('stroke', bg);
+    return r;
+  }
+  _getDiv(x, y, w, h, bg, fg) {
+    let r = document.createElement('div');
+    if (this.w < w || this.h < h) { this.setSize(w, h); }
+    if (isdef(x)) {
+      r.style.position = 'absolute';
+      r.style.left = x + 'px';
+      r.style.top = y + 'px';
+    }
+    if (isdef(w)) {
+      r.style.width = w + 'px';
+      r.style.height = h + 'px';
+    }
+    if (isdef(bg)) r.style.backgroundColor = bg;
+    if (isdef(fg)) r.style.color = fg;
+    return r;
+  }
+  addInteractivity(partName, hover = true, click = true) {
+    let part = this.parts[partName];
+    if (nundef(part)) { part = this.elem; } 
+    if (this.part.isInteractive) return;
+    this.part.isInteractive = true;
+    if (click) this.part.clickHandler = null;
+    if (hover) { this.part.mouseEnterHandler = null; this.part.mouseLeaveHandler = null; }
+    this.isEnabled = false;
+    this.enable = () => this.isEnabled = true;
+    this.disable = () => this.isEnabled = false;
+    this.elem.addEventListener('click', this._onClick.bind(this));
+    this.elem.addEventListener('mouseenter', this._onMouseEnter.bind(this));
+    this.elem.addEventListener('mouseleave', this._onMouseLeave.bind(this));
+    return this;
+  }
+  enable() {
+    this.isEnabled = true;
+  }
+  disable() {
+    this.isEnabled = false;
+  }
+  high() {
+    if (isdef(this.parts) && isdef(this.parts.title)) this.parts['title'].style.backgroundColor = '#ccff00';
+    else {
+      this.elem.classList.add('selected');
+      this.elem.backgroundColor = '#ccff00';
+    }
+  } 
+  unhigh() {
+    if (isdef(this.parts) && isdef(this.parts.title)) this.parts['title'].style.backgroundColor = this.titleColor;
+    else {
+      this.elem.classList.remove('selected');
+      this.elem.backgroundColor = this.titleColor;
+    }
+  }
+  sel() { }
+  unsel() { }
+  frame() { }
+  unframe() { }
+  setDefaults({ x, y, w, h, bg, fg } = {}) {
+    if (this.parent.type == 'svg' && isdef(bg) && nundef(w) && nundef(h) && this.domType == 'g') {
+      this.parent.setBg(bg);
+    } else {
+      if (isdef(bg) || this.cat == 'd') {
+        bg = nundef(bg) ? 'transparent' : bg;
+        this.setBg(bg);
+        fg = nundef(fg) ? bg == 'transparent' ? this.parent.fg : colorIdealText(bg) : fg;
+        this.setFg(fg);
+      }
+    }
+    if (this.cat == 'd' && (nundef(this.x) || nundef(this.w))) return this;
+    w = nundef(w) ? this.posRef.w : w;
+    h = nundef(h) ? this.posRef.h : h;
+    this.setSize(w, h);
+    x = nundef(x) ? 0 : this.posRef.x + x;
+    y = nundef(y) ? 0 : this.posRef.y + y;
+    if (this.parent.cat == 'd') { this.parent.elem.style.position = 'absolute'; }
+    this.setPos(x, y);
+    return this;
+  }
+  setBg(c, updateFg = false) {
+    this.bg = c;
+    if (this.cat == 'g') {
+      if (this.domType == 'text') {
+        if (!this.textBackground) {
+        }
+      } else {
+        this.elem.setAttribute('fill', c);
+      }
+    } else {
+      this.elem.style.backgroundColor = c;
+    }
+    if (updateFg) {
+      this.setFg(colorIdealText(c), true);
+    }
+    return this;
+  }
+  setFg(c) {
+    this.fg = c;
+    if (this.cat == 'g') {
+      if (this.domType == 'text') {
+        this.elem.setAttribute('fill', c);
+      } else {
+        this.elem.setAttribute('stroke', c);
+      }
+    } else {
+      this.elem.style.color = c;
+    }
+    return this;
+  }
+  setFullSize() {
+    this.setSize(this.posRef.w, this.posRef.h);
+    this.setPos(0, 0);
+  }
+  setSize(w, h) {
+    this.w = w; this.h = h;
+    if (this.cat == 'g') {
+      if (this.ground) {
+        this.ground.setAttribute('width', w);
+        this.ground.setAttribute('height', h);
+      } else {
+        this.elem.setAttribute('width', w);
+        this.elem.setAttribute('height', h);
+      }
+      if (this.overlay) {
+        this.overlay.setAttribute('width', w);
+        this.overlay.setAttribute('height', h);
+      }
+    } else {
+      this.elem.style.position = 'absolute';
+      this.elem.style.width = w + 'px';
+      this.elem.style.height = h + 'px';
+    }
+    return this;
+  }
+  setPos(x, y) {
+    this.x = x; 
+    this.y = y;
+    if (this.cat == 'g') {
+      this.elem.setAttribute('transform', `translate(${x},${y})`);
+    } else {
+      this.elem.style.position = 'absolute'
+      this.elem.style.left = x + 'px';
+      this.elem.style.top = y + 'px';
+    }
+    return this;
+  }
+  center() {
+    this.setPos(-this.w / 2, -this.h / 2)
+  }
+  centerOrigin() {
+    this.setPos(this.w / 2, this.h / 2);
+  }
+  rect({ x = 0, y = 0, w = 50, h = 25, bg, fg } = {}) {
+    let pa = this.domType == 'g' ? this._getRect(x, y, w, h, bg, fg) : this._getDiv(x, y, w, h, bg, fg);
+    this.elem.appendChild(pa);
+    this.attach();
+    return this;
+  }
+  addBorder(c) {
+    if (this.cat == 'd') {
+      this.elem.style.border = '1px solid ' + c;
+    }
+  }
+  removeBorder() {
+    if (this.cat == 'd') {
+      this.elem.style.border = null;
+    }
+  }
+  selBlack() {
+    if (this.isSelBlack) return;
+    this.elem.classList.add('selBlack');
+    this.isSelBlack = true;
+  }
+  unselBlack() {
+    if (!this.isSelBlack) return;
+    this.elem.classList.remove('selBlack');
+    this.isSelBlack = false;
+  }
+  selRed() { }
+  unselAll() { this.removeBorder(); }
+  //#endregion
+}
 class MS_dep {
   constructor({rsgType, parent, id, oid, o, domType = 'g', domel = null } = {}) {
     this.rsgType = rsgType;
@@ -16576,100 +9459,6 @@ class Peep {
     ctx.scale(this.scaleX, 1)
     ctx.drawImage(...this.drawArgs)
     ctx.restore()
-  }
-}
-class PerlenSettingsClass extends SettingsClass {
-  setOtherSettings(elem) {
-    console.log('____________elem', elem);
-    let val = elem.value;
-    let key = elem.keyList[0];
-    console.log('val',val,'key',key,'elem.value',elem.value)
-    switch (key) {
-      case 'boardStandard':
-        let data = DB.standardSettings[val];
-        if (nundef(data)) { console.log('NO! key', key); return; }
-        for (const k in data) { 
-          console.log('k',k)
-          this.o[k] = data[k]; 
-        }
-        this.o.boardStandard = val;
-        console.log('settings sollen so geaendert werden:', data);
-        this.createSettingsUi();
-        break;
-    }
-  }
-  setzeEinActiveOptions(dParent, label, optionList, friendlyList, init, skeys) {
-    let d = mDiv(dParent);
-    let val = init;
-    let inp = createElementFromHTML(`<select class="options" onchange="Settings.setOtherSettings(this)"></select>`);
-    for (let i = 0; i < optionList.length; i++) {
-      let opt = optionList[i];
-      let friendly = friendlyList[i];
-      let optElem = createElementFromHTML(`<option value="${opt}">${friendly}</option>`);
-      mAppend(inp, optElem);
-      if (opt == val) optElem.selected = true;
-    }
-    inp.value = val;
-    let labelui = createElementFromHTML(`<label>${label}</label>`);
-    mAppend(d, labelui);
-    mAppend(labelui, inp);
-    mStyleX(inp, { maleft: 12, mabottom: 4 });
-    inp.keyList = skeys;
-  }
-  setzeEinBrowseFile(dParent, label, init, skeys) {
-    let d = mDiv(dParent);
-    let val = lookup(this.o, skeys);
-    if (nundef(val)) val = init;
-    let inp = createElementFromHTML(
-      `<input type="text" class="input" value="${val}"  />`);
-    let labelui = createElementFromHTML(`<label>${label}</label>`);
-    mAppend(d, labelui);
-    mAppend(labelui, inp);
-    var fakeInput = document.createElement("input"); 
-    fakeInput.type = "file";
-    fakeInput.accept = "image/*";
-    fakeInput.multiple = false;
-    inp.onclick = () => { fakeInput.click(); };
-    fakeInput.onchange = () => {
-      let imgFile = fakeInput.files[0];
-      previewBrowsedFile(dTable, imgFile);
-      let val = inp.value = getFilename(imgFile.name);
-      this.hasChanged = true;
-      this.haveChanged.push(skeys);
-      this.o[skeys[0]] = val;
-      this.imgFile = imgFile;
-    };
-    mStyleX(inp, { maleft: 12, mabottom: 4, cursor: 'pointer' });
-    mClass(inp, 'input');
-    inp.keyList = skeys;
-    this.addSetting(skeys[0]);
-  }
-  createSettingsUi() {
-    let dParent = mBy('dSettingsContent'); 
-    mCenterFlex(dParent);
-    clearElement(dParent);
-    this.list = [];
-    let fertigSets = DB.standardSettings;
-    let fsNames = Object.keys(fertigSets); fsNames.unshift('none');
-    let nGroupBoardSettings = this.mInputGroup(dParent);
-    this.setzeEinOptions(nGroupBoardSettings, 'base on standard', fsNames, fsNames, 'shapeShifters', ['boardStandard']);
-    this.setzeEinOptions(nGroupBoardSettings, 'board layout', ['hex1', 'hex', 'quad', 'circle'], ['hex1', 'hex', 'quad', 'circle'], 'hex1', ['boardLayout']);
-    this.setzeEinBrowseFile(nGroupBoardSettings, 'board filename', 'shapeShifters', ['boardFilename']);
-    this.setzeEineZahl(nGroupBoardSettings, 'board rotation', 0, ['boardRotation']);
-    this.setzeEineZahl(nGroupBoardSettings, 'top margin', 10, ['boardMarginTop']);
-    this.setzeEineZahl(nGroupBoardSettings, 'left margin', 20, ['boardMarginLeft']);
-    this.setzeEinenString(nGroupBoardSettings, 'field color', 'transparent', ['fieldColor']);
-    this.setzeEineZahl(nGroupBoardSettings, 'field width', 100, ['dxCenter']);
-    this.setzeEineZahl(nGroupBoardSettings, 'field height', 120, ['dyCenter']);
-    this.setzeEineZahl(nGroupBoardSettings, 'horizontal gap', 10, ['wGap']);
-    this.setzeEineZahl(nGroupBoardSettings, 'vertical gap', 20, ['hGap']);
-    this.setzeEineZahl(nGroupBoardSettings, 'rows', 7, ['rows']);
-    this.setzeEineZahl(nGroupBoardSettings, 'columns', 6, ['cols']);
-    this.setzeEineZahl(nGroupBoardSettings, 'max width', 800, ['wFieldArea']);
-    this.setzeEineZahl(nGroupBoardSettings, 'max height', 800, ['hFieldArea']);
-    let nGroupPerlenSettings = this.mInputGroup(dParent);
-    this.setzeEinOptions(nGroupPerlenSettings, 'pool selection', ['random', 'mixed', 'player'], ['random', 'mixed', 'never'], 'random', ['poolSelection']);
-    this.setzeEineZahl(nGroupPerlenSettings, 'random pool size', 25, ['numPool']);
   }
 }
 class Player {
@@ -17685,12 +10474,6 @@ class SimpleClass7 {
     else { return true; }
   }
 }
-class SimpleGraph extends AbsGraph1 { 
-  constructor(dParent, styles = {}) {
-    super();
-    upgradeToSimpleGraph(this, dParent, styles);
-  }
-}
 class SimpleGrid {
   constructor(id, { mapData, shape = 'hex', rows = 3, cols = 2, idPrefix, hasNodes = false, hasEdges = false, randomizeIds = false } = {}) {
     this.randomizeIds = randomizeIds;
@@ -18543,51 +11326,44 @@ class TestEngine {
   }
 }
 class TimeIt {
-  constructor(msg = '*', showOutput = true) {
-    this.showOutput = showOutput;
+  constructor(msg) {
     this.init(msg);
-  }
-  getTotalTimeElapsed() {
-    let tNew = new Date();
-    let tDiffStart = tNew.getTime() - this.namedTimestamps.start.getTime();
-    return tDiffStart;
+    this.showOutput = true;
   }
   tacit() { this.showOutput = false; }
   timeStamp(name) {
-    let tNew = new Date();
+    let tNew = new Date(); 
     let tDiff = tNew.getTime() - this.namedTimestamps.start.getTime();
     if (this.showOutput) console.log('___', tDiff, 'msecs * to', name);
     this.t = tNew;
     this.namedTimestamps[name] = tNew;
   }
-  reset() { this.init('timing start') }
   init(msg) {
-    this.t = new Date();
+    this.t = new Date(); 
     if (this.showOutput) console.log('___', msg);
     this.namedTimestamps = { start: this.t };
   }
   showSince(name, msg = 'now') {
-    let tNew = new Date();
+    let tNew = new Date(); 
     let tNamed = this.namedTimestamps[name];
-    if (this.showOutput) if (!tNamed) { console.log(name, 'is not a timestamp!'); return; }
+    if (this.showOutput) if (!tNamed) { console.log(name, 'is not a timestamp!'); return; } 
     let tDiff = tNew.getTime() - tNamed.getTime();
     if (this.showOutput) console.log('___', tDiff, 'msecs', name, 'to', msg);
     this.t = tNew;
   }
   format(t) { return '___' + t.getSeconds() + ':' + t.getMilliseconds(); }
-  show(msg) { this.showTime(msg); }
-  showTime(msg = '*') {
-    let tNew = new Date();
+  showTime(msg) {
+    let tNew = new Date(); 
     let tDiff = tNew.getTime() - this.t.getTime();
     let tDiffStart = tNew.getTime() - this.namedTimestamps.start.getTime();
-    if (this.showOutput) console.log('___ ', tDiff, 'msecs to', msg, '(' + tDiffStart, 'total)');
+    if (this.showOutput) console.log(this.format(tNew), ':', tDiff, 'msecs to', msg, '(' + tDiffStart, 'total)');
     this.t = tNew;
   }
   start_of_cycle(msg) {
     this.init(msg);
   }
   end_of_cycle(msg) {
-    let tNew = new Date();
+    let tNew = new Date(); 
     let tDiff = tNew.getTime() - this.t.getTime();
     let tDiffStart = tNew.getTime() - this.namedTimestamps.start.getTime();
     if (this.showOutput) console.log('___ ' + tDiff + ' msecs', msg, 'to EOC (total: ' + tDiffStart + ')');
@@ -18707,6 +11483,186 @@ class ToolbarClass {
     this.addButton('retrieveState', onClickRetrieveState, 'retrieve gamestate');
   }
 }
+class UniqueIdEngine {
+  constructor() {
+    this.next = -1;
+  }
+  get() {
+    this.next += 1;
+    return 'a###' + this.next;
+    this.next += 1;
+  }
+}
+class UserManager{}
+class VidCache_dep {
+  constructor(resetStorage = false) {
+    this.live = {};
+    if (resetStorage) this.resetAll();
+  }
+  load(key) {
+    let keys = null; let sKey = key;
+    if (isList(key)) { skey = key.shift(); keys = key; }
+    let res = this.live[sKey];
+    if (res && keys) res = lookup(res, keys);
+    if (res) return res;
+    let sData = localStorage.getItem(sKey);
+    if (sData) {
+      let data = sData[0] == '{' || sData[0] == '[' ? JSON.parse(sData) : isNumber(sData) ? Number(sData) : sData;
+      if (keys) { this.live[sKey] = data; return lookup(data, keys); }
+      return data;
+    } else {
+      return null;
+    }
+  }
+  reset() { this.live = {}; }
+  resetAll() { localStorage.clear(); this.reset(); }
+  saveComplexObject(keys, o) {
+  }
+  save(key, data) {
+    this.live[key] = data;
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+}
+class WeightedSampler {
+  constructor(elements, weights) {
+    this.total = 0;
+    this.elements = Array.from(elements);
+    this.cweights = weights.map(weight => this.total += weight);
+  }
+  get() {
+    let random = Math.random() * this.total;
+    return this.elements.find((element, index) => random < this.cweights[index]);
+  }
+}
+class Layout1 extends Array { 
+  constructor(id, shape='grid', rows=3, cols=3, options = {}) {
+    console.log(';;;;;;;;;',id,shape,rows,cols,options)
+    var fields = Array(rows)
+      .fill()
+      .map(() => Array(cols).fill(0)); 
+    super(...fields);
+    this.options = options; 
+    this.msBase = null; 
+    this.id = id;
+    this.rows = rows;
+    this.cols = cols;
+    this.shape = shape;
+  }
+  addRow(...values) {
+    this.push(values);
+  }
+  addCol(){
+    let i=0;let val = arguments;
+    for (const row of this) {
+      row.push(val[i]);
+    }
+    for (let index = this.length; index < val.length; index++) {
+      this.push([val[index]]);
+    }
+  }
+  getPos(r,c){return this.msBase.getPos;}
+  setCols(c){}
+  setRows(r){}
+  setShape(shape){}
+  isValidIndex(r,c){return this[r][c];}
+  render(){this.renderBase}
+  renderField(r,c){}
+  setOption(key,value){}
+}
+class PerlenSettingsClass extends SettingsClass {
+  setOtherSettings(elem) {
+    console.log('____________elem', elem);
+    let val = elem.value;
+    let key = elem.keyList[0];
+    console.log('val',val,'key',key,'elem.value',elem.value)
+    switch (key) {
+      case 'boardStandard':
+        let data = DB.standardSettings[val];
+        if (nundef(data)) { console.log('NO! key', key); return; }
+        for (const k in data) { 
+          console.log('k',k)
+          this.o[k] = data[k]; 
+        }
+        this.o.boardStandard = val;
+        console.log('settings sollen so geaendert werden:', data);
+        this.createSettingsUi();
+        break;
+    }
+  }
+  setzeEinActiveOptions(dParent, label, optionList, friendlyList, init, skeys) {
+    let d = mDiv(dParent);
+    let val = init;
+    let inp = createElementFromHTML(`<select class="options" onchange="Settings.setOtherSettings(this)"></select>`);
+    for (let i = 0; i < optionList.length; i++) {
+      let opt = optionList[i];
+      let friendly = friendlyList[i];
+      let optElem = createElementFromHTML(`<option value="${opt}">${friendly}</option>`);
+      mAppend(inp, optElem);
+      if (opt == val) optElem.selected = true;
+    }
+    inp.value = val;
+    let labelui = createElementFromHTML(`<label>${label}</label>`);
+    mAppend(d, labelui);
+    mAppend(labelui, inp);
+    mStyleX(inp, { maleft: 12, mabottom: 4 });
+    inp.keyList = skeys;
+  }
+  setzeEinBrowseFile(dParent, label, init, skeys) {
+    let d = mDiv(dParent);
+    let val = lookup(this.o, skeys);
+    if (nundef(val)) val = init;
+    let inp = createElementFromHTML(
+      `<input type="text" class="input" value="${val}"  />`);
+    let labelui = createElementFromHTML(`<label>${label}</label>`);
+    mAppend(d, labelui);
+    mAppend(labelui, inp);
+    var fakeInput = document.createElement("input"); 
+    fakeInput.type = "file";
+    fakeInput.accept = "image/*";
+    fakeInput.multiple = false;
+    inp.onclick = () => { fakeInput.click(); };
+    fakeInput.onchange = () => {
+      let imgFile = fakeInput.files[0];
+      previewBrowsedFile(dTable, imgFile);
+      let val = inp.value = getFilename(imgFile.name);
+      this.hasChanged = true;
+      this.haveChanged.push(skeys);
+      this.o[skeys[0]] = val;
+      this.imgFile = imgFile;
+    };
+    mStyleX(inp, { maleft: 12, mabottom: 4, cursor: 'pointer' });
+    mClass(inp, 'input');
+    inp.keyList = skeys;
+    this.addSetting(skeys[0]);
+  }
+  createSettingsUi() {
+    let dParent = mBy('dSettingsContent'); 
+    mCenterFlex(dParent);
+    clearElement(dParent);
+    this.list = [];
+    let fertigSets = DB.standardSettings;
+    let fsNames = Object.keys(fertigSets); fsNames.unshift('none');
+    let nGroupBoardSettings = this.mInputGroup(dParent);
+    this.setzeEinOptions(nGroupBoardSettings, 'base on standard', fsNames, fsNames, 'shapeShifters', ['boardStandard']);
+    this.setzeEinOptions(nGroupBoardSettings, 'board layout', ['hex1', 'hex', 'quad', 'circle'], ['hex1', 'hex', 'quad', 'circle'], 'hex1', ['boardLayout']);
+    this.setzeEinBrowseFile(nGroupBoardSettings, 'board filename', 'shapeShifters', ['boardFilename']);
+    this.setzeEineZahl(nGroupBoardSettings, 'board rotation', 0, ['boardRotation']);
+    this.setzeEineZahl(nGroupBoardSettings, 'top margin', 10, ['boardMarginTop']);
+    this.setzeEineZahl(nGroupBoardSettings, 'left margin', 20, ['boardMarginLeft']);
+    this.setzeEinenString(nGroupBoardSettings, 'field color', 'transparent', ['fieldColor']);
+    this.setzeEineZahl(nGroupBoardSettings, 'field width', 100, ['dxCenter']);
+    this.setzeEineZahl(nGroupBoardSettings, 'field height', 120, ['dyCenter']);
+    this.setzeEineZahl(nGroupBoardSettings, 'horizontal gap', 10, ['wGap']);
+    this.setzeEineZahl(nGroupBoardSettings, 'vertical gap', 20, ['hGap']);
+    this.setzeEineZahl(nGroupBoardSettings, 'rows', 7, ['rows']);
+    this.setzeEineZahl(nGroupBoardSettings, 'columns', 6, ['cols']);
+    this.setzeEineZahl(nGroupBoardSettings, 'max width', 800, ['wFieldArea']);
+    this.setzeEineZahl(nGroupBoardSettings, 'max height', 800, ['hFieldArea']);
+    let nGroupPerlenSettings = this.mInputGroup(dParent);
+    this.setzeEinOptions(nGroupPerlenSettings, 'pool selection', ['random', 'mixed', 'player'], ['random', 'mixed', 'never'], 'random', ['poolSelection']);
+    this.setzeEineZahl(nGroupPerlenSettings, 'random pool size', 25, ['numPool']);
+  }
+}
 class UIGraph extends AGraph {
   init(dParent, styles = {}) {
     let defOptions = {
@@ -18774,31 +11730,31 @@ class UIGraph extends AGraph {
   comcola() {
     let defaults = {
       name: 'cola',
-      animate: true,
-      refresh: 1,
-      maxSimulationTime: 4000,
-      ungrabifyWhileSimulating: false,
-      fit: true,
-      padding: 30,
-      boundingBox: undefined,
-      nodeDimensionsIncludeLabels: false,
-      ready: function () { },
-      stop: function () { },
-      randomize: false,
-      avoidOverlap: true,
-      handleDisconnected: true,
-      convergenceThreshold: 0.01,
-      nodeSpacing: function (node) { return 10; },
-      flow: undefined,
-      alignment: undefined,
-      gapInequalities: undefined,
-      edgeLength: undefined,
-      edgeSymDiffLength: undefined,
-      edgeJaccardLength: undefined,
-      unconstrIter: undefined,
-      userConstIter: undefined,
-      allConstIter: undefined,
-      infinite: false
+      animate: true, 
+      refresh: 1, 
+      maxSimulationTime: 4000, 
+      ungrabifyWhileSimulating: false, 
+      fit: true, 
+      padding: 30, 
+      boundingBox: undefined, 
+      nodeDimensionsIncludeLabels: false, 
+      ready: function () { }, 
+      stop: function () { }, 
+      randomize: false, 
+      avoidOverlap: true, 
+      handleDisconnected: true, 
+      convergenceThreshold: 0.01, 
+      nodeSpacing: function (node) { return 10; }, 
+      flow: undefined, 
+      alignment: undefined, 
+      gapInequalities: undefined, 
+      edgeLength: undefined, 
+      edgeSymDiffLength: undefined, 
+      edgeJaccardLength: undefined, 
+      unconstrIter: undefined, 
+      userConstIter: undefined, 
+      allConstIter: undefined, 
+      infinite: false 
     };
     let options = {
       name: 'cola',
@@ -18849,11 +11805,11 @@ class UIGraph extends AGraph {
       alignmentConstraint: undefined,
       relativePlacementConstraint: undefined,
       /* layout event callbacks */
-      ready: () => { },
-      stop: () => { },
+      ready: () => { }, 
+      stop: () => { }, 
       name: 'fcose',
     };
-    this.cy.layout(defaultOptions).run();
+    this.cy.layout(defaultOptions).run(); 
   }
   gridLayout() { this.cy.layout({ name: 'grid', animate: true }).run(); }
   presetLayout_dep() {
@@ -18863,18 +11819,18 @@ class UIGraph extends AGraph {
     } else {
       let options = {
         name: 'preset',
-        positions: undefined,
-        zoom: undefined,
-        pan: undefined,
-        fit: true,
-        padding: 30,
-        animate: true,
-        animationDuration: 500,
-        animationEasing: undefined,
-        animateFilter: function (node, i) { return true; },
-        ready: undefined,
-        stop: undefined,
-        transform: function (node, position) { return position; }
+        positions: undefined, 
+        zoom: undefined, 
+        pan: undefined, 
+        fit: true, 
+        padding: 30, 
+        animate: true, 
+        animationDuration: 500, 
+        animationEasing: undefined, 
+        animateFilter: function (node, i) { return true; }, 
+        ready: undefined, 
+        stop: undefined, 
+        transform: function (node, position) { return position; } 
       };
       this.cy.layout(options);
       this.reset();
@@ -18888,90 +11844,91 @@ class UIGraph extends AGraph {
   randomLayout() { this.cy.layout({ name: 'random', animate: 'true' }).run(); }
   klay() {
     let klayDefaults = {
-      addUnnecessaryBendpoints: false,
-      aspectRatio: 1.6,
-      borderSpacing: 20,
-      compactComponents: false,
-      crossingMinimization: 'LAYER_SWEEP',
+      // Following descriptions taken from http://layout.rtsys.informatik.uni-kiel.de:9444/Providedlayout.html?algorithm=de.cau.cs.kieler.klay.layered
+      addUnnecessaryBendpoints: false, 
+      aspectRatio: 1.6, 
+      borderSpacing: 20, 
+      compactComponents: false, 
+      crossingMinimization: 'LAYER_SWEEP', 
       /* LAYER_SWEEP The layer sweep algorithm iterates multiple times over the layers, trying to find node orderings that minimize the number of crossings. The algorithm uses randomization to increase the odds of finding a good result. To improve its results, consider increasing the Thoroughness option, which influences the number of iterations done. The Randomization seed also influences results.
       INTERACTIVE Orders the nodes of each layer by comparing their positions before the layout algorithm was started. The idea is that the relative order of nodes as it was before layout was applied is not changed. This of course requires valid positions for all nodes to have been set on the input graph before calling the layout algorithm. The interactive layer sweep algorithm uses the Interactive Reference Point option to determine which reference point of nodes are used to compare positions. */
-      cycleBreaking: 'GREEDY',
+      cycleBreaking: 'GREEDY', 
       /* GREEDY This algorithm reverses edges greedily. The algorithm tries to avoid edges that have the Priority property set.
       INTERACTIVE The interactive algorithm tries to reverse edges that already pointed leftwards in the input graph. This requires node and port coordinates to have been set to sensible values.*/
-      direction: 'UNDEFINED',
+      direction: 'UNDEFINED', 
       /* UNDEFINED, RIGHT, LEFT, DOWN, UP */
-      edgeRouting: 'ORTHOGONAL',
-      edgeSpacingFactor: 0.5,
-      feedbackEdges: false,
-      fixedAlignment: 'NONE',
+      edgeRouting: 'ORTHOGONAL', 
+      edgeSpacingFactor: 0.5, 
+      feedbackEdges: false, 
+      fixedAlignment: 'NONE', 
       /* NONE Chooses the smallest layout from the four possible candidates.
       LEFTUP Chooses the left-up candidate from the four possible candidates.
       RIGHTUP Chooses the right-up candidate from the four possible candidates.
       LEFTDOWN Chooses the left-down candidate from the four possible candidates.
       RIGHTDOWN Chooses the right-down candidate from the four possible candidates.
       BALANCED Creates a balanced layout from the four possible candidates. */
-      inLayerSpacingFactor: 1.0,
-      layoutHierarchy: false,
-      linearSegmentsDeflectionDampening: 0.3,
-      mergeEdges: false,
-      mergeHierarchyCrossingEdges: true,
-      nodeLayering: 'NETWORK_SIMPLEX',
+      inLayerSpacingFactor: 1.0, 
+      layoutHierarchy: false, 
+      linearSegmentsDeflectionDampening: 0.3, 
+      mergeEdges: false, 
+      mergeHierarchyCrossingEdges: true, 
+      nodeLayering: 'NETWORK_SIMPLEX', 
       /* NETWORK_SIMPLEX This algorithm tries to minimize the length of edges. This is the most computationally intensive algorithm. The number of iterations after which it aborts if it hasn't found a result yet can be set with the Maximal Iterations option.
       LONGEST_PATH A very simple algorithm that distributes nodes along their longest path to a sink node.
       INTERACTIVE Distributes the nodes into layers by comparing their positions before the layout algorithm was started. The idea is that the relative horizontal order of nodes as it was before layout was applied is not changed. This of course requires valid positions for all nodes to have been set on the input graph before calling the layout algorithm. The interactive node layering algorithm uses the Interactive Reference Point option to determine which reference point of nodes are used to compare positions. */
-      nodePlacement: 'BRANDES_KOEPF',
+      nodePlacement: 'BRANDES_KOEPF', 
       /* BRANDES_KOEPF Minimizes the number of edge bends at the expense of diagram size: diagrams drawn with this algorithm are usually higher than diagrams drawn with other algorithms.
       LINEAR_SEGMENTS Computes a balanced placement.
       INTERACTIVE Tries to keep the preset y coordinates of nodes from the original layout. For dummy nodes, a guess is made to infer their coordinates. Requires the other interactive phase implementations to have run as well.
       SIMPLE Minimizes the area at the expense of... well, pretty much everything else. */
-      randomizationSeed: 1,
-      routeSelfLoopInside: false,
-      separateConnectedComponents: true,
-      spacing: 20,
-      thoroughness: 7
+      randomizationSeed: 1, 
+      routeSelfLoopInside: false, 
+      separateConnectedComponents: true, 
+      spacing: 20, 
+      thoroughness: 7 
     };
     var options = {
-      nodeDimensionsIncludeLabels: false,
-      fit: true,
-      padding: 20,
-      animate: true,
-      animateFilter: function (node, i) { return true; },
-      animationDuration: 500,
-      animationEasing: undefined,
-      transform: function (node, pos) { return pos; },
-      ready: this.reset.bind(this),
-      stop: undefined,
+      nodeDimensionsIncludeLabels: false, 
+      fit: true, 
+      padding: 20, 
+      animate: true, 
+      animateFilter: function (node, i) { return true; }, 
+      animationDuration: 500, 
+      animationEasing: undefined, 
+      transform: function (node, pos) { return pos; }, 
+      ready: this.reset.bind(this), 
+      stop: undefined, 
       klay: {
-        addUnnecessaryBendpoints: false,
-        aspectRatio: 1.6,
-        borderSpacing: 20,
-        compactComponents: false,
-        crossingMinimization: 'LAYER_SWEEP',
-        cycleBreaking: 'GREEDY',
-        direction: 'UNDEFINED',
-        edgeRouting: 'ORTHOGONAL',
-        edgeSpacingFactor: 0.5,
-        feedbackEdges: false,
-        fixedAlignment: 'NONE',
-        inLayerSpacingFactor: 1.0,
-        layoutHierarchy: false,
+        addUnnecessaryBendpoints: false, 
+        aspectRatio: 1.6, 
+        borderSpacing: 20, 
+        compactComponents: false, 
+        crossingMinimization: 'LAYER_SWEEP', 
+        cycleBreaking: 'GREEDY', 
+        direction: 'UNDEFINED', 
+        edgeRouting: 'ORTHOGONAL', 
+        edgeSpacingFactor: 0.5, 
+        feedbackEdges: false, 
+        fixedAlignment: 'NONE', 
+        inLayerSpacingFactor: 1.0, 
+        layoutHierarchy: false, 
         linearSegmentsDeflectionDampening: 0.3,
-        mergeEdges: false,
-        mergeHierarchyCrossingEdges: true,
-        nodeLayering: 'NETWORK_SIMPLEX',
-        nodePlacement: 'INTERACTIVE',
+        mergeEdges: false, 
+        mergeHierarchyCrossingEdges: true, 
+        nodeLayering: 'NETWORK_SIMPLEX', 
+        nodePlacement: 'INTERACTIVE', 
         /* BRANDES_KOEPF Minimizes the number of edge bends at the expense of diagram size: diagrams drawn with this algorithm are usually higher than diagrams drawn with other algorithms.
         LINEAR_SEGMENTS Computes a balanced placement.
         INTERACTIVE Tries to keep the preset y coordinates of nodes from the original layout. For dummy nodes, a guess is made to infer their coordinates. Requires the other interactive phase implementations to have run as well.
         SIMPLE Minimizes the area at the expense of... well, pretty much everything else. */
-        randomizationSeed: 1,
-        routeSelfLoopInside: false,
-        separateConnectedComponents: true,
-        spacing: 20,
-        thoroughness: 3
+        randomizationSeed: 1, 
+        routeSelfLoopInside: false, 
+        separateConnectedComponents: true, 
+        spacing: 20, 
+        thoroughness: 3 
       },
       name: 'klay',
-      priority: function (edge) { return null; },
+      priority: function (edge) { return null; }, 
     };
     this.cy.layout(options).run();
   }
@@ -19009,7 +11966,7 @@ class UIGraph extends AGraph {
   //#endregion
   //#region zoom pan fit center
   fit() { this.cy.fit(); }
-  center() { this.cy.center(); }
+  center() { this.cy.center(); } 
   reset() { this.pan0(); this.zoom1(); this.center(); this.fit(); }
   pan0() { this.cy.pan({ x: 0, y: 0 }); }
   zoom1() { this.cy.zoom(1); }
@@ -19041,7 +11998,7 @@ class UIGraph extends AGraph {
     this.cy.resize();
     dContainer.cytoscapeEdgehandles('resize');
   }
-  //#region ui funcs
+  //#region ui functions
   enableDD() { this.enableDragging(); }
   disableDD() { this.disableDragging(); }
   enableDragging() { this.cy.nodes().grabify(); }
@@ -19136,55 +12093,3762 @@ class UIGraph extends AGraph {
   }
   //#endregion
 }
-class UniqueIdEngine {
-  constructor() {
-    this.next = -1;
+class ControllerSolitaireMinimal extends ControllerSolitaire {
+  clear() { if (isdef(this.timer)) this.timer.clear(); }
+  startLevel() {
+    Settings.updateGameValues(this.player, this.g);
+    this.g.start_Level();
+    this.startRound();
   }
-  get() {
-    this.next += 1;
-    return 'a###' + this.next;
-    this.next += 1;
+  prompt() {
+    QContextCounter += 1;
+    showStats(false); 
+    this.g.trialNumber = 0;
+    this.g.prompt();
   }
-}
-class UserManager{}
-class VidCache_dep {
-  constructor(resetStorage = false) {
-    this.live = {};
-    if (resetStorage) this.resetAll();
+  activateUi() {
+    Selected = null;
+    uiActivated = true;
+    if (isdef(this.timer)) this.timer.start(); 
+    this.g.activate();
   }
-  load(key) {
-    let keys = null; let sKey = key;
-    if (isList(key)) { skey = key.shift(); keys = key; }
-    let res = this.live[sKey];
-    if (res && keys) res = lookup(res, keys);
-    if (res) return res;
-    let sData = localStorage.getItem(sKey);
-    if (sData) {
-      let data = sData[0] == '{' || sData[0] == '[' ? JSON.parse(sData) : isNumber(sData) ? Number(sData) : sData;
-      if (keys) { this.live[sKey] = data; return lookup(data, keys); }
-      return data;
+  gotoNext(nextLevel) {
+    onclick = null;
+    removeMarkers();
+    clearTimeouts();
+    if (isdef(this.timer)) this.timer.clear();
+    if (Score.levelChange && nextLevel <= this.g.maxLevel) {
+      this.g.level = nextLevel;
+      setBadgeLevel(this.g.level);
+      this.startLevel();
     } else {
-      return null;
+      this.startRound();
     }
   }
-  reset() { this.live = {}; }
-  resetAll() { localStorage.clear(); this.reset(); }
-  saveComplexObject(keys, o) {
+}
+class MazeGraph extends AGraph {
+  constructor(dParent, rows, cols, sz, gap = 4) {
+    super();
+    [this.cols, this.rows, this.sz, this.gap] = [cols, rows, sz, gap];
+    let m = this.m = this.createMaze(cols, rows, sz, gap);
+    let dMaze = this.dMaze = this.createDiv(dParent, cols, rows, sz, gap);
+    let szMaze = getSize(dMaze);
+    let dGraph = this.dGraph = mDiv(dParent, { align: 'left', w: szMaze.w, h: szMaze.h, bg: 'pink', maleft: 20 }, 'd_graph');
+    this.mazeId = dGraph.id = getUID();
+    let sb = this.sb = mDiv(dParent, { w: 40 }); mCenterCenterFlex(this.sb);
+    hide(dGraph); hide(sb);
+    this.items = this.createCellItems();
   }
-  save(key, data) {
-    this.live[key] = data;
-    localStorage.setItem(key, JSON.stringify(data));
+  clear() { super.clear(); } 
+  getTopLeftCell() { return this.getCell(0, 0); }
+  getTopRightCell() { return this.getCell(0, this.cols - 1); }
+  getBottomLeftCell() { return this.getCell(this.rows - 1, 0); }
+  getBottomRightCell() { return this.getCell(this.rows - 1, this.cols - 1); }
+  getCell(row, col) { return this.matrix[row][col]; }
+  getCommonId(row, col) { return '' + row + "-" + col; }
+  getCommonIdTable(row, col) { return 'td_' + this.getCommonId(row, col); }
+  getRCI(edgeId) {
+    let [r1, c1, r2, c2] = allNumbers(edgeId).map(x => Math.abs(x));  
+    let i1, i2; 
+    i1 = r1 < r2 ? 2 : r1 > r2 ? 0 : c1 < c2 ? 1 : 3;
+    i2 = i1 == 0 ? 2 : i1 == 1 ? 3 : i1 == 2 ? 0 : 1;
+    return [r1, c1, i1, r2, c2, i2];
+  }
+  getRelativeDirections(item1, item2) {
+    let [r1, c1, r2, c2] = [item1.row, item1.col, item2.row, item2.col];
+    let i1, i2; 
+    i1 = r1 < r2 ? 2 : r1 > r2 ? 0 : c1 < c2 ? 1 : 3;
+    i2 = i1 == 0 ? 2 : i1 == 1 ? 3 : i1 == 2 ? 0 : 1;
+    return [i1, i2];
+  }
+  createCellItems() {
+    let items = [];
+    this.matrix = [];
+    for (let r = 0; r < this.rows; r++) {
+      this.matrix[r] = [];
+      for (let c = 0; c < this.cols; c++) {
+        let id = this.getCommonId(r, c);
+        let item = { id: id, nid: id, nodeId: id, cellId: this.getCommonIdTable(r, c), row: r, col: c, sz: this.sz, marr: this.m[r, c] };
+        delete Items[id];
+        iAdd(item, { div: mBy(this.getCommonIdTable(r, c)) });
+        items.push(item);
+        this.matrix[r][c] = item;
+      }
+    }
+    return items;
+  }
+  createDiv(dParent, cols, rows, sz, gap = 1) {
+    let [wCell, hCell] = [sz, sz];
+    let [wTotal, hTotal] = [cols * (wCell + gap) + gap, rows * (hCell + gap) + gap];
+    let dGridOuter = this.dMaze = mDiv(dParent, { wmin: wTotal, hmin: hTotal, position: 'relative' });
+    let m = this.m;
+    let [x, y] = [0, 0];
+    let sBorder = `${gap}px solid black`;
+    let noBorder = `${gap}px solid transparent`;
+    this.dCells = [];
+    for (var r = 0; r < m.length; r++) {
+      x = 0;
+      this.dCells[r] = [];
+      for (var c = 0; c < m[r].length; c++) {
+        let info = m[r][c];
+        let dCell = mDiv(dGridOuter, { w: wCell, h: hCell, position: 'absolute', top: y, left: x, bg: 'gray' });
+        dCell.id = this.getCommonIdTable(r, c);
+        dCell.style.borderTop = info[0] == 0 ? sBorder : noBorder;
+        dCell.style.borderRight = info[1] == 0 ? sBorder : noBorder;
+        dCell.style.borderBottom = info[2] == 0 ? sBorder : noBorder;
+        dCell.style.borderLeft = info[3] == 0 ? sBorder : noBorder;
+        x += wCell + gap;
+        this.dCells[r].push(dCell);
+      }
+      y += hCell + gap;
+    }
+    return dGridOuter;
+  }
+  createDiv_orig(dParent, cols, rows, sz, gap) {
+    let [wCell, hCell] = [sz, sz];
+    let [wTotal, hTotal] = [cols * (wCell + gap), rows * (hCell + gap)];
+    let dGridOuter = this.dMaze = mDiv(dParent, { wmin: wTotal, hmin: hTotal });
+    let m = this.m;
+    let id = 'tMaze';
+    setCSSVariable('--wCell', `${wCell}px`);
+    setCSSVariable('--hCell', `${hCell}px`);
+    let tMaze = createElementFromHtml(`
+      <table id="${id}">
+      <tbody></tbody>
+      </table>
+    `);
+    mAppend(dGridOuter, tMaze);
+    let sBorder = `${1}px solid black`;
+    for (var i = 0; i < m.length; i++) {
+      $('#tMaze > tbody').append("<tr>");
+      for (var j = 0; j < m[i].length; j++) {
+        var selector = this.getCommonIdTable(i, j);
+        $('#tMaze > tbody').append("<td id='" + selector + "'>&nbsp;</td>");
+        if (m[i][j][0] == 0) { $('#' + selector).css('border-top', sBorder); }
+        if (m[i][j][1] == 0) { $('#' + selector).css('border-right', sBorder); }
+        if (m[i][j][2] == 0) { $('#' + selector).css('border-bottom', sBorder); }
+        if (m[i][j][3] == 0) { $('#' + selector).css('border-left', sBorder); }
+      }
+      $('tMmaze > tbody').append("</tr>");
+    }
+    return dGridOuter;
+  }
+  createMaze(cols, rows, sz, gap) {
+    var dxy = sz + 2 * gap;
+    var offs = dxy / 2 + gap;
+    var totalCells = cols * rows;
+    var cells = new Array();
+    var unvis = new Array();
+    for (var i = 0; i < rows; i++) {
+      cells[i] = new Array();
+      unvis[i] = new Array();
+      for (var j = 0; j < cols; j++) {
+        cells[i][j] = [0, 0, 0, 0];
+        let pos = { x: offs + dxy * j, y: offs + dxy * i };
+        this.addNode({ id: this.getCommonId(i, j), row: i, col: j, center: pos }, pos);
+        unvis[i][j] = true;
+      }
+    }
+    var currentCell = [Math.floor(Math.random() * rows), Math.floor(Math.random() * cols)];
+    var path = [currentCell];
+    unvis[currentCell[0]][currentCell[1]] = false;
+    var visited = 1;
+    while (visited < totalCells) {
+      var pot = [[currentCell[0] - 1, currentCell[1], 0, 2],
+      [currentCell[0], currentCell[1] + 1, 1, 3],
+      [currentCell[0] + 1, currentCell[1], 2, 0],
+      [currentCell[0], currentCell[1] - 1, 3, 1]];
+      var neighbors = new Array();
+      for (var l = 0; l < 4; l++) {
+        if (pot[l][0] > -1 && pot[l][0] < rows && pot[l][1] > -1 && pot[l][1] < cols && unvis[pot[l][0]][pot[l][1]]) { neighbors.push(pot[l]); }
+      }
+      if (neighbors.length) {
+        let next = neighbors[Math.floor(Math.random() * neighbors.length)];
+        cells[currentCell[0]][currentCell[1]][next[2]] = 1;
+        cells[next[0]][next[1]][next[3]] = 1;
+        let row = currentCell[0];
+        let col = currentCell[1];
+        let row2 = next[0];
+        let col2 = next[1];
+        this.addEdge(this.getCommonId(row, col), this.getCommonId(row2, col2), {});
+        unvis[next[0]][next[1]] = false;
+        visited++;
+        currentCell = [next[0], next[1]];
+        path.push(currentCell);
+      }
+      else {
+        currentCell = path.pop();
+      }
+    }
+    return cells;
+  }
+  setItemBorder(item, dir) {
+    let prop = getBorderPropertyForDirection(dir);
+    iDiv(item).style[prop] = `${this.gap}px solid black`;
+  }
+  setItemColor(item, color) { mStyle(iDiv(item), { bg: color }); }
+  setItemContent(item, text) { iDiv(item).innerHTML = text; }
+  removeItemContent(item) { iDiv(item).innerHTML = ''; }
+  disconnectCells(nid1, nid2) {
+    this.removeEdge(this.getCommonEdgeId(nid1, nid2));
+    let [item1, item2] = [Items[nid1], Items[nid2]];
+    let [dir1, dir2] = this.getRelativeDirections(item1, item2);
+    this.setItemBorder(item1, dir1);
+    this.setItemBorder(item2, dir2);
+  }
+  cutPath(path, min, max) {
+    let edges = path.edges();
+    let len = edges.length;
+    let [imin, imax] = [Math.floor(len * min), Math.floor(len * max)];
+    let i = randomNumber(imin, imax);
+    let edge = edges[i];
+    let [nid1, nid2] = edge.connectedNodes().map(x => x.id());
+    this.disconnectCells(nid1, nid2);
+  }
+  breadCrumbs(path, color = 'sienna', sz = 10) {
+    for (const cell of path.nodes().map(x => Items[x.id()])) {
+      mCellContent(iDiv(cell), { w: sz, h: sz, bg: color, fg: 'white', rounding: '50%' });
+    }
+  }
+  colorComponents() {
+    let comps = this.getComponents();
+    let wheel = getColorWheel('red', comps.length);
+    let i = 0;
+    for (const comp of comps) {
+      this.breadCrumbs(comp, wheel[i]); i += 1;
+    }
+  }
+  showGraph() {
+    this.dGraph.style.opacity = 1;
+    if (this.hasVisual) { show(this.dGraph); return; }
+    this.addVisual(this.dGraph);
+    this.storeCurrentPositions();
+    this.addLayoutControls(this.sb, ['show', 'hide', 'prest', 'grid', 'klay', 'rand', 'euler', 'reset', 'store']);
+  }
+  hideGraph() {
+    if (isdef(this.dGraph) && this.hasVisual) {
+      this.dGraph.style.display = 'none';
+    }
   }
 }
-class WeightedSampler {
-  constructor(elements, weights) {
-    this.total = 0;
-    this.elements = Array.from(elements);
-    this.cweights = weights.map(weight => this.total += weight);
+class Deck1 extends Array {
+  initTest(n, shuffled = true) { range(0, n).map(x => this.push(Card52.getItem(x))); if (shuffled) this.shuffle(); }
+  initEmpty() { }
+  init52(shuffled = true, jokers = 0) {
+    range(0, 51 + jokers).map(x => this.push(Card52.getItem(x)));
+    if (shuffled) this.shuffle();
   }
-  get() {
-    let random = Math.random() * this.total;
-    return this.elements.find((element, index) => random < this.cweights[index]);
+  add(otherDeck) { while (otherDeck.length > 0) { this.unshift(otherDeck.pop()); } return this; }
+  count() { return this.length; }
+  static transferTopFromToBottom(d1, d2) { let c = d1.pop(); d2.putUnderPile(c); return c; }
+  deal(n) { return this.splice(0, n); }
+  getIndices() { return this.map(x => x.i); }
+  log() { console.log(this); }
+  putUnderPile(x) { this.push(x); }
+  putOnTop(x) { this.unshift(x); }
+  showDeck(dParent, splay, ovPercent = 0, faceUp = undefined, contStyles = {}) {
+    if (isdef(faceUp)) { if (faceUp == true) this.turnFaceUp(); else this.turnFaceDown(); }
+    splayout(this, dParent, contStyles, ovPercent, splay);
+  }
+  shuffle() { shuffle(this); }
+  topCard() { return this[this.length - 1]; }
+  turnFaceUp() {
+    if (isEmpty(this) || this[0].faceUp) return;
+    this.map(x => Card52.turnFaceUp(x));
+  }
+  turnFaceDown() {
+    if (isEmpty(this) || !this[0].faceUp) return;
+    this.map(x => Card52.turnFaceDown(x));
+  }
+}
+class SimpleGraph extends AbsGraph1 { 
+  constructor(dParent, styles = {}) {
+    super();
+    upgradeToSimpleGraph(this, dParent, styles);
+  }
+}
+class GAbacus extends Game {
+  constructor(name, o) { super(name, o); }
+  startGame() { this.successFunc = successThumbsUp; this.failFunc = failThumbsDown; this.correctionFunc = this.showCorrectSequence.bind(this); }
+  showCorrectSequence() { let t = correctBlanks(); if (this.level <= 1 && (this.step <= 3 || this.op != 'mult')) showSayHint(3); return t + 1000; }
+  start_Level() { if (!isList(this.steps)) this.steps = [this.steps]; this.numPics = 2; }
+  prompt() {
+    mLinebreak(dTable, 2);
+    showHiddenThumbsUpDown(110);
+    mLinebreak(dTable);
+    this.seq = makeExpSequence();
+    let panel = mDiv(dTable, { bg: '#00000080', padding: 20, rounding: 10 });
+    [this.words, this.letters] = showEquation(this.seq, panel);
+    setNumberSequenceGoal();
+    mLinebreak(dTable, 30);
+    let wr = (this.language == 'E' ? 'calculate' : "rechne");
+    let spOp = this.oop.sp; if (this.language == 'D') spOp = DD[spOp];
+    let sp = this.operand + ' ' + spOp + ' ' + this.step + ' ?';
+    show_instruction(wr, dTitle, sp);
+    if (this.level <= 1 && this.showHint && (this.step <= 3 || this.op != 'mult'))
+      hintEngineStart(getOperationHintString, [0, 1], 5000 + this.level * 1000);
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    if (this.level <= 1 && this.showHint && (this.step <= 3 || this.op != 'mult')) hintEngineStart(getOperationHintString, [0, 1], 5000 + this.level * 1000);
+    TOMain = setTimeout(() => getWrongChars().map(x => unfillChar(x)), 500);
+    return 600;
+  }
+  activate() { addKeyup('G', this.interact.bind(this)); }
+  interact(ev) {
+    if (!isNumber(ev.key) && ev.key != '-') return;
+    clearFleetingMessage();
+    if (!canAct()) return;
+    let sel = Selected = onKeyWordInput(ev);
+    if (nundef(sel)) return;
+    let lastInputCharFilled = sel.target;
+    console.assert(sel.isMatch == (lastInputCharFilled.letter == sel.ch), lastInputCharFilled, sel.ch);
+    if (sel.isMatch && sel.isVeryLast) {
+      deactivateFocusGroup();
+      this.controller.evaluate.bind(this.controller)(true);
+    } else if (sel.isMatch && sel.isLastOfGroup) {
+      sel.target.isBlank = false;
+      sel.target.group.hasBlanks = false;
+      removeInPlace(Goal.blankWords, sel.target.group);
+      removeInPlace(Goal.blankChars, sel.target);
+      deactivateFocusGroup();
+      console.log('haaaaaaaaaaaalo', Goal.isFocus)
+    } else if (sel.isMatch) {
+      removeInPlace(Goal.blankChars, sel.target);
+      sel.target.isBlank = false;
+    } else if (sel.isVeryLast) {
+      Selected.words = getInputWords();
+      Selected.answer = getInputWordString();
+      Selected.req = getCorrectWordString();
+      deactivateFocusGroup();
+      this.controller.evaluate.bind(this.controller)(false);
+    } else if (sel.isLastOfGroup) {
+      Selected.words = getInputWords();
+      Selected.answer = getInputWordString();
+      Selected.req = getCorrectWordString();
+      deactivateFocusGroup();
+      this.controller.evaluate.bind(this.controller)(false);
+    } else {
+      if (!this.silent) { writeSound(); playSound('incorrect1'); }
+      deactivateFocusGroup();
+      showFleetingMessage('does NOT fit: ' + Selected.ch, 0, { fz: 24 });
+      setTimeout(() => unfillCharInput(Selected.target), 500);
+    }
+  }
+  eval(isCorrect) { return isCorrect; }
+}
+class GAnagram extends Game {
+  constructor(name, o) {
+    super(name, o);
+    if (this.language == 'C') {
+      this.realLanguage = this.language;
+      this.language = chooseRandom('E', 'S', 'F', 'D');
+    }
+  }
+  clear() { super.clear(); if (isdef(this.language)) this.language = this.language; }
+  start_Level() {
+    this.keys = setKeysG(this, filterWordByLengthG, 10);
+    if (this.keys.length < 10) { this.keys = setKeysG(this, filterWordByLengthG, 10, 'all'); }
+  }
+  prompt() {
+    myShowPics(null, {}, {});
+    if (this.hidden) {
+      let d = iDiv(Pictures[0]);
+      animate(d, 'aniAppearMinute', 100000);
+    }
+    setGoal();
+    let w = this.showWord ? Goal.label : '';
+    let wr = `drag letters to form ${w}`;
+    let sp = `form ${w}`;
+    show_instruction(wr, dTitle, sp);
+    mLinebreak(dTable, 22);
+    let word = Goal.label.toUpperCase();
+    let wlen = word.length;
+    let wTable = getRect(mBy('table')).w;
+    let wmax = wTable / wlen;
+    let gap = 4;
+    let fzMax = wTable / wlen - 3 * gap;
+    let fz = Math.min(70, fzMax);
+    let dpEmpty = createLetterInputsX(word, dTable, { pabottom: 5, bg: 'grey', display: 'inline-block', fz: fz, w: fz, h: fz * 1.1, margin: gap }); 
+    let inputs = blankInputs(dpEmpty, range(0, wlen - 1), false);
+    for (let i = 0; i < inputs.length; i++) {
+      let l = iDiv(inputs[i]);
+      ipadd(l);
+      mClass(l, 'dropzone');
+      l.id = 'input' + i;
+    }
+    this.inputs = inputs;
+    let x = mLinebreak(dTable, 35);
+    fz = Math.min(60, fzMax);
+    let dp = createLetterInputsX(word, dTable, { bg: 'silver', display: 'inline-block', fz: fz, w: fz, h: fz * 1.1, margin: 4 }); 
+    scrambleInputs(dp);
+    let letters = Array.from(dp.children);
+    for (let i = 0; i < letters.length; i++) {
+      let l = letters[i];
+      l.setAttribute('draggable', true);
+      ipadd(l);
+      l.id = 'letter' + i;
+    }
+    this.letters = letters;
+    mLinebreak(dTable, 35);
+    this.bDone = mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
+    if (this.hidden) showFleetingMessage('category: ' + Pictures[0].info.subgroup, 5000);
+    else if (!this.showWord) { showLabelPercentHintAfter(50, 6000); }
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    sayTryAgain();
+    setTimeout(() => {
+      this.inputs.map(x => iDiv(x).innerHTML = '_')
+    }, 1500);
+    return 10;
+  }
+  eval() {
+    let s = this.inputs.map(x => iDiv(x).innerHTML);
+    let w = s = s.join('');
+    let word = Goal.label.toUpperCase();
+    Selected = { answer: w, reqAnswer: word, feedbackUI: iDiv(Goal) };
+    return w == word;
+  }
+  onTimeup() { this.controller.evaluate(); }
+}
+class GColoku extends Game {
+  startGame() {
+    this.correctionFunc = () => {
+      if (this.qName == 'isThisSudokuCorrect') {
+        mStyle(Goal.buttonCorrect, { bg: 'green' });
+        animate(Goal.buttonCorrect, 'komisch', 1000);
+        if (!Goal.correct) {
+          animateColorScale(Goal.correctionFeedbackUI, Goal.item.color, 1.5, 1500);
+          this.dComment.innerHTML = 'rule broken! duplicate in ' + Goal.err.type;
+        } else {
+          this.dComment.innerHTML = 'this coloku is correct!';
+        }
+      } else {
+        this.dWordArea.remove();
+        this.bDone.remove();
+        if (Goal.err) {
+          this.dComment.innerHTML = 'rule broken! duplicate in ' + Goal.err.type;
+          animateColorScale(Goal.correctionFeedbackUI, Goal.item.color, 1.5, 1500);
+        } else {
+          this.dComment.innerHTML = 'Coloku is incomplete!!!!';
+        }
+      }
+      return 20000;
+    };
+    this.failFunc = () => {
+      if (this.qName == 'isThisSudokuCorrect') {
+        if (Goal.choice == Goal.correctChoice) { mStyle(Goal.buttonClicked, { bg: 'green' }); mCheckit(Goal.feedbackUI, 100); }
+        else { mXit(Goal.buttonClicked, 100); }
+      } else {
+        mXit(this.dGrid, 200);
+      }
+    }
+    this.successFunc = () => {
+      if (this.qName == 'isThisSudokuCorrect') {
+        if (Goal.choice == Goal.correctChoice) { mStyle(Goal.buttonClicked, { bg: 'green' }); mCheckit(Goal.feedbackUI, 100); }
+        else { mXit(Goal.buttonClicked, 100); }
+      } else {
+        mCheckit(this.dGrid, 200);
+      }
+    }
+  }
+  prompt() {
+    this.trials = 1;
+    let [rows, cols] = [this.rows, this.cols];
+    this.dGrid = mGrid(rows, cols, dTable, { position: 'relative', w: 400, h: 400, gap: 8, bg: 'white' });
+    let o = getSudokuPatternFromDB(rows, cols);
+    let [pattern, minPuzzle] = [this.pattern, this.minPuzzle] = [o.pattern, o.puzzle];
+    mLinebreak(dTable, 20);
+    this.dChoices = mDiv(dTable);
+    mLinebreak(dTable);
+    this.dComment = mDiv(dTable);
+    mLinebreak(dTable);
+    let qName = this.qName = this.level == 0 && coin() && PROJECTNAME == 'belinda' ? 'isThisSudokuCorrect' : 'solve';
+    this[qName]();
+    this.controller.activateUi.bind(this.controller)();
+  }
+  fillGrid(pattern) {
+    let items = this.items = [];
+    let [rows, cols, dGrid] = [this.rows, this.cols, this.dGrid];
+    let colors = this.colors = rows == 4 ? [RED, YELLOW, BLUE, GREEN]
+      : rows == 6 ? [RED, YELLOW, BLUE, GREEN, PURPLE, ORANGE]
+        : [BLUEGREEN, PURPLE, ORANGE, RED, YELLOW, BLUE, GREEN, LIGHTBLUE, OLIVE];
+    shuffle(colors);
+    for (let r = 0; r < rows; r++) {
+      let arr = [];
+      for (let c = 0; c < cols; c++) {
+        let nch = pattern[r][c];
+        let color = isNumber(nch) ? colors[pattern[r][c]] : null;
+        let d = mDiv(dGrid, { bg: color }, getUID());
+        let item = { row: r, col: c, id: d.id, color: color, val: nch };
+        iAdd(item, { div: d });
+        arr.push(item);
+      }
+      items.push(arr);
+    }
+    return items;
+  }
+  makeLines() {
+    let [wline, dGrid, sz] = [2, this.dGrid, this.rows];
+    let gSize = getSize(dGrid);
+    let rh = sz != 9 ? makeRect((gSize.w - wline) / 2, 0, wline, gSize.h) : makeRect((gSize.w - wline) / 3, 0, wline, gSize.h);
+    let rv = sz == 4 ? makeRect(0, (gSize.h - wline) / 2, gSize.w, wline) : makeRect(0, (gSize.h - wline) / 3, gSize.w, wline);
+    let vLine = mDiv(dGrid, { bg: this.color, position: 'absolute', left: rh.l, top: rh.t, w: rh.w, h: rh.h });
+    if (sz == 9) vLine = mDiv(dGrid, { bg: this.color, position: 'absolute', left: rh.l * 2, top: rh.t, w: rh.w, h: rh.h });
+    let hLine = mDiv(dGrid, { bg: this.color, position: 'absolute', left: rv.l, top: rv.t, w: rv.w, h: rv.h });
+    if (sz != 4) vLine = mDiv(dGrid, { bg: this.color, position: 'absolute', left: rv.l, top: 2 * rv.t, w: rv.w, h: rv.h });
+  }
+  setGoal(pattern) {
+    let err = checkSudokuRule(pattern);
+    let incomplete = false;
+    for (const el of arrFlatten(pattern)) {
+      if (!isNumber(el)) { incomplete = true; break; }
+    }
+    let answer = (err == null) && !incomplete; 
+    Goal = { correct: answer, err: err, incomplete: incomplete };
+  }
+  isThisSudokuCorrect() {
+    this.trials = 1;
+    let [pattern, rows, cols, dGrid] = [this.pattern, this.rows, this.cols, this.dGrid];
+    destroySudokuRule(pattern, rows, cols);
+    this.setGoal(pattern);
+    let items = this.fillGrid(pattern);
+    this.makeLines();
+    let wsp = {
+      D: 'ist dieses coloku korrekt?',
+      E: 'is this coloku correct?',
+      S: 'es este coloku correcto?',
+      F: 'est ce que ce coloku est exacte?',
+    };
+    let sp = wsp[this.language];
+    show_instruction(sp, dTitle, sp);
+    showFleetingMessage('rule: each color must be unique in every row, column and quadrant!', 15000);
+    let correct, incorrect;
+    if (Goal.correct) { correct = { num: 1, text: 'yes' }; incorrect = [{ num: 0, text: 'no' }]; }
+    else { correct = { num: 0, text: 'no' }; incorrect = [{ num: 1, text: 'yes' }]; }
+    let feedbackUI = Goal.correctionFeedbackUI = Goal.correct ? this.dGrid : iDiv(this.items[Goal.err.row][Goal.err.col]);
+    createMultipleChoiceElements(correct, incorrect, this.dChoices, feedbackUI, {});
+    Goal.item = Goal.correct ? this.items[0] : this.items[Goal.err.row][Goal.err.col];
+  }
+  solve() {
+    let [rrand, crand] = [randomNumber(0, this.rows - 1), randomNumber(0, this.cols - 1)];
+    let puzzle = this.puzzle = jsCopy(this.pattern);
+    let [min, rows, cols] = [this.minPuzzle, this.rows, this.cols];
+    let combis = [];
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (min[r][c] === ' ') combis.push({ row: r, col: c });
+      }
+    }
+    let combisToRemove = choose(combis, this.numMissing);
+    for (const o of combisToRemove) {
+      puzzle[o.row][o.col] = ' ';
+    }
+    this.fillGrid(puzzle);
+    this.makeLines();
+    let sp = 'solve this coloku!'
+    show_instruction(sp, dTitle, sp);
+    let itemlist = this.itemlist = arrFlatten(this.items);
+    let containers = this.containers = itemlist.filter(x => x.val === ' ');
+    let dWordArea = this.dWordArea = mDiv(dTable, { h: 70, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
+    let colorItems = this.colorItems = [];
+    for (const color of this.colors) {
+      let colorItem = { id: getUID(), color: color };
+      let d = mDiv(dWordArea, { w: 40, h: 40, bg: color, margin: 10, cursor: 'pointer' }, colorItem.id);
+      iAdd(colorItem, { div: d });
+      colorItems.push(colorItem);
+    }
+    enableDD(colorItems, containers, this.dropHandler.bind(this), true);
+    mLinebreak(dTable, 50);
+    this.bDone = mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
+  }
+  dropHandler(source, target, isCopy = true) {
+    let dSource = iDiv(source);
+    let dTarget = iDiv(target);
+    mStyle(dTarget, { bg: source.color });
+    target.color = source.color;
+    target.val = this.colors.indexOf(source.color);
+  }
+  evalIsCorrect() {
+    Selected = { feedbackUI: Goal.buttonClicked };
+    return Goal.buttonClicked == Goal.buttonCorrect;
+  }
+  evalSolve() {
+    let [items, pattern, rows, cols] = [this.items, this.pattern, this.rows, this.cols];
+    let pat = items.map(x => x.map(y => y.val));
+    this.setGoal(pat);
+    if (Goal.err) {
+      Goal.correctionFeedbackUI = iDiv(this.items[Goal.err.row][Goal.err.col]);
+      Goal.item = this.items[Goal.err.row][Goal.err.col];
+    }
+    Selected = { feedbackUI: this.dGrid };
+    return Goal.correct;
+  }
+  eval() {
+    clearFleetingMessage();
+    return this.qName == 'solve' ? this.evalSolve() : this.evalIsCorrect();
+  }
+  onTimeup() { this.controller.evaluate(); }
+}
+class GCats extends Game {
+  constructor(name, o) { super(name, o); }
+  startGame() { this.correctionFunc = showCorrectPictureLabels; this.failFunc = failSomePictures; }
+  dropHandler(source, target, isCopy = true) {
+    let dSource = iDiv(source);
+    let dTarget = iDiv(target);
+    if (!isCopy) {
+      mAppend(dTarget, dSource);
+    } else {
+      let dNew = mText(dSource.innerHTML, dTarget, { wmin: 100, fz: 20, padding: 4, margin: 4, display: 'inline-block' });
+      addDDSource(dNew, false);
+    }
+    if (isOverflown(dTarget)) {
+      let d = dTarget.parentNode;
+      let r = getRect(d);
+      let w = r.w + 100;
+      mSize(d, w, r.h);
+      console.log('overflow!!!!', r.w, '=>', w)
+    }
+  }
+  prompt() {
+    let items;
+    let data = this.keysByCat = genCats(this.numCats);
+    this.keylists = [], this.catsByKey = {};
+    for (const cat in data) {
+      this.keylists.push({ keys: data[cat], cat: cat });
+      for (const k of data[cat]) {
+        this.catsByKey[k] = cat;
+      }
+    }
+    this.cats = Object.keys(this.keysByCat);
+    this.allKeys = Object.keys(this.catsByKey);
+    this.options = {}; _extendOptions(this.options);
+    if (this.pickRandom == false) {
+      items = Pictures = getNItemsPerKeylist(this.numPics, this.keylists, this.options);
+    } else {
+      let keys = choose(this.allKeys, this.numPics * this.numCats);
+      items = Pictures = genItemsFromKeys(keys, this.options);
+      items.map(x => x.cat = this.catsByKey[x.key]);
+    }
+    shuffle(items);
+    let wr = this.language == 'E' ? 'drag pictures to categories' : "ordne die bilder in kategorien";
+    show_instruction(wr, dTitle, wr);
+    mLinebreak(dTable);
+    let dArea = mDiv(dTable, { display: 'flex', 'flex-wrap': 'wrap' });
+    let containers, dWordArea;
+    containers = this.containers = createContainers(this.cats, dArea, { w: 'auto', wmin: 150, wmax: 300, hmin: 250, fz: 24, fg: 'contrast' }); 
+    mLinebreak(dTable);
+    dWordArea = this.dWordArea = mDiv(dTable, { h: 70, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
+    for (const item of items) { let d = miPic(item, dWordArea); iAdd(item, { div: d }); }
+    enableDD(items, containers, this.dropHandler.bind(this), false);
+    mLinebreak(dTable, 50);
+    mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    sayTryAgain();
+    TOMain = setTimeout(() => {
+      for (const p of Pictures) {
+        if (!p.isCorrect) {
+          mAppend(this.dWordArea, iDiv(p));
+          if (this.trialNumber == 1) miAddLabel(p, { bg: '#00000080', margin: 4, fz: 20 });
+        }
+      }
+    }, 1000);
+    return 1200;
+  }
+  eval() {
+    this.piclist = Pictures;
+    Selected = { piclist: this.piclist, feedbackUI: this.piclist.map(x => iDiv(x)), sz: getRect(iDiv(this.piclist[0])).h };
+    let isCorrect = true;
+    for (const p of Pictures) {
+      let label = p.label;
+      let d = iDiv(p);
+      let cont = d.parentNode;
+      for (const c of this.containers) {
+        if (iDiv(c) == cont) {
+          p.classified = true;
+          if (p.cat == c.label) p.isCorrect = true;
+          else { p.isCorrect = isCorrect = false; }
+          break;
+        }
+      }
+      if (!p.classified) p.isCorrect = isCorrect = false;
+    }
+    return isCorrect;
+  }
+}
+class GElim extends Game {
+  constructor(name, o) { super(name, o); }
+  startGame() {
+    this.correctionFunc = () => { writeSound(); playSound('incorrect1'); return this.spokenFeedback ? 1800 : 300; };
+    this.successFunc = () => { Goal.pics.map(x => iDiv(x).style.opacity = .3); successPictureGoal(); }
+  }
+  start_Level() {
+    super.start_Level();
+    this.keys = this.keys.filter(x => containsColorWord(x));
+  }
+  prompt() {
+    this.piclist = [];
+    let colorKeys = this.numColors > 1 ? choose(this.colors, this.numColors) : null;
+    let showRepeat = this.numRepeat > 1;
+    let rows = this.numColors > 1 ? this.numColors : undefined;
+    myShowPics(this.interact.bind(this), { bg: 'white' },
+      {
+        showRepeat: showRepeat, colorKeys: colorKeys, numRepeat: this.numRepeat,
+        contrast: this.contrast, rows: rows
+      });
+    let [sSpoken, sWritten, piclist] = logicMulti(Pictures);
+    this.piclist = piclist;
+    Goal = { pics: this.piclist, sammler: [] };
+    show_instruction(sWritten, dTitle, sSpoken, { fz: 22, voice: 'zira' });
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    sayTryAgain();
+    let msg = this.language == 'D' ? 'noch einmal!' : 'try again!'
+    showFleetingMessage(msg, 0, { margin: -8, fz: 22 }, true);
+    return 1000;
+  }
+  activate() {
+    for (const p of this.piclist) { if (p.isSelected) toggleSelectionOfPicture(p); }
+    this.piclist = [];
+  }
+  interact(ev) {
+    ev.cancelBubble = true;
+    if (!canAct()) return;
+    let pic = findItemFromEvent(Pictures, ev);
+    writeSound(); playSound('hit');
+    if (Goal.pics.includes(pic)) {
+      removePicture(pic);
+      Goal.sammler.push(pic);
+    }
+    if (Goal.pics.length == Goal.sammler.length) this.controller.evaluate.bind(this.controller)(true);
+    else if (!Goal.pics.includes(pic)) { this.lastPic = pic; this.controller.evaluate.bind(this.controller)(false); }
+  }
+  eval(isCorrect) {
+    Selected = { piclist: this.piclist, feedbackUI: isCorrect ? Goal.pics.map(x => iDiv(x)) : iDiv(this.lastPic) };
+    return isCorrect;
+  }
+}
+class GHouse extends Game {
+  constructor(name, o) { super(name, o); }
+  startGame() {
+    this.correctionFunc = () => {
+      mStyle(Goal.buttonCorrect, { bg: 'green' });
+      animate(Goal.buttonCorrect, 'komisch', 1000);
+      mStyle(this.dGraph, { opacity: 1 });
+      return 20000;
+    };
+    this.failFunc = () => {
+      if (Goal.choice == Goal.correctChoice) { mStyle(Goal.buttonClicked, { bg: 'green' }); mCheckit(Goal.feedbackUI, 100); }
+      else { mXit(Goal.buttonClicked, 100); }
+      mStyle(this.dGraph, { opacity: 1 });
+    }
+    this.successFunc = () => {
+      if (Goal.choice == Goal.correctChoice) { mStyle(Goal.buttonClicked, { bg: 'green' }); mCheckit(Goal.feedbackUI, 100); }
+      else { mXit(Goal.buttonClicked, 100); }
+      mStyle(this.dGraph, { opacity: 1 });
+    }
+  }
+  prompt() {
+    if (isdef(this.graph)) this.graph.clear();
+    this.trials = 1;
+    let n = randomNumber(this.minRooms, this.maxRooms); 
+    //#region selectQuestion
+    let qFuncs = [this.areRoomsConnected.bind(this)];
+    if (n > 5) qFuncs.push(this.isThereAPath.bind(this));
+    let q = this.q = this.level > 1 ? arrLast(qFuncs) : chooseRandom(qFuncs); 
+    //#endregion
+    //#region make house
+    let s = n;
+    let wTotal = n < 4 || n > 12 ? 700 : n > 10 ? 600 : 500;
+    let dGridOuter = mDiv(dTable, { wmin: wTotal, hmin: 400 });
+    let house = this.house = iHouse(dGridOuter, s, { w: wTotal, h: 400 });
+    let rooms = this.rooms = house.rooms.map(x => Items[x]);
+    this.addLabelsToRooms();
+    //#endregion
+    //#region add doors
+    let dirs = coin() ? ['n', 'w'] : ['s', 'e'];
+    let doors = this.doors = [];
+    for (const r of rooms) {
+      let dir = coin() ? dirs[0] : dirs[1];
+      let door = iDoor(r.id, dir);
+      doors.push(door);
+    }
+    if (q.name.includes('Path')) hideOuterDoors(house);
+    //#endregion
+    //#region prep container for multiple choices
+    mLinebreak(dTable, 20);
+    this.dChoices = mDiv(dTable);
+    mLinebreak(dTable);
+    //#endregion
+    //#region make graph container
+    let r = getRect(dGridOuter); 
+    mStyle(dGridOuter, { position: 'relative' });
+    let dGraph = this.dGraph = mDiv(dGridOuter, { box: true, align: 'left', position: 'absolute', bg: '#ffffff80', top: 0, left: 0, w: r.w, h: r.h });
+    //#endregion
+    let innerStyles = { box: true, align: 'left', position: 'absolute', bg: '#ffffff80', top: 0, left: 0, w: r.w, h: r.h };
+    let g1 = this.graph = new UIGraph(dGraph, { edge: { bg: 'blue' }, outer: { align: 'left', w: wTotal, h: 400 }, inner: innerStyles });
+    convertToGraphElements(g1, house);
+    g1.presetLayout();
+    g1.reset();
+    mStyle(dGraph, { opacity: 0 });
+    q();
+    this.controller.activateUi.bind(this.controller)();
+  }
+  //#region qFuncs
+  isThereAPath() {
+    let house = this.house;
+    let corners = getCornerRoomsDict(house); 
+    let clist = Object.values(corners);  
+    let g = this.graph;
+    let id = g.getNodeWithMaxDegree(clist); 
+    let cornerRoomIds = g.sortNodesByDegree(clist).map(x => x.id());
+    let [r1, r2] = [Items[cornerRoomIds[0]], Items[cornerRoomIds[1]]]; 
+    if (r1 == r2 || areNeighbors(r1, r2) && cornerRoomIds.length > 2) r2 = Items[cornerRoomIds[2]];
+    if (!r1.isW && (r2.isW || !r1.N)) [r1, r2] = [r2, r1];
+    let roomFrom = r1.id; 
+    let funcs = this.dijkstra = g.getShortestPathsFrom(roomFrom);  
+    let roomTo = r2.id; 
+    for (const k in corners) {
+      if (k != 'NW') {
+        let dist = funcs.distanceTo('#' + corners[k]);
+        if (dist != Infinity && dist >= 3) {
+          roomTo = corners[k];
+          break;
+        } 
+      }
+    }
+    if (!roomTo) { roomTo = corners.SE; }
+    //#region spoken and written instruction
+    this.roomFrom = roomFrom;
+    this.roomTo = roomTo;
+    let sp1 = {
+      D: ['gibt es einen weeg von', 'gibt es einen weg von'],
+      E: ['is there a path from', 'is there a path from'],
+      S: ['hay un camino de', 'hay un camino de'],
+      F: ["y a 'til un chemin de", "y a 'til un chemin de"],
+    };
+    let sp2 = {
+      D: ['zu', 'zu'],
+      E: ['to', 'to'],
+      S: ['a', 'a'],
+      F: ['!. a! ', 'à'],
+    };
+    let fill1 = [`. "${Items[roomFrom].id.toUpperCase()}"! `, ` ${Items[roomFrom].id} `];
+    let fill2 = [`. "${Items[roomTo].id.toUpperCase()}"`, ` ${Items[roomTo].id}`];
+    let l = 'E'; 
+    let sp = sp1[l][0] + fill1[0] + sp2[l][0] + fill2[0] + '?';
+    let wr = sp1[l][1] + fill1[1] + sp2[l][1] + fill2[1] + '?';
+    let voice = this.language == 'E' ? coin() ? 'ukMale' : 'zira' : this.language;
+    //#endregion
+    show_instruction(wr, dTitle, sp, { voice: voice });
+    let answer = funcs.distanceTo('#' + roomTo) != Infinity;
+    let correct, incorrect;
+    if (answer) { correct = { num: 1, text: 'yes' }; incorrect = [{ num: 0, text: 'no' }]; }
+    else { correct = { num: 0, text: 'no' }; incorrect = [{ num: 1, text: 'yes' }]; }
+    createMultipleChoiceElements(correct, incorrect, this.dChoices, iDiv(this.house), {});
+  }
+  howMany() {
+    let wr = this.language == 'E' ? 'how many units are there in this house?' : "wieviele wohneinheiten hat dieses haus?";
+    show_instruction(wr, dTitle, wr);
+    let numUnits = this.graph.getNumComponents(); 
+    let otherChoices = [
+      numUnits * 2,
+      Math.round(numUnits / 2),
+      numUnits + randomNumber(1, 10)
+    ];
+    let di = {};
+    for (let i = 0; i < otherChoices.length; i++) {
+      let n = otherChoices[i];
+      while (n == numUnits || isdef(di[n])) { n += 1; } 
+      di[n] = true;
+      otherChoices[i] = n;
+    }
+    createMultipleChoiceElements({ num: numUnits, text: numUnits },
+      otherChoices.map(x => ({ num: x, text: x })), this.dChoices, iDiv(this.house), {});
+  }
+  areRoomsConnected() {
+    let wr = this.language == 'E' ? 'are all rooms connected?' : "sind alle zimmer verbunden?";
+    showInstruction(wr, dTitle, wr);
+    let numUnits = this.graph.getNumComponents(); 
+    let correct, incorrect;
+    if (numUnits == 1) { correct = { num: 1, text: 'yes' }; incorrect = [{ num: 0, text: 'no' }]; }
+    else { correct = { num: 0, text: 'no' }; incorrect = [{ num: 1, text: 'yes' }]; }
+    createMultipleChoiceElements(correct, incorrect, this.dChoices, iDiv(this.house), {});
+  }
+  //#region helpers
+  showPath() {
+    mStyle(this.dGraph, { opacity: 1 });
+  }
+  //#region add stuff to house
+  addLabelsToRooms() {
+    let roomlist = ['bedroom', 'livingroom', 'bathroom', 'kitchen'];
+    sortByFunc(this.rooms, x => x.rect.w * x.rect.h);
+    this.rooms.map(x => addLabel(x, x.ch, {}));
+  }
+  addOneDoorPerRoom(directions) {
+    for (const r of this.rooms) {
+      let door = makeRandomDoor(r, this.house, directions); this.doors.push(door);
+    }
+  }
+  addWallFinderByMouseClick() {
+    dTable.onclick = ev => {
+      console.log(ev.clientX, ev.clientY);
+      let w = findWall(ev.clientX, ev.clientY, this.walls);
+      console.log('found wall', w)
+    }
+  }
+  addFurnitureItems() {
+    let keys = ['bed', 'bathtub', 'chair', 'couch and lamp', 'toilet', 'door', 'table'];
+    let items = Pictures = genItemsFromKeys(keys);
+    console.assert(arrLast(items).key == 'table', 'NOOOOOOO');
+    let itable = arrLast(items);
+    shuffle(items);
+    let dWordArea = this.dWordArea = mDiv(dTable, { h: 70, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
+    for (const item of items) { let d = miPic(item, dWordArea); iAdd(item, { div: d }); }
+    mStyle(iDiv(itable), { fg: BROWN });
+    enableDD(items, rooms, this.dropHandler.bind(this), false);
+  }
+  //#endregion
+  eval() {
+    clearFleetingMessage();
+    Selected = { reqAnswer: G.correctAnswer, answer: Goal.choice.text, feedbackUI: Goal.buttonClicked };
+    return (Goal.buttonClicked == Goal.buttonCorrect);
+  }
+}
+class GMaze extends Game {
+  constructor(name, o) { super(name, o); }
+  clear() { super.clear(); if (isdef(this.cy)) { this.cy.destroy(); } }
+  startGame() {
+    this.correctionFunc = () => {
+      mStyle(Goal.buttonCorrect, { bg: 'green' });
+      animate(Goal.buttonCorrect, 'komisch', 1000);
+      if (Goal.correctChoice.text == 'yes') this.maze.breadCrumbs(this.path); else this.maze.colorComponents();
+      return 20000;
+    };
+    this.failFunc = () => {
+      if (Goal.choice == Goal.correctChoice) { mStyle(Goal.buttonClicked, { bg: 'green' }); mCheckit(Goal.feedbackUI, 100); }
+      else { mXit(Goal.buttonClicked, 100); }
+    }
+    this.successFunc = () => {
+      if (Goal.choice == Goal.correctChoice) { mStyle(Goal.buttonClicked, { bg: 'green' }); mCheckit(Goal.feedbackUI, 100); }
+      else { mXit(Goal.buttonClicked, 100); }
+    }
+  }
+  startRound() { if (isdef(this.cy)) this.cy.destroy(); clearElement(dTable); } 
+  prompt() {
+    this.trials = 1;
+    let maze = this.maze = new MazeGraph(dTable, this.rows, this.cols, this.sz, this.gap);
+    this.cy = maze.cy;
+    mLinebreak(dTable, 20);
+    this.dChoices = mDiv(dTable);
+    mLinebreak(dTable);
+    this.isThereAPath(maze);
+    this.controller.activateUi.bind(this.controller)();
+  }
+  isThereAPath(maze) {
+    let cellStart = maze.getTopLeftCell();
+    mCellContent(iDiv(cellStart), { w: '50%', h: '50%', fz: '60%', bg: 'green', fg: 'white', rounding: '50%' }, 'A');
+    let cellGoal = maze.getBottomRightCell();
+    mCellContent(iDiv(cellGoal), { w: '50%', h: '50%', fz: '60%', bg: 'red', fg: 'white', rounding: '50%' }, 'B');
+    [this.roomFrom, this.roomTo] = [cellStart.nodeId, cellGoal.nodeId];
+    //#region spoken and written instruction
+    let sp1 = {
+      D: ['gibt es einen weeg von', 'gibt es einen weg von'],
+      E: ['is there a path from', 'is there a path from'],
+      S: ['hay un camino de', 'hay un camino de'],
+      F: ["y a 'til un chemin de", "y a 'til un chemin de"],
+    };
+    let sp2 = {
+      D: ['zu', 'zu'],
+      E: ['to', 'to'],
+      S: ['a', 'a'],
+      F: ['!. a! ', 'à'],
+    };
+    let fill1 = [`. "A"! `, ` A `];
+    let fill2 = [`. "B"`, ` B`];
+    let l = this.language;
+    let sp = sp1[l][0] + fill1[0] + sp2[l][0] + fill2[0] + '?';
+    let wr = sp1[l][1] + fill1[1] + sp2[l][1] + fill2[1] + '?';
+    let voice = this.language == 'E' ? coin() ? 'ukMale' : 'zira' : this.language;
+    show_instruction(wr, dTitle, sp, { voice: voice });
+    //#endregion
+    let path = this.path = maze.getShortestPathFromTo(this.roomFrom, this.roomTo);
+    console.assert(path.length < Infinity, 'WAAAAAAAAAAAAAAS?');
+    if (coin(this.level > 2 ? 50 : 40)) maze.cutPath(this.path, .5, .75);
+    let len = maze.getLengthOfShortestPath(this.roomFrom, this.roomTo); 
+    let answer = len != Infinity;
+    let correct, incorrect;
+    if (answer) { correct = { num: 1, text: 'yes' }; incorrect = [{ num: 0, text: 'no' }]; }
+    else { correct = { num: 0, text: 'no' }; incorrect = [{ num: 1, text: 'yes' }]; }
+    createMultipleChoiceElements(correct, incorrect, this.dChoices, maze.dMaze, {});
+  }
+  eval() {
+    clearFleetingMessage();
+    Selected = { reqAnswer: G.correctAnswer, answer: Goal.choice.text, feedbackUI: Goal.buttonClicked };
+    return (Goal.buttonClicked == Goal.buttonCorrect);
+  }
+}
+class GMem extends Game {
+  constructor(name, o) { super(name, o); }
+  clear() { clearTimeout(this.TO); showMouse(); }
+  prompt() {
+    this.trials = 1;
+    myShowPics(this.interact.bind(this),
+      { border: '3px solid #ffffff80' },
+      {});
+    setGoal();
+    let wr = (this.language == 'E' ? 'remember ' : 'merke dir ') + (this.level > 2 ? (this.language == 'E' ? 'all' : 'alle') : Goal.label);
+    show_instruction(wr, dTitle, wr);
+    let secs = calcMemorizingTime(this.numPics, this.level > 2);
+    hideMouse();
+    TOMain = setTimeout(() => turnCardsAfter(secs), 300, this.level >= 5); 
+  }
+  interact(ev) {
+    ev.cancelBubble = true;
+    if (!canAct()) return;
+    let pic = findItemFromEvent(Pictures, ev);
+    turnFaceUpSimple(pic);
+    if (this.trialNumber == this.trials - 1) turnFaceUpSimple(Goal);
+    TOMain = setTimeout(() => this.controller.evaluate.bind(this.controller)(ev), 300);
+  }
+}
+class GMissingLetter extends Game {
+  constructor(name, o) { super(name, o); }
+  start_Level() {
+    super.start_Level();
+    this.maxPosMissing = this.posMissing == 'start' ? this.numMissing - 1 : 100;
+  }
+  prompt() {
+    myShowPics(() => fleetingMessage('just enter the missing letter!'));
+    setGoal();
+    if (this.instruction == 'all') {
+      let wr = (this.language == 'E' ? 'complete ' : "ergänze ") + `<b>${Goal.label.toUpperCase()}</b>`;
+      let sp = (this.language == 'E' ? 'complete ' : "ergänze ") + `${Goal.label}`;
+      show_instruction(wr, dTitle, sp);
+    } else if (this.instruction == 'spokenGoal') {
+      let wr = this.language == 'E' ? 'complete the word' : "ergänze das wort";
+      let sp = (this.language == 'E' ? 'complete' : "ergänze") + ' ' + Goal.label;
+      show_instruction(wr, dTitle, sp);
+    } else {
+      let wr = this.language == 'E' ? 'complete the word' : "ergänze das wort";
+      show_instruction(wr, dTitle, wr);
+    }
+    mLinebreak(dTable, 20);
+    let style = { margin: 6, fg: 'white', display: 'inline', bg: 'transparent', align: 'center', border: 'transparent', outline: 'none', family: 'Consolas', fz: 80 };
+    let d = createLetterInputs(Goal.label.toUpperCase(), dTable, style); 
+    let indices = getIndicesCondi(Goal.label, (x, i) => isAlphaNum(x) && i <= this.maxPosMissing);
+    this.nMissing = Math.min(indices.length, this.numMissing);
+    let ilist = choose(indices, this.nMissing); sortNumbers(ilist);
+    this.inputs = [];
+    for (const idx of ilist) {
+      let inp = d.children[idx];
+      inp.innerHTML = '_';
+      mClass(inp, 'blink');
+      this.inputs.push({ letter: Goal.label[idx].toUpperCase(), div: inp, index: idx });
+    }
+    mLinebreak(dTable);
+    let msg = this.composeFleetingMessage();
+    let ms = this.instruction == 'all' ? 3000 : this.instruction == 'spokenGoal' ? 9000 : 15000;
+    showFleetingMessage(msg, ms);
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    let selinp = Selected.inp;
+    sayTryAgain();
+    TOMain = setTimeout(() => {
+      let d = selinp.div;
+      d.innerHTML = '_';
+      mClass(d, 'blink');
+    }, 1200);
+    showFleetingMessage(this.composeFleetingMessage(), 3000);
+    return 1500;
+  }
+  activate() {
+    addKeyup('G', ev => {
+      if (!isLetter(ev.key)) return;
+      clearFleetingMessage();
+      if (!canAct()) return;
+      let charEntered = ev.key.toString();
+      if (!isAlphaNum(charEntered)) return;
+      Selected = { lastLetterEntered: charEntered.toUpperCase() };
+      if (this.nMissing == 1) {
+        let d = Selected.feedbackUI = this.inputs[0].div;
+        Selected.positiveFeedbackUI = iDiv(Goal);
+        Selected.lastIndexEntered = this.inputs[0].index;
+        Selected.inp = this.inputs[0];
+        d.innerHTML = Selected.lastLetterEntered;
+        mRemoveClass(d, 'blink');
+        let result = buildWordFromLetters(mParent(d));
+        this.controller.evaluate.bind(this.controller)(result);
+      } else {
+        let ch = charEntered.toUpperCase();
+        for (const inp of this.inputs) {
+          if (inp.letter == ch) {
+            Selected.lastIndexEntered = inp.index;
+            Selected.inp = inp;
+            let d = Selected.feedbackUI = inp.div;
+            d.innerHTML = ch;
+            mRemoveClass(d, 'blink');
+            removeInPlace(this.inputs, inp);
+            this.nMissing -= 1;
+            break;
+          }
+        }
+        if (nundef(Selected.lastIndexEntered)) {
+          showFleetingMessage('you entered ' + Selected.lastLetterEntered);
+          sayRandomVoice('try a different letter!', 'anderer Buchstabe!')
+        }
+        showFleetingMessage(this.composeFleetingMessage(), 3000);
+      }
+    })
+  }
+  eval(word) {
+    let answer = normalize(word, this.language);
+    let reqAnswer = normalize(Goal.label, this.language);
+    Selected.reqAnswer = reqAnswer;
+    Selected.answer = answer;
+    if (answer == reqAnswer) return true;
+    else if (this.language == 'D' && fromUmlaut(answer) == fromUmlaut(reqAnswer)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  composeFleetingMessage() {
+    let lst = this.inputs;
+    let msg = lst.map(x => x.letter).join(',');
+    let edecl = lst.length > 1 ? 's ' : ' ';
+    let ddecl = lst.length > 1 ? 'die' : 'den';
+    let s = (this.language == 'E' ? 'Type the letter' + edecl : 'Tippe ' + ddecl + ' Buchstaben ');
+    return s + msg;
+  }
+}
+class GNamit extends Game {
+  constructor(name, o) { super(name, o); }
+  startGame() { this.correctionFunc = showCorrectPictureLabels; this.failFunc = failSomePictures; }
+  prompt() {
+    this.showLabels = false;
+    myShowPics(null, {}, { rows: 1 });
+    Pictures.map(x => x.correctLabel = x.label);
+    Goal = { pics: Pictures };
+    let wr = this.language == 'E' ? 'drag labels to pictures' : "ordne die texte den bildern zu";
+    show_instruction(wr, dTitle, wr);
+    mLinebreak(dTable);
+    mLinebreak(dTable, 50);
+    let keys = Pictures.map(x => x.key);
+    shuffle(keys);
+    G.showLabels = true;
+    let titems = this.letters = myShowLabels(null, undefined, { rows: 1, showLabels: true }, keys);
+    titems.map(x => iDiv(x).style.cursor = 'pointer');
+    mLinebreak(dTable, 50);
+    enableDD(this.letters, Pictures, this.dropHandler.bind(this), true, false, null);
+    mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 32, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
+    this.controller.activateUi.bind(this.controller)();
+  }
+  dropHandler(source, target, isCopy = true) {
+    let dSource = iDiv(source);
+    let dTarget = iDiv(target);
+    console.log('dropped', source, 'onto', target);
+    let label = iLabel(target);
+    console.log('label', label);
+    let div = iDiv(target);
+    console.log('div', div);
+    addLabel(target, source.label, {});
+  }
+  trialPrompt() {
+    this.failFunc();
+    sayTryAgain();
+    TOMain = setTimeout(() => { removeMarkers(); Pictures.map(x => removeLabel(x)) }, 1200);
+    return 1500;
+  }
+  eval() {
+    console.log('eval in Namit!!!!!')
+    this.piclist = Pictures;
+    Selected = { piclist: this.piclist, feedbackUI: this.piclist.map(x => iDiv(x)), sz: getRect(iDiv(this.piclist[0])).h };
+    let isCorrect = true;
+    for (const p of Pictures) {
+      let correctLabel = p.correctLabel;
+      console.log('correctLabel', correctLabel, p.label);
+      let dLabel = iLabel(p);
+      console.log('dLabel', dLabel);
+      if (nundef(dLabel) || p.label != correctLabel) p.isCorrect = isCorrect = false;
+      else p.isCorrect = true;
+    }
+    return isCorrect;
+  }
+}
+class GPremem extends Game {
+  constructor(name, o) { super(name, o); this.piclist = []; }
+  prompt() {
+    this.piclist = [];
+    this.showLabels = false;
+    myShowPics(this.interact.bind(this), { border: '3px solid #ffffff80' }, {});
+    let wr = this.language == 'E' ? 'click any picture' : 'click irgendein Bild';
+    show_instruction(wr, dTitle, wr);
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    for (const p of this.piclist) { toggleSelectionOfPicture(p); }
+    this.piclist = [];
+    show_instruction('try again: click any picture', dTitle, 'try again: click any picture');
+    return 10;
+  }
+  interact(ev) {
+    ev.cancelBubble = true;
+    if (!canAct()) return;
+    let pic = findItemFromEvent(Pictures, ev);
+    if (!isEmpty(this.piclist) && this.piclist.length < this.numRepeat - 1 && this.piclist[0].label != pic.label) return;
+    toggleSelectionOfPicture(pic, this.piclist);
+    if (isEmpty(this.piclist)) {
+      let wr = this.language == 'E' ? 'click any picture' : 'click irgendein Bild';
+      show_instruction(wr, dTitle, wr);
+    } else if (this.piclist.length < this.numRepeat - 1) {
+      let wr = (this.language == 'E' ? 'click another ' : 'click ein andres Bild mit ');
+      show_instruction(wr + `<b>${pic.label.toUpperCase()}</b>`, dTitle, wr + pic.label);
+    } else if (this.piclist.length == this.numRepeat - 1) {
+      let picGoal = firstCond(Pictures, x => x.label == pic.label && !x.isSelected);
+      setGoal(picGoal.index);
+      let wr = (this.language == 'E' ? 'click the ' + (this.numRepeat == 2 ? 'other ' : 'last ')
+        : 'click das ' + (this.numRepeat == 2 ? 'andere ' : 'letzte ') + ' Bild mit')
+      show_instruction(wr + `<b>${picGoal.label.toUpperCase()}</b>`, dTitle, wr + picGoal.label);
+    } else {
+      this.controller.evaluate.bind(this.controller)(this.piclist);
+    }
+  }
+  eval(piclist) {
+    Selected = { piclist: piclist, feedbackUI: piclist.map(x => iDiv(x)), sz: getRect(iDiv(piclist[0])).h };
+    let req = Selected.reqAnswer = piclist[0].label;
+    Selected.answer = piclist[piclist.length - 1].label;
+    if (Selected.answer == req) { return true; } else { return false; }
+  }
+}
+class GRiddle extends Game {
+  constructor(name, o) { super(name, o); }
+  startGame() {
+    this.successFunc = successThumbsUp; this.failFunc = failThumbsDown;
+    this.correctionFunc = () => {
+      mStyle(Goal.buttonCorrect, { bg: 'green' });
+      animate(Goal.buttonCorrect, 'komisch', 1000);
+      return 20000;
+    };
+  }
+  prompt() {
+    this.trials = 1;
+    show_instruction('Solve the Riddle:', dTitle, 'Solve the Riddle:');
+    let wp = this.wp = getRandomWP(this.minIndex, this.maxIndex);
+    let haveResult = wp.isTextResult = instantiateNames(wp);
+    if (!haveResult) instantiateNumbers(wp);
+    mLinebreak(dTable, 2);
+    showHiddenThumbsUpDown(90);
+    mLinebreak(dTable);
+    let dArea = this.textArea = mDiv(dTable, { w: '70%' });
+    let d = mText(wp.text, dArea, { fz: 28 });
+    mLinebreak(dTable, 20);
+    let dResult = this.dResult = mDiv(dTable);
+    Goal = { label: wp.result.text };
+    this.createMultipleChoiceElements();
+    mLinebreak(dTable);
+    this.controller.activateUi.bind(this.controller)();
+  }
+  createMultipleChoiceElements() {
+    let wp = this.wp;
+    let choices = [], nums = [], texts = [];
+    if (wp.isTextResult == true) {
+      texts = Object.values(wp.diNames);
+      for (let i = 0; i < texts.length; i++) { choices.push({ number: 0, text: texts[i] }); }
+      Goal.correctChoice = firstCond(choices, x => x.text == Goal.label);
+    } else if (wp.isFractionResult == true) {
+      let res = wp.result.number; 
+      if (res.n / res.d > 2) {
+        wp.result.isMixed = true;
+        wp.result.mixed = getMixedNumber(res.n, res.d);
+      }
+      nums = get3FractionVariants(res);
+      texts = nums.map(x => getTextForFractionX(x.n, x.d));
+      wp.result.text = texts[0];
+      for (let i = 0; i < texts.length; i++) { choices.push({ number: nums[i], text: texts[i] }); }
+      Goal.correctChoice = firstCond(choices, x => x.text == wp.result.text);
+    } else {
+      let res = wp.result.number;
+      nums = [res, res + randomNumber(1, 25), res / randomNumber(2, 5), res * randomNumber(2, 5)];
+      texts = nums.map(x => (Math.round(x * 100) / 100));
+      for (let i = 0; i < texts.length; i++) { choices.push({ number: nums[i], text: texts[i] }); }
+      Goal.correctChoice = choices[0];
+    }
+    shuffle(choices);
+    if (coin()) shuffle(choices);
+    Goal.choices = choices;
+    let dParent = this.dResult;
+    let idx = 0;
+    for (const ch of choices) {
+      ////'&frac57;', //'&frac12;', 
+      let dButton = mButton(ch.text, this.onClickChoice.bind(this), dParent, { wmin: 100, fz: 36, margin: 20, rounding: 4, vpadding: 4, hpadding: 10 }, ['toggleButtonClass']);
+      dButton.id = 'bChoice_' + idx; idx += 1;
+      if (ch.text == wp.result.text) {
+        Goal.choice = ch.toString();
+        Goal.buttonCorrect = dButton; 
+      }
+    }
+  }
+  onClickChoice(ev) {
+    let id = evToClosestId(ev);
+    let b = mBy(id);
+    let index = Number(stringAfter(id, '_'));
+    Goal.choice = Goal.choices[index];
+    Goal.buttonClicked = b;
+    if (Goal.choice == Goal.correctChoice) { mStyle(b, { bg: 'green' }); mCheckit(this.textArea, 100); }
+    else { mXit(b, 100); }
+    this.controller.evaluate.bind(this.controller)();
+  }
+  eval() {
+    clearFleetingMessage();
+    Selected = { delay: 5000, reqAnswer: this.wp.result.number, answer: Goal.choice.number, feedbackUI: Goal.buttonClicked };
+    if (this.wp.isTextResult) { Selected.reqAnswer = this.wp.result.text; Selected.answer = Goal.choice.text; }
+    return (Goal.buttonClicked == Goal.buttonCorrect);
+  }
+  createInputElements() {
+    this.inputBox = addNthInputElement(this.dResult, 0);
+    this.defaultFocusElement = this.inputBox.id;
+    onclick = () => mBy(this.defaultFocusElement).focus();
+    mBy(this.defaultFocusElement).focus();
+  }
+  activate() { }
+  eval_dep(ev) {
+    console.log('#', this.trialNumber, 'of', this.trials);
+    clearFleetingMessage();
+    Selected = {};
+    let answer = normalize(this.inputBox.value, 'E');
+    let reqAnswer = normalize(this.wp.result.text, 'E');
+    console.log('answer', answer, 'req', reqAnswer);
+    let isCorrect = answer == reqAnswer;
+    Selected = { reqAnswer: reqAnswer, answer: answer, feedbackUI: isCorrect ? Goal.buttonClicked : Goal.buttonCorrect };
+    return (answer == reqAnswer);
+  }
+  trialPrompt_dep() {
+    sayTryAgain();
+    let n = this.trialNumber; 
+    showFleetingMessage('try again!', 0, {}, true);
+    this.inputBox = addNthInputElement(this.dResult, this.trialNumber);
+    this.defaultFocusElement = this.inputBox.id;
+    mLinebreak(dTable);
+    return 10;
+  }
+  activate_input() {
+    this.inputBox.onkeyup = ev => {
+      if (!canAct()) return;
+      if (ev.key === "Enter") {
+        ev.cancelBubble = true;
+        this.controller.evaluate.bind(this.controller)(ev);
+      }
+    };
+    this.inputBox.focus();
+  }
+}
+class GSentence extends Game {
+  constructor(name, o) {
+    super(name, o);
+    this.prevLanguage = this.language;
+    this.language = 'E';
+  }
+  startGame() {
+    this.correctionFunc = () => {
+      let sent = this.sentenceList[0].join(' ');
+      this.dWordArea.innerHTML = `<h1>${sent}</h1>`;
+      if (this.spokenFeedback) sayRandomVoice(sent);
+      return 3000;
+    }
+    this.successFunc = () => { mCheckit(this.dWordArea, 120); };
+  }
+  clear() { super.clear(); this.language = this.prevLanguage; }
+  start_Level() {
+    this.sentences = [];
+    for (const s of EnglishSentences) {
+      let slist = isList(s) ? s : [s];
+      slist = slist.map(x => x.split(' '));
+      if (slist[0].length <= this.maxWords && slist[0].length >= this.minWords) this.sentences.push(slist);
+    }
+  }
+  dropHandler(source, target, isCopy = false, clearTarget = false) {
+    let prevTarget = source.target;
+    source.target = target;
+    let dSource = iDiv(source);
+    let dTarget = iDiv(target);
+    if (clearTarget) {
+      let ch = dTarget.children[0];
+      let chSource = firstCond(Pictures, x => iDiv(x) == ch);
+      if (chSource) {
+        if (isdef(prevTarget)) {
+          mAppend(iDiv(prevTarget), ch);
+          chSource.target = prevTarget;
+        } else {
+          mAppend(this.dWordArea, ch);
+          delete chSource.target;
+        }
+      }
+      clearElement(dTarget);
+    }
+    if (isCopy) {
+      let dNew = mText(dSource.innerHTML, dTarget, { wmin: 100, fz: 20, padding: 4, margin: 4, display: 'inline-block' });
+      addDDSource(dNew, isCopy, clearTarget);
+    } else {
+      mAppend(dTarget, dSource);
+    }
+  }
+  prompt() {
+    show_instruction('form a correct sentence', dTitle, 'form a correct sentence');
+    mLinebreak(dTable);
+    let sl = this.sentenceList = chooseRandom(this.sentences);
+    let words = this.sentenceList[0];
+    let fz = 32;
+    let h = fz * 1.25, wmin = fz * 1.25;
+    let items = Pictures = [];
+    let containers = this.containers = [];
+    let options = _simpleOptions({ fz: fz, bg: 'transparent', fg: 'white', showPic: false, showLabels: true }, { wmin: wmin });
+    let dArea = mDiv(dTable, { h: 150, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
+    mLinebreak(dTable);
+    let dWordArea = this.dWordArea = mDiv(dTable, { h: 70, wmin: 20, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
+    let i = 0;
+    for (const word of words) {
+      let item = { label: word, index: i };
+      let container = { label: word, index: i };
+      i += 1;
+      let d = makeItemDiv(item, options);
+      let dCont = mDiv(dArea, { wmin: wmin + 12, hmin: h + 10, bg: colorTrans('beige', .25), fg: 'black', margin: 12 });
+      container.div = dCont;
+      items.push(item);
+      containers.push(container);
+    }
+    shuffle(items);
+    items.map(x => { mAppend(dWordArea, iDiv(x)); mStyle(iDiv(x), { h: h, w: 'auto' }); });
+    enableDD(items, containers, this.dropHandler.bind(this), false, true);
+    mLinebreak(dTable, 50);
+    mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    sayTryAgain();
+    showFleetingMessage('Try again!', 0, { fg: 'white' });
+    TOMain = setTimeout(() => { Pictures.map(x => mAppend(this.dWordArea, iDiv(x))); }, 1200);
+    return 1500;
+  }
+  eval() {
+    let words = [];
+    for (const cont of this.containers) {
+      let d = iDiv(cont);
+      let ch = d.firstChild;
+      if (ch && isdef(ch.firstChild)) {
+        words.push(ch.firstChild.innerHTML);
+      } else break;
+    }
+    let answer = words.join(' ');
+    let isCorrect = false;
+    for (const sent of this.sentenceList) {
+      let variant = sent.join(' ');
+      if (answer == variant) isCorrect = true;
+    }
+    Selected = { piclist: Pictures, feedbackUI: Pictures.map(x => iDiv(x)), sz: getRect(iDiv(Pictures[0])).h + 10 };
+    return isCorrect;
+  }
+}
+class GSteps extends Game {
+  constructor(name, o) { super(name, o); }
+  startGame() { this.correctionFunc = showCorrectWords; }
+  start_Level() {
+    super.start_Level();
+    this.keys = this.keys.filter(x => containsColorWord(x));
+  }
+  prompt() {
+    this.piclist = [];
+    let colorKeys = this.numColors > 1 ? choose(this.colors, this.numColors) : null;
+    let bg = this.numColors > 1 || this.numRepeat > 1 ? 'white' : 'random';
+    let rows = this.numColors > 1 ? this.numColors : undefined;
+    let showRepeat = this.numRepeat > 1;
+    myShowPics(this.interact.bind(this), { bg: bg },
+      { rows: rows, showRepeat: showRepeat, colorKeys: colorKeys, numRepeat: this.numRepeat, contrast: this.contrast });
+    setMultiGoal(this.numSteps);
+    let cmd = 'click';
+    let spoken = [], written = [], corr = [];
+    for (let i = 0; i < this.numSteps; i++) {
+      let goal = Goal.pics[i];
+      let sOrdinal = getOrdinal(goal.iRepeat);
+      [written[i], spoken[i], corr[i]] = getOrdinalColorLabelInstruction(cmd, sOrdinal, goal.color, goal.label);
+      goal.correctionPhrase = corr[i];
+      cmd = 'then';
+    }
+    let sWritten = this.showVisualInstruction ? written.join('; ') : 'listen to instruction!';
+    show_instruction(sWritten, dTitle, spoken.join('. '), { fz: 20 });
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    sayTryAgain();
+    showFleetingMessage(this.message, 0);
+    return 1000;
+  }
+  activate() {
+    for (const p of this.piclist) { toggleSelectionOfPicture(p); }
+    this.piclist = [];
+  }
+  interact(ev) {
+    ev.cancelBubble = true;
+    if (!canAct()) { console.log('no act'); return; }
+    let pic = findItemFromEvent(Pictures, ev);
+    toggleSelectionOfPicture(pic, this.piclist);
+    if (this.piclist.length == Goal.pics.length) {
+      clearFleetingMessage();
+      Selected = { piclist: this.piclist }; this.controller.evaluate.bind(this.controller)();
+    }
+  }
+  eval() {
+    Selected = { piclist: this.piclist, feedbackUI: this.piclist.map(x => iDiv(x)), sz: getRect(iDiv(this.piclist[0])).h };
+    let isCorrect = true;
+    this.message = this.language == 'D' ? 'beachte die REIHENFOLGE!' : 'mind the ORDER!';
+    for (let i = 0; i < this.piclist.length; i++) {
+      let p = this.piclist[i];
+      if (!Goal.pics.includes(p)) this.message = this.language == 'D' ? 'noch einmal!' : 'try again!';
+      if (this.piclist[i] != Goal.pics[i]) isCorrect = false;
+    }
+    return isCorrect;
+  }
+}
+class GSwap extends Game {
+  constructor(name, o) {
+    super(name, o);
+    if (this.language == 'C') { this.prevLanguage = this.language; this.language = chooseRandom('E', 'D'); }
+    ensureDictionary();
+  }
+  startGame() { this.correctionFunc = showCorrectLabelSwapping; } 
+  clear() { super.clear(); if (isdef(this.prevLanguage)) this.language = this.prevLanguage; }
+  start_Level() {
+    this.keys = setKeysG(this, filterWordByLengthG, 25);
+    if (this.keys.length < 25) { this.keys = setKeysG(this, filterWordByLengthG, 25, 'all'); }
+    this.trials = 2;
+  }
+  dropHandler(source, target, isCopy = false, clearTarget = false) {
+    let prevTarget = source.target;
+    source.target = target;
+    let dSource = iDiv(source);
+    let dTarget = iDiv(target);
+    if (clearTarget) {
+      let ch = dTarget.children[0];
+      let chSource = firstCond(Pictures, x => iDiv(x) == ch);
+      if (chSource) {
+        if (isdef(prevTarget)) {
+          mAppend(iDiv(prevTarget), ch);
+          chSource.target = prevTarget;
+        } else {
+          mAppend(this.dWordArea, ch);
+          delete chSource.target;
+        }
+      }
+      clearElement(dTarget);
+    }
+    if (isCopy) {
+      let dNew = mText(dSource.innerHTML, dTarget, { wmin: 100, fz: 20, padding: 4, margin: 4, display: 'inline-block' });
+      addDDSource(dNew, isCopy, clearTarget);
+    } else {
+      mAppend(dTarget, dSource);
+    }
+  }
+  prompt() {
+    show_instruction('swap letter to form words', dTitle, 'swap letter to form words');
+    mLinebreak(dTable);
+    let fz = 32;
+    let options = _simpleOptions({ language: this.language, w: 200, h: 200, keySet: this.keys, luc: 'u', fz: fz, bg: 'random', fg: 'white', showLabels: true });
+    let n = 2;
+    let items = gatherItems(n, options); 
+    let style = { margin: 3, cursor: 'pointer', fg: 'white', display: 'inline', bg: '#00000020', align: 'center', border: 'transparent', outline: 'none', family: 'Consolas', fz: 80 };
+    for (const item of items) {
+      let d1 = item.container = mDiv(dTable, { hmin: 250 });
+      let d = iLetters(item.label, d1, style); 
+      iAdd(item, { div: d }); 
+      let letters = item.letters = [];
+      for (let i = 0; i < arrChildren(d).length; i++) {
+        let ch = d.children[i];
+        let l = {
+          itemId: item.id, div: ch, i: i, letter: ch.innerHTML,
+          swapInfo: item.swaps[i],
+          state: 'swapped',
+          isBlinking: false, fg: 'white', bg: 'transparent'
+        };
+        letters.push(l);
+        ch.onclick = () => { startBlinking(l, item.letters, true) };
+      }
+      mStyle(d, { margin: 35 });
+      delete item.swaps;
+    }
+    showPictureHints(Pictures, 'container');
+    mLinebreak(dTable, 50);
+    this.buttonDone = mButton('Done!', () => {
+      if (!canAct()) return;
+      for (let i = 0; i < Pictures.length; i++) {
+        let p = Pictures[i];
+        let blinking = getBlinkingLetter(p);
+        if (!blinking) {
+          let msg = 'You need to pick 1 letter to swap in EACH word!!!';
+          Speech.say(msg);
+          sayRandomVoice(msg);
+          showFleetingMessage('You need to pick 1 letter to swap in EACH word!!!', 0, { fz: 30 });
+          return;
+        }
+      }
+      this.controller.evaluate.bind(this.controller)();
+    }, dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    if (this.trialNumber % 2 == 0) showPictureHints(Pictures, 'container'); else showTextHints(Pictures, 'container', 'origLabel');
+    TOMain = setTimeout(() => {
+      for (const p of Pictures) {
+        for (const l of p.letters) {
+          l.state = 'swapped';
+          if (isdef(l.swapInfo)) {
+            iDiv(l).innerHTML = p.label[l.i];
+          }
+        }
+      }
+    }, 1500);
+    return 1800;
+  }
+  activate() {
+    if (this.trialNumber >= 1) { sayTryAgain(); showFleetingMessage('Try again!'); }
+    else { showFleetingMessage('click one letter in each word!'); }
+  }
+  eval() {
+    let n = Pictures.length;
+    let blinkInfo = this.blinkInfo = [];
+    clearFleetingMessage();
+    for (let i = 0; i < n; i++) {
+      let p = Pictures[i];
+      let blinking = getBlinkingLetter(p);
+      blinkInfo.push({ i: i, blinking: blinking });
+    }
+    for (let i = 0; i < n; i++) { let l = blinkInfo[i].blinking; if (!l) continue; stopBlinking(l); }
+    for (const blinki of blinkInfo) { if (!blinki.blinking) { return false; } }
+    let isCorrect = true;
+    for (let i = 0; i < n; i++) {
+      let b1 = blinkInfo[i].blinking;
+      let b2 = blinkInfo[(i + 1) % blinkInfo.length].blinking;
+      let item = Items[b1.itemId];
+      let item2 = Items[b2.itemId];
+      let l = item.letters[b1.i];
+      let sw = l.swapInfo;
+      if (nundef(sw)) { sw = l.swapInfo = { correct: { itemId: item.id, index: b1.i, l: b1.letter } }; }
+      sw.temp = { itemId: item2.id, index: b2.i, l: b2.letter };
+      item.testLabel = replaceAtString(item.label, b1.i, b2.letter);
+      iDiv(l).innerHTML = b2.letter;
+      l.state = 'temp';
+    }
+    for (const p of Pictures) { if (p.testLabel != p.origLabel) { isCorrect = false; } }
+    let feedbackList = [];
+    for (let i = 0; i < n; i++) {
+      let item = Pictures[i];
+      let d;
+      if (isCorrect) d = iDiv(item.letters[item.iLetter]);
+      else {
+        let iLetter = blinkInfo[i].blinking.i;
+        if (item.iLetter != iLetter) d = iDiv(item.letters[iLetter]);
+      }
+      if (isdef(d)) feedbackList.push(d);
+    }
+    Selected = { piclist: Pictures, feedbackUI: feedbackList, sz: getRect(iDiv(Pictures[0])).h, delay: 800 };
+    return isCorrect;
+  }
+}
+class GTouchColors extends Game {
+  constructor(name, o) { super(name, o); }
+  start_Level() {
+    super.start_Level();
+    this.keys = this.keys.filter(x => containsColorWord(x));
+  }
+  prompt() {
+    let colorKeys = choose(this.colors, this.numColors);
+    let rows = this.numColors;
+    let showLabels = this.lang == 'C' || this.showLabels;
+    console.log('showLabels', showLabels);
+    myShowPics(this.controller.evaluate.bind(this.controller), { bg: 'white' }, { showLabels: showLabels, colorKeys: colorKeys, rows: rows });
+    if (this.shuffle == true) {
+      let dParent = iDiv(Pictures[0]).parentNode;
+      shuffleChildren(dParent);
+    }
+    setGoal(randomNumber(0, Pictures.length - 1));
+    let [written, spoken] = getOrdinalColorLabelInstruction('click'); 
+    show_instruction(written, dTitle, spoken);
+    this.controller.activateUi.bind(this.controller)();
+  }
+  eval(ev) {
+    ev.cancelBubble = true;
+    let item = findItemFromEvent(Pictures, ev);
+    Selected = { answer: item.label, reqAnswer: Goal.label, pic: item, feedbackUI: iDiv(item) };
+    if (item == Goal) { return true; } else { return false; }
+  }
+}
+class GTouchPic extends Game {
+  constructor(name, o) { super(name, o); }
+  prompt() {
+    myShowPics(this.controller.evaluate.bind(this.controller), {}, { showLabels: (this.lang == 'C' || this.showLabels) });
+    setGoal();
+    let wr = 'click ';
+    show_instruction(wr + `<b>${Goal.label.toUpperCase()}</b>`, dTitle, Goal.label);
+    this.controller.activateUi.bind(this.controller)();
+  }
+}
+class GWritePic extends Game {
+  constructor(name, o) { super(name, o); }
+  startGame() {
+    this.correctionFunc = showCorrectWordInTitle;
+    onkeydown = ev => {
+      if (!canAct()) return;
+      if (isdef(this.inputBox)) { this.inputBox.focus(); }
+    }
+  }
+  start_Level() {
+    this.keys = setKeysG(this, filterWordByLengthG, 25);
+    if (this.keys.length < 25) { this.keys = setKeysG(this, filterWordByLengthG, 25, 'all'); }
+  }
+  prompt() {
+    let showLabels = this.showLabels == true && this.labels == true;
+    myShowPics(() => mBy(this.defaultFocusElement).focus(), {}, { showLabels: showLabels });
+    setGoal();
+    if (this.instruction == 'all') {
+      let wr = (this.language == 'E' ? 'type ' : "schreib' ");
+      show_instruction(wr + `<b>${Goal.label.toUpperCase()}</b>`, dTitle, wr + Goal.label);
+    } else if (this.instruction == 'spokenGoal') {
+      let wr = this.language == 'E' ? 'type the correct word' : "schreib' das passende wort";
+      let sp = (this.language == 'E' ? 'type' : "schreib'") + ' ' + Goal.label;
+      show_instruction(wr, dTitle, sp);
+    } else {
+      let wr = this.language == 'E' ? 'type the correct word' : "schreib' das passende wort";
+      show_instruction(wr, dTitle, wr);
+    }
+    mLinebreak(dTable, 20);
+    this.inputBox = addNthInputElement(dTable, this.trialNumber);
+    this.defaultFocusElement = this.inputBox.id;
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    sayTryAgain();
+    let n = this.trialNumber == 1 ? 1 : (this.trialNumber + Math.floor((Goal.label.length - this.trialNumber) / 2));
+    showFleetingMessage(Goal.label.substring(0, n));
+    mLinebreak(dTable);
+    this.inputBox = addNthInputElement(dTable, this.trialNumber);
+    this.defaultFocusElement = this.inputBox.id;
+    return 10;
+  }
+  activate() {
+    this.inputBox.onkeyup = ev => {
+      if (!canAct()) return;
+      if (ev.key === "Enter") {
+        ev.cancelBubble = true;
+        this.controller.evaluate.bind(this.controller)(ev);
+      } 
+    };
+    this.inputBox.focus();
+  }
+  eval(ev) {
+    let answer = normalize(this.inputBox.value, this.language);
+    let reqAnswer = normalize(Goal.label, this.language);
+    let correctPrefix = this.correctPrefix = getCorrectPrefix(Goal.label, this.inputBox.value);
+    Selected = { reqAnswer: reqAnswer, answer: answer, feedbackUI: iDiv(Goal) };
+    if (answer == reqAnswer) { showFleetingMessage(Goal.label); return true; }
+    else { return false; }
+  }
+}
+class GMissingNumber extends Game {
+  constructor(name, o) { super(name, o); }
+  startGame() {
+    this.successFunc = successThumbsUp;
+    this.failFunc = failThumbsDown;
+    this.correctionFunc = this.showCorrectSequence.bind(this);
+  }
+  showCorrectSequence() { return numberSequenceCorrectionAnimation(getNumSeqHint); }
+  start_Level() {
+    if (!isList(this.steps)) this.steps = [this.steps];
+    this.numPics = 2;
+    this.labels = false;
+  }
+  prompt() {
+    mLinebreak(dTable, 12);
+    showHiddenThumbsUpDown(110);
+    mLinebreak(dTable);
+    this.step = chooseRandom(this.steps);
+    this.op = chooseRandom(this.ops);
+    this.oop = OPS[this.op];
+    this.seq = createNumberSequence(this.seqLen, this.minNum, this.maxNum, this.step, this.op);
+    [this.words, this.letters] = showNumberSequence(this.seq, dTable);
+    setNumberSequenceGoal();
+    mLinebreak(dTable);
+    let instr1 = (this.language == 'E' ? 'complete the sequence' : "ergänze die reihe");
+    show_instruction(instr1, dTitle, instr1);
+    if (this.showHint) {
+      hintEngineStart(getNumSeqHintString, [0, 1, 2, 3, 4], 5000 + this.level * 1000);
+    }
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    let hintlist = this.trialNumber >= 4 ? [this.trialNumber] : range(this.trialNumber, 4);
+    if (this.showHint) hintEngineStart(getNumSeqHintString, hintlist, 3000 + this.level * 1000);
+    TOMain = setTimeout(() => getWrongChars().map(x => unfillChar(x)), 500);
+    return 600;
+  }
+  activate() { addKeyup('G', this.interact.bind(this)); }
+  interact(ev) {
+    if (!isNumber(ev.key) && ev.key != '-') return;
+    clearFleetingMessage();
+    if (!canAct()) return;
+    let sel = Selected = onKeyWordInput(ev);
+    if (nundef(sel)) return;
+    let lastInputCharFilled = sel.target;
+    console.assert(sel.isMatch == (lastInputCharFilled.letter == sel.ch), lastInputCharFilled, sel.ch);
+    if (sel.isMatch && sel.isVeryLast) {
+      deactivateFocusGroup();
+      this.controller.evaluate.bind(this.controller)(true);
+    } else if (sel.isMatch && sel.isLastOfGroup) {
+      sel.target.isBlank = false;
+      sel.target.group.hasBlanks = false;
+      removeInPlace(Goal.blankWords, sel.target.group);
+      removeInPlace(Goal.blankChars, sel.target);
+      deactivateFocusGroup();
+      console.log('haaaaaaaaaaaalo', Goal.isFocus)
+    } else if (sel.isMatch) {
+      removeInPlace(Goal.blankChars, sel.target);
+      sel.target.isBlank = false;
+    } else if (sel.isVeryLast) {
+      Selected.words = getInputWords();
+      Selected.answer = getInputWordString();
+      Selected.req = getCorrectWordString();
+      deactivateFocusGroup();
+      this.controller.evaluate.bind(this.controller)(false);
+    } else if (sel.isLastOfGroup) {
+      Selected.words = getInputWords();
+      Selected.answer = getInputWordString();
+      Selected.req = getCorrectWordString();
+      deactivateFocusGroup();
+      this.controller.evaluate.bind(this.controller)(false);
+    } else {
+      if (!this.silent) { writeSound(); playSound('incorrect1'); }
+      deactivateFocusGroup();
+      showFleetingMessage('does NOT fit: ' + Selected.ch, 0, { fz: 24 });
+      setTimeout(() => unfillCharInput(Selected.target), 500);
+    }
+  }
+  eval(isCorrect) { return isCorrect; }
+}
+class GameTimed extends Game{
+  constructor(name, o) { super(name, o); }
+  clear() { clearInterval(this.TOI); super.clear(); this.timer = null; }
+  makeTimer() {
+    this.timer = true;
+    if (nundef(this.msTotal)) this.msTotal = 5000;
+    if (nundef(this.msInterval)) this.msInterval = 100;
+    let w = this.wTimerOuter = 200;
+    this.dTimeOuter = mDiv(dTable, { w: w, h: 25, border: 'white', rounding: 10, position: 'relative' });
+    [this.wTimer, this.r, this.g] = [0, 0, 255];
+    this.dTimeInner = mDiv(this.dTimeOuter, { h: 25, w: this.wTimer, rounding: 10, bg: `rgb(${this.r},${this.g},0)`, position: 'absolute', left: 0, top: 0 });
+    this.dTimeDisplay = mDiv(this.dTimeOuter, { patop: 2, align: 'center', h: 25, w: w, position: 'absolute', left: 0, top: 0 });
+    mLinebreak(dTable);
+    this.dPause = mDiv(dTable, { cursor: 'pointer', fz: 12, hpadding: 30, vpadding: 10 }, null, 'click to pause');
+    this.dPause.onclick = () => this.pause();
+  }
+  pause() {
+    if (nundef(this.timer)) return;
+    clearInterval(this.TOI);
+    this.dPause.innerHTML = 'click to resume...';
+    this.dPause.onclick = () => this.resume();
+  }
+  resume() {
+    if (nundef(this.timer)) return;
+    this.dPause.innerHTML = 'click to pause...';
+    this.dPause.onclick = () => this.pause();
+    this.TOI = setInterval(this.onTick.bind(this), this.msInterval);
+  }
+  activate() {
+    if (nundef(this.timer)) return;
+    this.msLeft = valf(this.msTotal, 10000);
+    this.dTimeDisplay.innerHTML = timeConversion(this.msLeft, 'sh');
+    this.TOI = setInterval(this.onTick.bind(this), this.msInterval);
+  }
+  onTick() {
+    this.msLeft -= this.msInterval;
+    this.wTimer += this.wTimerOuter * this.msInterval / this.msTotal;
+    let inc_color = 255 * this.msInterval / this.msTotal; 
+    this.r += inc_color; this.g -= inc_color;
+    mStyle(this.dTimeInner, { w: this.wTimer, bg: `rgb(${this.r},${this.g},0)` });
+    this.dTimeDisplay.innerHTML = timeConversion(this.msLeft, 'sh');
+    if (this.msLeft < 100) {
+      clearInterval(this.TOI);
+      this.dPause.style.opacity = 0;
+      this.onTimeup();
+    }
+  }
+}
+class GSpotit extends GameTimed {
+  constructor(name, o) { super(name, o); }
+  startGame() { this.correctionFunc = showCorrectUis; }
+  start_Level() {
+    super.start_Level();
+    this.colarr = _calc_hex_col_array(this.rows, this.cols);
+    let perCard = arrSum(this.colarr);
+    this.nShared = (this.numCards * (this.numCards - 1)) / 2;
+    this.nUnique = perCard - this.numCards + 1;
+    this.numKeysNeeded = this.nShared + this.numCards * this.nUnique;
+    this.keys = setKeysG(this, (_, x) => !x.includes(' '), this.numKeysNeeded + 1);
+  }
+  deal() {
+    let keys = choose(this.keys, this.numKeysNeeded);
+    let dupls = keys.slice(0, this.nShared); 
+    let uniqs = keys.slice(this.nShared);
+    let infos = [];
+    for (let i = 0; i < this.numCards; i++) {
+      let keylist = uniqs.slice(i * this.nUnique, (i + 1) * this.nUnique);
+      let info = { id: getUID(), shares: {}, keys: keylist, rows: this.rows, cols: this.cols, colarr: this.colarr };
+      infos.push(info);
+    }
+    let iShared = 0;
+    for (let i = 0; i < this.numCards; i++) {
+      for (let j = i + 1; j < this.numCards; j++) {
+        let c1 = infos[i];
+        let c2 = infos[j];
+        let dupl = dupls[iShared++];
+        c1.keys.push(dupl);
+        c1.shares[c2.id] = dupl;
+        c2.shares[c1.id] = dupl;
+        c2.keys.push(dupl);
+      }
+    }
+    for (const info of infos) { shuffle(info.keys); }
+    return infos;
+  }
+  interact(ev) {
+    ev.cancelBubble = true;
+    if (!canAct()) { console.log('no act'); return; }
+    let keyClicked = evToProp(ev, 'key');
+    let id = evToId(ev);
+    if (isdef(keyClicked) && isdef(Items[id])) {
+      this.pause();
+      let item = Items[id];
+      if (Object.values(item.shares).includes(keyClicked)) {
+        let otherCard = spotitFindCardSharingSymbol(item, keyClicked);
+        let cardSymbol = ev.target;
+        let otherSymbol = spotitFindSymbol(otherCard, keyClicked);
+        Selected = { isCorrect: true, feedbackUI: [cardSymbol, otherSymbol] };
+      } else {
+        let cardSymbol = ev.target;
+        Selected = { isCorrect: false, feedbackUI: [cardSymbol], correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 1500 };
+      }
+      this.controller.evaluate.bind(this.controller)();
+    }
+  }
+  getSharedSymbols() {
+    let result = [];
+    for (const item of this.items) {
+      for (const id in item.shares) {
+        let k = item.shares[id];
+        let ui = iGetl(item, k);
+        result.push(ui);
+      }
+    }
+    return result;
+  }
+  eval() { return Selected.isCorrect; }
+  prompt() {
+    this.trials = 1;
+    show_instruction('find common symbol', dTitle);
+    mLinebreak(dTable, 25);
+    let infos = this.deal(); 
+    let items = this.items = [];
+    for (const info of infos) {
+      let item = spotitCard(info, dTable, { margin: 10 }, this.interact.bind(this));
+      items.push(item);
+    }
+    this.controller.activateUi.bind(this.controller)();
+  }
+  activate(){}
+  onTimeup() {
+    Selected = { isCorrect: false, correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 2000 };
+    this.controller.evaluate.bind(this.controller)();
+  }
+}
+class GSpotitMulti extends GSpotit {
+  constructor(name, o) { super(name, o); }
+  make_players(table) {
+    let players = this.players = {};
+    for (const plname of table.players) {
+      players[plname] = { name: plname, color: getColorDictColor(DB.users[plname].color), imgPath: `../base/assets/images/${plname}.jpg`, score: 0 };
+    }
+    this.player = Session.cur_user;
+    this.me = players[this.player];
+    this.others = Object.values(players).filter(x => x.name != this.player);
+  }
+  startGame() {
+    resetState();
+    this.successFunc = successPictureGoal;
+    this.failFunc = failPictureGoal;
+    this.correctionFunc = showCorrectUis;
+    this.numCards = 2;
+    this.colarr = _calc_hex_col_array(this.rows, this.cols);
+    let perCard = arrSum(this.colarr);
+    this.nShared = (this.numCards * (this.numCards - 1)) / 2;
+    this.nUnique = perCard - this.numCards + 1;
+    this.numKeysNeeded = this.nShared + this.numCards * this.nUnique;
+    this.keys = setKeysG(this, (_, x) => !x.includes(' '), this.numKeysNeeded + 1);
+    resetRound(); 
+    uiActivated = false;
+    QContextCounter += 1;
+    showStats(false);
+    this.update_status(); 
+    show_title(Session.table.friendly);
+    this.trialNumber = 0;
+    hide('sidebar');
+    this.trials = 1;
+    this.startTime = get_timestamp();
+    mLinebreak(dTable, 25);
+    let infos = this.deal(); 
+    let items = this.items = [];
+    for (const info of infos) {
+      let item = spotitCard(info, dTable, { margin: 10 }, this.interact.bind(this));
+      items.push(item);
+    }
+    Selected = null;
+    uiActivated = true;
+  }
+  update_status() {
+    let d = dTitle;
+    clearElement(d);
+    let d1 = mDiv(d, { display: 'flex', 'justify-content': 'center' });
+    for (const plname in this.players) {
+      let pl = this.players[plname];
+      let d2 = mDiv(d1, { vmargin: 10, hmargin: 20, align: 'center' }, null, `<img src='${pl.imgPath}' style="display:block" class='img_person' width=50 height=50>${pl.score}`);
+    }
+  }
+  evaluate() {
+    if (!canAct()) return;
+    uiActivated = false; clearTimeouts();
+    IsAnswerCorrect = Selected.isCorrect;
+    this.me.score += IsAnswerCorrect ? 1 : 0;
+    user_game_status();
+  }
+  //#region spotit
+  interact(ev) {
+    ev.cancelBubble = true;
+    if (!canAct()) { console.log('no act'); return; }
+    let keyClicked = evToProp(ev, 'key');
+    let id = evToId(ev);
+    if (isdef(keyClicked) && isdef(Items[id])) {
+      this.pause();
+      let item = Items[id];
+      if (Object.values(item.shares).includes(keyClicked)) {
+        let otherCard = spotitFindCardSharingSymbol(item, keyClicked);
+        let cardSymbol = ev.target;
+        let otherSymbol = spotitFindSymbol(otherCard, keyClicked);
+        Selected = { isCorrect: true, feedbackUI: [cardSymbol, otherSymbol] };
+      } else {
+        let cardSymbol = ev.target;
+        Selected = { isCorrect: false, feedbackUI: [cardSymbol], correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 1500 };
+      }
+      this.evaluate.bind(this)();
+    }
+  }
+  deal() {
+    let keys = choose(this.keys, this.numKeysNeeded);
+    let dupls = keys.slice(0, this.nShared); 
+    let uniqs = keys.slice(this.nShared);
+    let infos = [];
+    for (let i = 0; i < this.numCards; i++) {
+      let keylist = uniqs.slice(i * this.nUnique, (i + 1) * this.nUnique);
+      let info = { id: getUID(), shares: {}, keys: keylist, rows: this.rows, cols: this.cols, colarr: this.colarr };
+      infos.push(info);
+    }
+    let iShared = 0;
+    for (let i = 0; i < this.numCards; i++) {
+      for (let j = i + 1; j < this.numCards; j++) {
+        let c1 = infos[i];
+        let c2 = infos[j];
+        let dupl = dupls[iShared++];
+        c1.keys.push(dupl);
+        c1.shares[c2.id] = dupl;
+        c2.shares[c1.id] = dupl;
+        c2.keys.push(dupl);
+      }
+    }
+    for (const info of infos) { shuffle(info.keys); }
+    return infos;
+  }
+  getSharedSymbols() {
+    let result = [];
+    for (const item of this.items) {
+      for (const id in item.shares) {
+        let k = item.shares[id];
+        let ui = iGetl(item, k);
+        result.push(ui);
+      }
+    }
+    return result;
+  }
+  //#endregion
+}
+class GSpotitMulti_mess extends GSpotit {
+  constructor(name, o) { super(name, o); }
+  static start_fen(players) { let fen = {}; for (const pl of players) { fen[pl] = 0; } return fen; }
+  fen_to_state(fen) {
+    console.log('fen', fen);
+    this.playerscores = isDict(fen) ? fen : JSON.parse(fen);
+    for (const plname in this.players) { let pl = this.players[plname]; pl.score = this.playerscores[plname]; }
+    console.log('players', this.players);
+  }
+  make_players(table) {
+    let players = this.players = {};
+    for (const plname of table.players) {
+      players[plname] = { name: plname, color: getColorDictColor(DB.users[plname].color), imgPath: `../base/assets/images/${plname}.jpg`, score: 0 };
+    }
+    this.player = Session.cur_user;
+    this.me = players[this.player];
+    this.others = Object.values(players).filter(x => x.name != this.player);
+  }
+  make_fen_vor_move(table, moves = []) { return table.fen; }
+  make_fen_after_move() {
+    this.me.score += IsAnswerCorrect ? 1 : 0;
+    let fen = {};
+    for (const plname in this.players) {
+      let pl = this.players[plname];
+      fen[plname] = pl.score;
+    }
+    return fen;
+  }
+  startGame(fen) {
+    resetState();
+    this.successFunc = successPictureGoal;
+    this.failFunc = failPictureGoal;
+    this.correctionFunc = showCorrectUis;
+    console.log(this.player);
+    Settings.updateGameValues(this.player, this);
+    super.start_level();
+    this.numCards = 2;
+    this.colarr = _calc_hex_col_array(this.rows, this.cols);
+    let perCard = arrSum(this.colarr);
+    this.nShared = (this.numCards * (this.numCards - 1)) / 2;
+    this.nUnique = perCard - this.numCards + 1;
+    this.numKeysNeeded = this.nShared + this.numCards * this.nUnique;
+    this.keys = setKeysG(this, (_, x) => !x.includes(' '), this.numKeysNeeded + 1);
+    this.fen_to_state(fen);
+    resetRound(); 
+    uiActivated = false;
+    TOMain = setTimeout(() => this.prompt(), 300);
+  }
+  update_status() {
+    let d = dTitle;
+    clearElement(d);
+    let d1 = mDiv(d, { display: 'flex', 'justify-content': 'center' });
+    for (const plname in this.players) {
+      let pl = this.players[plname];
+      let d2 = mDiv(d1, { vmargin: 10, hmargin: 20, align: 'center' }, null, `<img src='${pl.imgPath}' style="display:block" class='img_person' width=50 height=50>${pl.score}`);
+    }
+  }
+  prompt() {
+    QContextCounter += 1;
+    showStats(false);
+    this.update_status(); 
+    show_title(Session.table.friendly);
+    this.trialNumber = 0;
+    hide('sidebar');
+    this.trials = 1;
+    this.startTime = get_timestamp();
+    mLinebreak(dTable, 25);
+    let infos = this.deal(); 
+    let items = this.items = [];
+    for (const info of infos) {
+      let item = spotitCard(info, dTable, { margin: 10 }, this.interact.bind(this));
+      items.push(item);
+    }
+    this.activateUi.bind(this)();
+  }
+  activateUi() {
+    Selected = null;
+    uiActivated = true;
+    this.activate(); 
+  }
+  deal() {
+    let keys = choose(this.keys, this.numKeysNeeded);
+    let dupls = keys.slice(0, this.nShared); 
+    let uniqs = keys.slice(this.nShared);
+    let infos = [];
+    for (let i = 0; i < this.numCards; i++) {
+      let keylist = uniqs.slice(i * this.nUnique, (i + 1) * this.nUnique);
+      let info = { id: getUID(), shares: {}, keys: keylist, rows: this.rows, cols: this.cols, colarr: this.colarr };
+      infos.push(info);
+    }
+    let iShared = 0;
+    for (let i = 0; i < this.numCards; i++) {
+      for (let j = i + 1; j < this.numCards; j++) {
+        let c1 = infos[i];
+        let c2 = infos[j];
+        let dupl = dupls[iShared++];
+        c1.keys.push(dupl);
+        c1.shares[c2.id] = dupl;
+        c2.shares[c1.id] = dupl;
+        c2.keys.push(dupl);
+      }
+    }
+    for (const info of infos) { shuffle(info.keys); }
+    return infos;
+  }
+  interact(ev) {
+    ev.cancelBubble = true;
+    if (!canAct()) { console.log('no act'); return; }
+    let keyClicked = evToProp(ev, 'key');
+    let id = evToId(ev);
+    if (isdef(keyClicked) && isdef(Items[id])) {
+      this.pause();
+      let item = Items[id];
+      if (Object.values(item.shares).includes(keyClicked)) {
+        let otherCard = spotitFindCardSharingSymbol(item, keyClicked);
+        let cardSymbol = ev.target;
+        let otherSymbol = spotitFindSymbol(otherCard, keyClicked);
+        Selected = { isCorrect: true, feedbackUI: [cardSymbol, otherSymbol] };
+      } else {
+        let cardSymbol = ev.target;
+        Selected = { isCorrect: false, feedbackUI: [cardSymbol], correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 1500 };
+      }
+      this.evaluate.bind(this)();
+    }
+  }
+  evaluate() {
+    if (!canAct()) return;
+    uiActivated = false; clearTimeouts();
+    IsAnswerCorrect = Selected.isCorrect;
+    this.me.score += IsAnswerCorrect ? 1 : 0;
+    user_game_status();
+  }
+  getSharedSymbols() {
+    let result = [];
+    for (const item of this.items) {
+      for (const id in item.shares) {
+        let k = item.shares[id];
+        let ui = iGetl(item, k);
+        result.push(ui);
+      }
+    }
+    return result;
+  }
+  to_move(is_correct, ms_total) { return '' + (is_correct ? 1 : 0) + ' ' + ms_total; }
+  from_move(data) { return { is_correct: (data[0] == '1' ? true : false), ms_total: stringAfter(data, ' ') }; }
+  onTimeup() {
+    Selected = { isCorrect: false, correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 2000 };
+    this.evaluate.bind(this)();
+  }
+}
+class GProg extends Game {
+  constructor(name, o) { super(name, o); }
+  prompt() {
+    let c = this.card = cRound(dTable); 
+    let d = c.visual = iDiv(c);
+    visualPropertySetter(this.card);
+    visualAttributeSetter(this.card);
+    d.innerHTML = 'HALLO';
+    mStyle(d, { fg: 'blue' });
+    mLinebreak(dTable, 25);
+    this.ta = this.createTextArea();
+    this.ta.value = `mCenterCenterFlex(card.visual);`; 
+    mLinebreak(dTable, 25);
+    mButton('run', this.runCode.bind(this), dTable, { bg: 'skyblue', fg: 'black', fz: 32 }, 'mybutton');
+  }
+  runCode() {
+    let code = this.ta.value;
+    let prelim = ''; 
+    prelim = 'let card = this.card;'; 
+    code = prelim + code;
+    eval(code);
+  }
+  createTextArea() {
+    let dCode = mDiv(dTable, {});
+    let ta = this.ta = mCreate('textarea');
+    mAppend(dCode, ta);
+    ta.setAttribute('rows', 10);
+    ta.setAttribute('cols', 60);
+    mStyle(ta, { family: 'courier', padding: 10 });
+    return ta;
+  }
+}
+class GKrieg extends G2Player {
+  write() { write('game', ...arguments); }
+  startGame() {
+    this.write('start game')
+    super.startGame();
+    let back = this.back = new GKriegBack();
+    this.setStartPosition();
+    this.front = new GKriegFront(130, dTable);
+    this.front.presentState(this.back.get_state());
+    mLinebreak(dTable, 50);
+    this.moveButton = mButton('Move!', this.interact.bind(this), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
+  }
+  setStartPosition() {
+    this.back.load(null); 
+  }
+  prompt() {
+    this.write('prompt')
+    let msg = this.plTurn == this.ai ? 'Ai thinking...' : 'Deterministic: click Move!';
+    showInstruction('', msg, dTitle, false);
+    this.controller.activateUi();
+  }
+  activate() {
+    let pl = this.plTurn;
+    let autoplay = false;
+    let manual = true;
+    if (!manual && (autoplay || pl == this.ai)) {
+      if (this.ai == pl) uiActivated = false;
+      setTimeout(this.interact.bind(this), 500);
+    } else {
+      this.moveButton.style.opacity = 1;
+    }
+  }
+  interact() {
+    if (!canAct()) { console.log('NOPE!!!!', 'ai', aiActivated, 'ui', uiActivated); return; }
+    this.controller.deactivateUi();
+    this.write('interact');
+    let back = this.back;
+    back.make_random_move();
+    this.front.animatePlayerMove(back.turn(), this.onPlayerMoveCompleted.bind(this));
+  }
+  onPlayerMoveCompleted() {
+    let back = this.back;
+    this.front.presentState(this.back.get_state());
+    let x = this.back.resolve();
+    if (isdef(x)) {
+      this.moveButton.style.opacity = .3;
+      this.TO = setTimeout(() => { this.front.animateResolve(x, () => { GC.evaluate(x) }) },  
+        1000
+      );
+    } else this.controller.evaluate(x);
+  }
+  changePlayer() {
+    this.write('change player')
+    this.back.swap_turn();
+    this.plTurn = this.players[this.back.player().index];
+    this.opp = this.players[this.back.opponent().index];
+  }
+  eval(x) {
+    let back = this.back;
+    this.write('eval', x)
+    if (isdef(x)) this.front.presentState(this.back.get_state());
+    if (back.is_out_of_cards()) {
+      this.moveButton.remove();
+      this.gameOver = true;
+      let w = back.winner();
+      if (isdef(w)) this.winner = this.players[w.index];
+      this.bannerPos = -480;
+    }
+  }
+}
+class GTTT extends G2Player {
+  startGame() {
+    super.startGame();
+    this.createBoard();
+    this.human.sym = 'O';
+    this.ai.sym = 'X';
+    this.setStartPosition();
+  }
+  createBoard() {
+    this.rows = this.cols = this.boardSize;
+    this.board = new Board(this.rows, this.cols, this.controller.uiInteract.bind(this.controller));
+  }
+  setStartPosition() {
+    return;
+    let positions = [
+      new Array(9).fill(null),
+      ['X', 'X', null, 'O', null, null, 'O', null, null],
+      [null, 'X', null, 'X', null, 'O', null, 'O', null],
+      [null, null, null, null, 'X', 'O', null, 'O', null],
+    ];
+    if (isdef(this.iPosition)) {
+      let idx = this.iPosition + 1; idx = idx % positions.length; this.iPosition = idx;
+    } else this.iPosition = 0;
+    let state = nundef(this.startPosition) || this.startPosition == 'empty' ? positions[0]
+      : this.startPosition == 'random' ? chooseRandom(positions)
+        : positions[this.iPosition];
+    this.board.setState(state, { X: this.ai.color, O: this.human.color });
+  }
+  prompt() {
+    let msg = this.plTurn == this.ai ? 'Ai thinking...' : 'click an empty field!';
+    showInstruction('', msg, dTitle, false);
+    this.controller.activateUi();
+  }
+  activate() {
+    let pl = this.plTurn;
+    let autoplay = false;
+    if (autoplay || pl == this.ai) {
+      if (this.ai == pl) uiActivated = false;
+      setTimeout(() => AIMinimax(this, this.afterComputerMove.bind(this)), 200);
+    }
+  }
+  interact(ev) {
+    let tile = evToItemC(ev);
+    if (isdef(tile.label)) return; 
+    let pl = this.plTurn;
+    addLabel(tile, pl.sym, { fz: 60, fg: pl.color });
+    this.controller.evaluate(tile);
+  }
+  afterComputerMove(iMove) {
+    let tile = this.board.items[iMove];
+    this.interact({ target: iDiv(tile) });
+  }
+  eval() {
+    let done = this.checkFinal();
+    this.gameOver = done > 0;
+    if (this.gameOver) { this.winner = done > 1 ? this.plTurn : null; this.tie = done == 1; }
+  }
+  checkFinal(state) {
+    if (nundef(state)) state = this.getState();
+    let isTie = false;
+    let isWin = checkWinnerTTT(state);
+    if (!isWin) { isTie = checkBoardFull(state) || !checkPotentialTTT(state); }
+    return isWin ? 2 : isTie ? 1 : 0;
+  }
+  getState() { return this.board.getState(); }
+  applyMove(state, move, player) { arrReplaceAtInPlace(state, move, player.sym); }
+  undoMove(state, move, player) { arrReplaceAtInPlace(state, move, ' '); }
+  getAvailableMoves(state) {
+    let moves = [];
+    for (let i = 0; i < state.length; i++) {
+      if (EmptyFunc(state[i])) moves.push(i);
+    }
+    shuffle(moves);
+    return moves;
+  }
+  heuristic1(node, depth) { }
+  evalState(node, depth) {
+    let x = checkWinnerTTT(node);
+    if (checkBoardFull(node) || x) {
+      return { reached: true, val: (!x ? 0 : (10 - depth) * (x == MAXIMIZER.sym ? 1 : -1)) };
+    }
+    return { reached: false };
+  }
+  evalStateL(node, depth) {
+    let key = node.join('');
+    let val = DMM[key];
+    let x = isdef(val) ? val : checkWinnerTTT(node);
+    DMM[key] = x;
+    if (checkBoardFull(node) || x) {
+      return { reached: true, val: (!x ? 0 : (10 - depth) * (x == MAXIMIZER.sym ? 1 : -1)) };
+    }
+    return { reached: false };
+  }
+  evalStateL2(node, depth) {
+    let full = checkBoardFull(node);
+    if (full) {
+      let key = JSON.stringify(node);
+      let x = DMM[key];
+      if (nundef(x)) DMM[key] = x = checkWinnerTTT(node);
+      return { reached: true, val: (!x ? 0 : (10 - depth) * (x == MAXIMIZER.sym ? 1 : -1)) };
+    } else {
+      let x = checkWinnerTTT(node);
+      if (x) return { reached: true, val: (!x ? 0 : (10 - depth) * (x == MAXIMIZER.sym ? 1 : -1)) };
+      return { reached: false };
+    }
+  }
+}
+class GC4 extends GTTT {
+  startGame() {
+    super.startGame();
+  }
+  createBoard() {
+    this.board = new Board(this.rows, this.cols, this.controller.uiInteract.bind(this.controller), { margin: 6, w: 60, h: 60, bg: 'white', fg: 'black', rounding: '50%' });
+  }
+  setStartPosition() {
+    let positions = [
+      [[0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0]],
+      [[0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      ['O', 'X', 0, 0, 0, 0, 0],
+      ['O', 'X', 0, 0, 0, 0, 0]],
+      [[0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      ['O', 'X', 0, 0, 0, 0, 0],
+      ['O', 'X', 0, 0, 0, 0, 0],
+      ['O', 'X', 0, 0, 0, 0, 0]],
+      [[0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 'O', 0, 0, 0],
+      ['O', 'X', 0, 'O', 0, 0, 0],
+      ['O', 'X', 0, 'O', 0, 0, 0]],
+      [[0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, "X", 0, 0, 0],
+      ["X", 0, 0, "O", 0, 0, 0],
+      ["O", "X", 0, "O", 0, 0, 0],
+      ["O", "X", "O", "O", 0, 0, 0]],
+      [[0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      ["X", 0, 0, 0, 0, 0, 0],
+      ["X", 0, 0, 0, "O", "O", 0]],
+    ];
+    this.iPosition = 4;
+    if (isdef(this.iPosition)) {
+      let idx = this.iPosition + 1; idx = idx % positions.length; this.iPosition = idx;
+    } else this.iPosition = 0;
+    let state = nundef(this.startPosition) || this.startPosition == 'empty' ? positions[0]
+      : this.startPosition == 'random' ? chooseRandom(positions)
+        : positions[this.iPosition];
+    this.board.setState(state, { X: this.ai.color, O: this.human.color });
+  }
+  checkFinal(state) {
+    if (nundef(state)) state = this.getState();
+    let isTie = false;
+    let isWin = checkWinnerC4(state, this.rows, this.cols, this.stride);
+    if (!isWin) { isTie = checkBoardFull(state); }
+    return isWin ? 2 : isTie ? 1 : 0;
+  }
+  checkLegal(tile) {
+    let col = tile.col;
+    let topmost = this.board.items[col];
+    if (EmptyFunc(topmost.label)) return true; else return false;
+  }
+  findBottomEmptyTileInColumn(col) {
+    let x = lastCond(this.board.items, x => x.col == col && EmptyFunc(x.label));
+    return x;
+  }
+  interact(ev) {
+    let tile = evToItemC(ev);
+    let legal = this.checkLegal(tile);
+    if (!legal) { console.log('illegal move!'); return; } 
+    let pl = this.plTurn;
+    let bottomMost = this.findBottomEmptyTileInColumn(tile.col);
+    addLabel(bottomMost, pl.sym, { fz: 60, fg: pl.color });
+    this.controller.evaluate(tile);
+  }
+  getAvailableMoves(state) {
+    let moves = [];
+    for (let c = 0; c < G.cols; c++) {
+      for (let r = G.rows - 1; r >= 0; r--) {
+        let i = r * G.cols + c;
+        if (EmptyFunc(state[i])) { moves.push(i); break; }
+      }
+    }
+    shuffle(moves)
+    return moves;
+  }
+  evalState(node, depth) {
+    let x = checkWinnerC4(node);
+    if (checkBoardFull(node) || x) {
+      let res = { reached: true, val: (!x ? 0 : (10 - depth) * (x == MAXIMIZER.sym ? 1 : -1)) };
+      return res;
+    }
+    return { reached: false };
+  }
+}
+class GReversi extends GTTT {
+  createBoard() {
+    this.board = new Board(this.rows, this.cols, this.controller.uiInteract.bind(this.controller), { margin: 6, w: 60, h: 60, bg: 'white', fg: 'black', rounding: '50%' });
+  }
+  setStartPosition() {
+    let positions = [
+      [[0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0],
+      [0, 0, 'O', 'X', 0, 0],
+      [0, 0, 'X', 'O', 0, 0],
+      [0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0]],
+    ];
+    if (isdef(this.iPosition)) {
+      let idx = this.iPosition + 1; idx = idx % positions.length; this.iPosition = idx;
+    } else this.iPosition = 0;
+    if (this.startPosition == 'empty' || this.rows != 6 || this.cols != 6) {
+      let pos = bCreateEmpty(this.rows, this.cols);
+      let r1 = this.rows / 2 - 1, r2 = this.rows / 2, c1 = this.cols / 2 - 1, c2 = this.cols / 2;
+      pos[r1 * this.cols + c1] = pos[r2 * this.cols + c2] = 'O';
+      pos[r1 * this.cols + c2] = pos[r2 * this.cols + c1] = 'X';
+      positions[0] = pos;
+    }
+    let state = nundef(this.startPosition) || this.startPosition == 'empty' ? positions[0]
+      : this.startPosition == 'random' ? chooseRandom(positions)
+        : positions[this.iPosition];
+    this.board.setState(state, { X: this.ai.color, O: this.human.color });
+  }
+  startGame() {
+    super.startGame();
+    this.setStartPosition();
+  }
+  checkLegal(tile) {
+    let state = this.getState();
+    if (!EmptyFunc(tile.label)) return false;
+    let nei = bNei(state, tile.index, this.rows, this.cols, true);
+    for (const n of nei) {
+      if (!n) continue;
+      let t = state[n];
+      if (!EmptyFunc(t)) return true;
+    }
+    console.log('ILLEGAL MOVE! tile', tile.index, 'does not have neighbor!')
+    return false;
+  }
+  interact(ev) {
+    let tile = evToItemC(ev);
+    if (!this.checkLegal(tile)) return; 
+    let pl = this.plTurn;
+    addLabel(tile, pl.sym, { fz: 60, fg: pl.color });
+    let state = this.getState();
+    let iCapt = bCapturedPieces(pl.sym, state, tile.index, this.rows, this.cols);
+    for (const i of iCapt) {
+      let item = this.board.get(i);
+      modLabel(item, this.plTurn.sym, { fg: this.plTurn.color });
+    }
+    this.controller.evaluate(tile);
+  }
+  activate() {
+    let pl = this.plTurn;
+    let autoplay = false;
+    if (autoplay || pl == this.ai) {
+      if (this.ai == pl) uiActivated = false;
+      setTimeout(() => AIMinimax(this, this.afterComputerMove.bind(this)), 200);
+    }
+  }
+  checkFinal(state, pl1, pl2) {
+    if (nundef(state)) state = this.getState();
+    if (nundef(pl1)) pl1 = this.plTurn;
+    if (nundef(pl2)) pl2 = this.plOpp;
+    return GReversi.checkEnd(state, pl1, pl2);
+  }
+  static checkEnd(state, pl1, pl2) {
+    let hasPl1 = false, hasPl2 = false, s1 = pl1.sym, s2 = pl2.sym, hasEmpty = false;
+    for (const s of state) {
+      if (!hasPl1 && s == s1) hasPl1 = true;
+      else if (!hasPl2 && s == s2) hasPl2 = true;
+      else if (!hasEmpty && EmptyFunc(s)) hasEmpty = true;
+      if (hasPl1 && hasPl2 && hasEmpty) return false;
+    }
+    let winner = !hasPl2 ? pl1 : !hasPl1 ? pl2 : 0;
+    let full = !hasEmpty;
+    if (full) {
+      let n1 = arrCount(state, x => x == s1);
+      let n2 = arrCount(state, x => x == s2);
+      if (!winner && n1 != n2) {
+        if (n1 > n2) winner = pl1; else winner = pl2;
+      }
+    }
+    return winner ? { reached: true, winner: winner } : full ? { reached: true, winner: null } : { reached: false };
+  }
+  heuristic(state, plMax, plMin) {
+    let vmax = 0, vmin = 0;
+    vmax = vmax + arrCount(state, x => x == plMax.sym);
+    vmin = vmin + arrCount(state, x => x == plMin.sym);
+    return vmax - vmin;
+  }
+  heureval(state) {
+    let heurinfo = GReversi.heuristic(state, MAXIMIZER, MINIMIZER);
+    let val = heurinfo.val; 
+    return val;
+  }
+  eval() {
+    this.moveCounter += 1;
+    let info = this.checkFinal();
+    this.gameOver = info.reached;
+    if (this.gameOver) {
+      this.winner = info.winner;
+      this.tie = !info.winner;
+      if (this.winner) {
+        this.loser = this.winner == this.ai ? this.human : this.ai;
+        let state = this.getState();
+        let nWinner = arrCount(state, x => x == this.winner.sym);
+        let nLoser = arrCount(state, x => x == this.loser.sym);
+        this.info = '(' + nWinner + ':' + nLoser + ')';
+      }
+    }
+  }
+  getAvailableMoves(state) {
+    let moves = [];
+    for (let i = 0; i < state.length; i++) {
+      if (EmptyFunc(state[i])) {
+        let nei = bNei(state, i, G.rows, G.cols, true);
+        let iFull = firstCond(nei, x => !EmptyFunc(state[x]));
+        if (iFull != null) moves.push(i);
+      }
+    }
+    return moves;
+  }
+  evalState(state, depth) {
+    let info = GReversi.checkEnd(state, MAXIMIZER, MINIMIZER);
+    let val = info.reached && info.winner ? (100 - depth) * (info.winner == MAXIMIZER ? 1 : -1) : 0;
+    return { reached: info.reached, val: val };
+  }
+  applyMove(state, move, player) {
+    arrReplaceAtInPlace(state, move, player.sym);
+    let iCapt = bCapturedPieces(player.sym, state, move, G.rows, G.cols);
+    for (const i of iCapt) { state[i] = player.sym; }
+  }
+}
+class GChess extends G2Player {
+  clear() { super.clear(); if (isdef(this.game)) { this.game.reset(); } }
+  startGame() {
+    super.startGame();
+    this.createBoard();
+    this.game = new Chess();
+    this.setStartPosition();
+    let c = this.game.turn();
+    if (c == 'b') { this.plTurn.color = 'black'; this.plOpp.color = 'white'; } else { this.plTurn.color = 'white'; this.plOpp.color = 'black'; }
+    showFleetingMessage(`You play ${this.human.color}`)
+  }
+  createBoard() {
+    let d = mDiv(dTable, { h: 500, w: 500 }, 'dChessBoard');
+    let config = {
+      pieceTheme: '../alibs/chessBoard/img/chesspieces/wikipedia/{piece}.png',
+      draggable: true,
+      onDragStart: this.onDragStart.bind(this),
+      onDrop: this.onDrop.bind(this),
+      onSnapEnd: this.onSnapEnd.bind(this),
+    }
+    this.board = ChessBoard('dChessBoard', config);
+    mLinebreak(dTable);
+  }
+  setStartPosition() {
+    let positions = [
+      'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', 
+      // //'8/8/8/8/8/8/8/8 b KQkq - 0 1', //black starts
+    ];
+    if (nundef(this.iPosition)) this.iPosition = 0;
+    let state = nundef(this.startPosition) || this.startPosition == 'empty' ? positions[0] : this.startPosition == 'random' ? chooseRandom(positions) : positions[this.iPosition];
+    if (!isString(state)) state = arrToFen(state.arr, state.plStart);
+    this.game.load(state); //'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1');
+    this.board.position(this.game.fen());
+    let idx = this.iPosition + 1; idx = idx % positions.length; this.iPosition = idx;
+  }
+  prompt() {
+    let msg = this.plTurn == this.ai && !this.manual ? `Ai (${this.ai.color.toUpperCase()}) thinking...`
+      : `player: ${this.plTurn.color.toUpperCase()}`;
+    showInstruction(this.game.in_check() ? '- CHECK!!!' : '', msg, dTitle, false);
+    this.controller.activateUi();
+  }
+  activate() {
+    let pl = this.plTurn;
+    let autoplay = false;
+    if (autoplay || pl == this.ai) {
+      if (this.ai == pl) { uiActivated = false; aiActivated = true; }
+      this.TO = setTimeout(() => {
+        let color = this.game.turn();
+        if (color === 'b') { var move = getBestMove(this.game, color, globalSum)[0]; }
+        else { var move = getBestMove(this.game, color, -globalSum)[0]; }
+        globalSum = evaluateBoard(move, globalSum, 'b');
+        this.game.move(move);
+        this.board.position(this.game.fen());
+        this.controller.evaluate();
+      }, 100);
+    } else { aiActivated = false; uiActivated = true; }
+  }
+  getTurnColor() { return this.getPlayer(this.game.turn() == 'b' ? 'black' : 'white'); }
+  getOppColor() { return this.getPlayer(this.game.turn() == 'b' ? 'white' : 'black'); }
+  getPlayer(color) { return firstCond(this.players, x => x.color == color); }
+  changePlayer() { this.plTurn = this.game.turn() == 'b' ? this.getPlayer('black') : this.getPlayer('white'); }
+  onDragStart(source, piece, position, orientation) {
+    if (this.game.game_over() || !uiActivated) return false;
+    if ((this.game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+      (this.game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+      return false
+    }
+  }
+  onDrop(source, target) {
+    var move = this.game.move({
+      from: source,
+      to: target,
+      promotion: 'q' 
+    });
+    if (move === null) return 'snapback';
+    this.controller.evaluate();
+  }
+  onSnapEnd() { this.board.position(this.game.fen()) }
+  eval() {
+    this.info = null;
+    let over = this.gameOver = this.game.game_over();
+    if (this.game.in_draw()) { this.tie = true; console.log('in_draw'); this.info = '(draw)'; }
+    if (this.game.in_stalemate()) { this.tie = true; console.log('in_stalemate'); this.info = '(stalemate)'; }
+    if (this.game.in_threefold_repetition()) { this.tie = true; console.log('in_threefold_repetition'); this.info = '(threefold repetition)'; }
+    if (this.game.in_checkmate()) {
+      this.tie = false;
+      this.winner = this.getOppColor();
+      console.log('in_checkmate');
+      this.info = `(${this.winner.color.toUpperCase()})`;
+    }
+  }
+}
+class GSayPic extends Game {
+  constructor(name, o) { super(name, o); }
+  clear() { Speech.stopRecording(); }
+  prompt() {
+    myShowPics();
+    setGoal();
+    let wr = (this.language == 'E' ? 'say: ' : "sage: ");
+    show_instruction(wr + `<b>${Goal.label.toUpperCase()}</b>`, dTitle); 
+    animate(dInstruction, 'pulse800' + bestContrastingColor(this.color, ['yellow', 'red']), 900);
+    mLinebreak(dTable, 25);
+    MicrophoneUi = mMicrophone(dTable, this.color);
+    MicrophoneHide();
+    TOMain = setTimeout(this.controller.activateUi.bind(this.controller), 200);
+  }
+  trialPrompt(nTrial) {
+    sayRandomVoice(nTrial < 2 ? 'speak UP!!!' : 'Louder!!!', 'LAUTER!!!');
+    animate(dInstruction, 'pulse800' + bestContrastingColor(this.color, ['yellow', 'red']), 500);
+    return 600;
+  }
+  activate() {
+    if (Speech.isSpeakerRunning()) {
+      TOMain = setTimeout(this.activate.bind(this), 200);
+    } else {
+      TOMain = setTimeout(() => Speech.startRecording(this.language, this.controller.evaluate.bind(this.controller)), 100);
+    }
+  }
+  eval(isfinal, speechResult, confidence, sessionId) {
+    if (sessionId != SessionId) {
+      alert('NOT THIS BROWSER!!!!!!'); return undefined;
+    }
+    let answer = Goal.answer = normalize(speechResult, this.language);
+    let reqAnswer = Goal.reqAnswer = normalize(Goal.label, this.language);
+    Selected = { reqAnswer: reqAnswer, answer: answer, feedbackUI: iDiv(Goal) };
+    if (isEmpty(answer)) return false;
+    else return isSimilar(answer, reqAnswer) || isList(Goal.info.valid) && firstCond(Goal.info.valid, x => x.toUpperCase() == answer.toUpperCase());
+  }
+}
+class GProg0 extends Game {
+  constructor(name, o) { super(name, o); }
+  startGame(fen) {
+  }
+  prompt() {
+    let c = this.card0 = cLandscape(dTable);
+    this.card1 = iDiv(c).style;
+    this.card2 = iDiv(c);
+    this.card3 = iDiv(c);
+    show_instruction('write code what rank and suit this card should have', dTitle);
+    mLinebreak(dTable, 25);
+    let dCode = mDiv(dTable, {});
+    let ta = this.ta = mCreate('textarea');
+    mAppend(dCode, ta);
+    ta.setAttribute('rows', 10);
+    ta.setAttribute('cols', 60);
+    mStyle(ta, { family: 'courier', padding: 10 });
+    ta.value = `mStyle(iDiv(G.card0),{bg:'pink'})`; 
+    ta.value = `this.card1.background = 'yellow'`; 
+    ta.value = `this.card2.style.background = 'yellow'`; 
+    ta.value = `this.set('background','red');`; 
+    ta.value = `this.set(this.card1,'background','red');`; 
+    ta.value = `set(card1,'background','red');`; 
+    ta.value = `card.background = 'red';`; 
+    ta.value = `card.color = 'red';`; 
+    ta.value = `card.color = 'red';`; 
+    mLinebreak(dTable, 25);
+    mButton('run', this.runCode.bind(this), dTable, { bg: 'skyblue', fg: 'black', fz: 32 }, 'mybutton');
+    console.log('type of style', typeof this.card1);
+  }
+  set(o, prop, val) {
+    o[prop] = val;
+  }
+  runCode() {
+    let code = this.ta.value;
+    let prelim = ''; 
+    prelim = 'let card = this.card1; '; 
+    prelim = `
+    var card = new ProgObject(this.card0);
+    console.log('card',card);
+    `;
+    prelim = `
+    var obj = {};
+    Object.defineProperty(obj, prop, {
+        get: function() {return this.card1; },
+        set: function(val) { this.card1.val = val; }
+    });
+    `
+    code = prelim + code;
+    console.log('code', code);
+    eval(code);
+  }
+}
+class GProg1 extends Game {
+  constructor(name, o) { super(name, o); }
+  prompt() {
+    let c = this.card = cLandscape(dTable);
+    let d = this.visual = iDiv(c);
+    this.style = d.style;
+    let propertyGiver1 = (o, prop, setter) => {
+      Object.defineProperty(o, prop, {
+        get: function () { return this.val; },
+        set: function (val) { this.val = val; setter(val); }
+      });
+    };
+    let visualPropertySetter1 = (o) => {
+      propertyGiver1(o, 'bg', x => { mStyle(G.visual, { 'bg': x }); }); 
+    }
+    visualPropertySetter1(this.card);
+    d.innerHTML = 'HALLO';
+    mStyle(d, { fg: 'blue' });
+    mLinebreak(dTable, 25);
+    let dCode = mDiv(dTable, {});
+    let ta = this.ta = mCreate('textarea');
+    mAppend(dCode, ta);
+    ta.setAttribute('rows', 10);
+    ta.setAttribute('cols', 60);
+    mStyle(ta, { family: 'courier', padding: 10 });
+    ta.value = `card.bg = 'red'; console.log(card.bg);`; 
+    mLinebreak(dTable, 25);
+    mButton('run', this.runCode.bind(this), dTable, { bg: 'skyblue', fg: 'black', fz: 32 }, 'mybutton');
+    console.log('type of style', typeof this.card1);
+  }
+  runCode() {
+    let code = this.ta.value;
+    let prelim = ''; 
+    prelim = 'let [card,visual,style] = [this.card,this.visual,this.style]; '; 
+    code = prelim + code;
+    console.log('code', code);
+    eval(code);
+  }
+}
+class IClass extends LiveObject {
+  constructor(k, U, G, T) {
+    super(k);
+    this.player = {};
+    copyKeys(U, this.player);
+    copyKeys(G, this);
+    copyKeys(T, this);
+    this.running = false;
+    this.uiState = this.immediateStart ? LiveObject.States.ready : LiveObject.States.none;
+    this.startTime = Date.now();
+    this.div = null;
+  }
+  loop() {
+    this.update(); 
+    this.present(); 
+    this.activate();
+  }
+  getState() {
+    return { players: this.players, table: this.table, options: this.options, turn: this.turn };
+  }
+  setState(s) {
+    this.players = s.players;
+    this.table = s.table;
+    this.options = s.options;
+    this.turn = s.turn;
+  }
+  present() {
+    console.log('state', this.getState());
+  }
+  update() {
+    for (const pl of this.players) this.updatePlayer(pl);
+    this.updateTable(); 
+    this.updateTurn();  
+    this.updateOptions(this.player);
+  }
+  updateOptions() { this.options = {}; }
+  updatePlayer() { }
+  updateTable() { this.table = {}; }
+  updateTurn() { this.turn = chooseRandom(this.players).id; }
+}
+class GGuess extends IClass{
+  setup(){
+  }
+  updatePlayer(pl){
+  }
+  updateOptions(pl){
+    this.options = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    console.log(this.options);
+  }
+}
+class AddonClass extends LiveObject {
+  constructor(k, dbInfo, userInfo) {
+    super(k);
+    copyKeys(dbInfo, this);
+    copyKeys(userInfo, this);
+    this.running = false;
+    this.uiState = this.immediateStart ? LiveObject.States.ready : LiveObject.States.none;
+    this.startTime = Date.now();
+    this.callback = this.div = this.dContent = null;
+  }
+  //#region internal
+  _createDivs() {
+    this.dInstruction = mDiv(this.dContent);
+    this.dMain = mDiv(this.dContent);
+    this.dHint = mDiv(this.dContent); this.dHint.innerHTML = 'hallo'; this.dHint.style.opacity = 0;
+  }
+  _createScreen() {
+    show(mBy('dAddons'));
+    let bg = colorTrans('silver', .25);
+    let d = mScreen(mBy('dAddons'), { bg: bg, display: 'flex', layout: 'fvcc' });
+    let dContent = mDiv(d, { display: 'flex', layout: 'fvcs', fg: 'contrast', fz: 24, bg: 'silver', patop: 50, pabottom: 50, matop: -50, w: '100vw' });
+    return [d, dContent];
+  }
+  //#endregion
+  checkEndCondition() {
+    let c = this.endsWhen;
+    let res = false;
+    if (isdef(c) && this[c.prop] == c.value) res = true;
+    console.log('condition:', res, 'tNext', this.tNext)
+    return res;
+  }
+  exit() {
+    hide('dAddons');
+    this.tNext *= this.tFactor;
+    this.startTime = Date.now();
+    this.clear();
+    this.callback();
+  }
+  init() {
+    [this.div, this.dContent] = this._createScreen();
+    this._createDivs();
+    this.setRunning();
+    let caption = this.presentInit();
+    mButton(isdef(caption) ? caption : 'Got it!', this.prompt.bind(this), this.dContent, { fz: 32, matop: 10 });
+  }
+  isTimeForAddon() {
+    switch (this.uiState) {
+      case LiveObject.States.none: this.getReady(this.tNext); return false;
+      case LiveObject.States.gettingReady: return false;
+      case LiveObject.States.ready: return true;
+      case LiveObject.States.running: return Date.now() - this.startTime >= this.tNext;
+    }
+  }
+  presentInit() { console.log('presenting initial information'); }
+  presentPrompt() { console.log('prompting user to do something') }
+  prompt() {
+    clearElement(this.dContent);
+    this.trialsNeeded = 0;
+    this._createDivs();
+    this.presentPrompt();
+    this.activate();
+  }
+  processInput() {
+    if (!this.uiActivated) return;
+    this.uiActivated = false;
+    let isCorrect = this.eval(...arguments);
+    if (isCorrect) {
+      this.positive();
+      this.exit();
+    } else {
+      this.negative();
+      this.trialPrompt();
+    }
+  }
+  positive() {
+    this.trialNumber = null;
+    delete this.dHint;
+  }
+  negative() {
+    if (nundef(this.trialNumber)) this.trialNumber = 1; else this.trialNumber += 1;
+  }
+  run() {
+    show('dAddons');
+    if (this.running) { this.prompt(); } else this.init();
+  }
+  trialPrompt() {
+    this.trialsNeeded += 1;
+    let [wr, sp] = this.getHint();
+    this.hintLength = wr.length;
+    if (isdef(sp)) sayRandomVoice(sp);
+    this.dHint.innerHTML = 'Hint: ' + wr; this.dHint.style.opacity = 1;
+    this.activate();
+  }
+}
+class APasscode extends AddonClass {
+  constructor(k, dbInfo, userInfo) {
+    super(k, dbInfo, userInfo);
+    this.needNewPasscode = true;
+  }
+  presentInit() {
+    let keys = getRandomKeysFromGKeys(1); 
+    let options = { rows: 1 };
+    this.pictures = getPics(null, {}, options, keys);
+    this.goal = this.pictures[0];
+    this.passcode = this.goal.label;
+    let dParent = this.dContent;
+    let d_title = mDiv(dParent);
+    showInstruction(this.goal.label, Settings.language == 'E' ? 'the passcode is' : 'das Codewort ist', d_title, true);
+    let d_pics = mDiv(dParent);
+    presentItems(this.pictures, d_pics, options.rows);
+    this.TOList.push(setTimeout(anim1, 300, this.goal, 500));
+  }
+  presentPrompt() {
+    let keys = getRandomKeysIncluding(this.numPics, this.goal.key, 'all');
+    let iGoal = keys.indexOf(this.goal.key);
+    let options = { rows: 2, showLabels: true };
+    this.pictures = getPics(this.processInput.bind(this), undefined, { rows: 2, showLabels: true }, keys);
+    this.goal = this.pictures[iGoal];
+    showInstruction('', 'click ' + (Settings.language == 'E' ? 'the passcode' : 'das Codewort'), this.dInstruction, true);
+    presentItems(this.pictures, this.dMain, options.rows);
+  }
+  eval(ev) {
+    ev.cancelBubble = true;
+    let item = findItemFromEvent(this.pictures, ev);
+    Selected = { pic: item, feedbackUI: item.div, sz: getBounds(item.div).height };
+    Selected.reqAnswer = this.goal.label;
+    Selected.answer = item.label;
+    if (item.label == this.goal.label) { return true; } else { return false; }
+  }
+  getHint() {
+    let hintLength, spoken;
+    if (this.trialNumber > this.passcode.length * 2) {
+      hintLength = this.passcode.length;
+      spoken = 'click ' + this.passcode.toUpperCase() + '!!!';
+    } else if (this.trialNumber > this.passcode.length * 2 - 1) {
+      hintLength = this.passcode.length;
+      spoken = (Settings.language == 'E' ? 'REMEMBER ' : 'MERKE DIR ') + this.passcode.toUpperCase() + '!!!';
+    } else if (this.trialNumber > this.passcode.length) {
+      hintLength = (this.trialNumber - this.passcode.length);
+      let letters = this.passcode.substring(0, hintLength);
+      let letters1 = letters.split();
+      spoken = (Settings.language == 'E' ? 'the passcode starts with' : 'das Codewort beginnt mit') + ' ' + letters1.join(', ');
+    } else {
+      hintLength = this.trialNumber;
+      spoken = null;
+    }
+    return [this.passcode.substring(0, hintLength), spoken];
+  }
+}
+class AAddress extends APasscode {
+  constructor(k, dbInfo, userInfo) {
+    super(k, dbInfo, userInfo);
+  }
+  clear() { super.clear(); Speech.setLanguage(Settings.language); window.onclick = null; }
+  presentInit() {
+    this.msgPrompt = 'enter your address';
+    this.lastHintPrompt = 'please complete entering address!';
+    this.goal = { label: '17448 NE 98th Way Redmond 98052' };
+    Speech.setLanguage('E')
+    let wr = 'your address is:';
+    let sp = 'your address is 1 7 4 4 8 - North-East 98th Way - Redmond, 9 8 0 5 2';
+    showInstruction(this.goal.label, wr, this.dInstruction, true, sp, 12);
+    this.goal.div = mText(this.goal.label, this.dMain, { fz: 40 });
+    this.TOList.push(setTimeout(anim1, 300, this.goal, 500));
+  }
+  presentPrompt() {
+    Speech.setLanguage('E');
+    stdInstruction(this.msgPrompt, this.dInstruction, this.msgPrompt, { voice: 'zira' });
+    this.input = stdInput(this.dMain, { w: 600, fz: 24 });
+    this.input.id = this.defaultFocusElement = 'inputAddon';
+    this.nCorrect = 0;
+  }
+  activate() {
+    window.onclick = () => mBy(this.defaultFocusElement).focus();
+    this.input.onkeyup = ev => {
+      if (ev.key === "Enter") {
+        ev.cancelBubble = true;
+        this.processInput(ev);
+      }
+    };
+    this.input.focus();
+    super.activate();
+  }
+  eval() {
+    let correctPrefix = this.correctPrefix = getCorrectPrefix(this.goal.label, this.input.value);
+    return correctPrefix == this.goal.label;
+  }
+  getHint() {
+    let oldHintLength = isdef(this.hintLength) ? this.hintLength : 0;
+    if (nundef(this.hintLength)) this.hintLength = 0;
+    this.input.value = this.correctPrefix;
+    let progress = this.correctPrefix.length > this.nCorrect;
+    if (this.correctPrefix.length > this.nCorrect) {
+      this.hintLength = 1;
+      this.nCorrect = this.correctPrefix.length;
+    } else if (this.hintLength < this.goal.label.length - this.nCorrect) this.hintLength += 1;
+    if (this.hintLength == 0) this.hintLength = 1;
+    let wr = substringOfMinLength(this.goal.label, this.correctPrefix.length, this.hintLength);
+    let sp = oldHintLength == this.hintLength && !progress ? this.lastHintPrompt : null;
+    return [wr, sp];
+  }
+}
+class APassword extends AAddress {
+  presentInit() {
+    this.goal = null;
+    Speech.setLanguage('E');
+    let msg = 'create a new password!';
+    this.msgPrompt = 'enter your password';
+    this.lastHintPrompt = 'please complete entering password!';
+    stdInstruction(msg, this.dInstruction, msg, { voice: 'zira' });
+    this.input = stdInputVal(this.dMain, { w: 600, fz: 24 }, 'hallo');
+    this.input.id = this.defaultFocusElement = 'inputAddon';
+    window.onclick = () => mBy(this.defaultFocusElement).focus();
+    return 'set password';
+  }
+  presentPrompt() {
+    if (nundef(this.goal)) this.goal = { label: this.input.value.trim() };
+    super.presentPrompt();
+  }
+}
+class GPasscode extends Game {
+  constructor(name, o) { super(name, o); this.needNewPasscode = true; }
+  clear() { clearTimeout(this.TO); clearTimeCD(); }
+  startGame() {
+    this.incrementLevelOnPositiveStreak = this.samplesPerGame;
+    this.decrementLevelOnNegativeStreak = this.samplesPerGame;
+  }
+  start_Level() { this.needNewPasscode = true; }
+  prompt() {
+    this.trials = 1;
+    if (this.needNewPasscode) {
+      this.timeout = 1000;
+      this.needNewPasscode = false;
+      let keys = getRandomKeysFromGKeys(this.passcodeLength);
+      myShowPics(null,
+        { border: '3px solid #ffffff80' },
+        { numRepeat: this.numRepeat, sameBackground: true }, keys);
+      Goal = Pictures[0];
+      this.wort = (this.language == 'E' ? 'the passcode' : 'das Codewort');
+      showInstruction(Goal.label, this.wort + (this.language == 'E' ? ' is' : ' ist'), dTitle, true);
+      TOMain = setTimeout(anim1, 300, Goal, 500, showGotItButton);
+    } else {
+      this.timeout *= 2;
+      doOtherStuff();
+    }
+  }
+  eval(x) {
+    CountdownTimer.cancel();
+    let isCorrect = super.eval(x);
+    if (!isCorrect) this.needNewPasscode = true;
+    return isCorrect;
+  }
+}
+class GStory extends Game {
+  constructor(name) { super(name); }
+  prompt() {
+    let showLabels = G.showLabels == true && Settings.labels == true;
+    myShowPics(evaluate, {}, { showLabels: showLabels });
+    setGoal();
+    showInstruction(Goal.label, 'click', dTitle, true);
+    activateUi();
+  }
+}
+class GSentence1 extends Game {
+  constructor(name, o) {
+    super(name, o);
+    this.prevLanguage = this.language;
+    this.language = 'E';
+  }
+  startGame() {
+    this.correctionFunc = showCorrectPictureLabels;
+    this.failFunc = failSomePictures;
+    this.successFunc = () => { mCheckit(this.dWordArea, 120); };
+  }
+  clear() { super.clear(); this.language = this.prevLanguage; }
+  start_Level() {
+    this.sentences = EnglishSentences.map(x => x.split(' ')).filter(x => x.length <= this.maxWords);
+  }
+  dropHandler(source, target, isCopy = false, clearTarget = false) {
+    let prevTarget = source.target;
+    source.target = target;
+    let dSource = iDiv(source);
+    let dTarget = iDiv(target);
+    if (clearTarget) {
+      let ch = dTarget.children[0];
+      let chSource = firstCond(Pictures, x => iDiv(x) == ch);
+      if (chSource) {
+        if (isdef(prevTarget)) {
+          mAppend(iDiv(prevTarget), ch);
+          chSource.target = prevTarget;
+        } else {
+          mAppend(this.dWordArea, ch);
+          delete chSource.target;
+        }
+      }
+      clearElement(dTarget);
+    }
+    if (isCopy) {
+      let dNew = mText(dSource.innerHTML, dTarget, { wmin: 100, fz: 20, padding: 4, margin: 4, display: 'inline-block' });
+      addDDSource(dNew, isCopy, clearTarget);
+    } else {
+      mAppend(dTarget, dSource);
+    }
+  }
+  prompt() {
+    let words = this.sentence = chooseRandom(this.sentences);
+    showInstruction('', 'drag words into blanks', dTitle, true);
+    mLinebreak(dTable);
+    let fz = 32;
+    let h = fz * 1.25, wmin = fz * 1.25;
+    let items = Pictures = [];
+    let containers = [];
+    let options = _simpleOptions({ fz: fz, bg: 'transparent', fg: 'white', showPic: false, showLabels: true }, { wmin: wmin });
+    let dArea = mDiv(dTable, { h: 150, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
+    mLinebreak(dTable);
+    let dWordArea = this.dWordArea = mDiv(dTable, { h: 70, wmin: 20, display: 'flex', 'flex-wrap': 'wrap', layout: 'fhcc' });
+    let i = 0;
+    for (const word of words) {
+      let item = { label: word, index: i };
+      let container = { label: word, index: i };
+      i += 1;
+      let d = makeItemDiv(item, options);
+      let dCont = mDiv(dArea, { wmin: wmin + 12, hmin: h + 10, bg: colorTrans('beige', .25), fg: 'black', margin: 12 });
+      container.div = dCont;
+      items.push(item);
+      containers.push(container);
+    }
+    shuffle(items);
+    items.map(x => { mAppend(dWordArea, iDiv(x)); mStyleX(iDiv(x), { h: h, w: 'auto' }); });
+    enableDD(items, containers, this.dropHandler.bind(this), false, true);
+    mLinebreak(dTable, 50);
+    mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    sayTryAgain();
+    showFleetingMessage('Try again!', 0, { fg: 'white' });
+    TOMain = setTimeout(() => { Pictures.map(x => mAppend(this.dWordArea, iDiv(x))); }, 1200);
+    return 1500;
+  }
+  eval() {
+    let i = 0;
+    let isCorrect = true;
+    for (const p of Pictures) {
+      let cont = p.target;
+      if (nundef(cont)) p.isCorrect = isCorrect = false;
+      else if (p.index != cont.index) p.isCorrect = isCorrect = false;
+      else p.isCorrect = true;
+    }
+    Selected = { piclist: Pictures, feedbackUI: Pictures.map(x => iDiv(x)), sz: getRect(iDiv(Pictures[0])).h + 10 };
+    return isCorrect;
+  }
+}
+class CCanvasNoClear extends CCanvas {
+  clear() { }
+}
+class CCanvasPlot extends CCanvas {
+  clear() {
+    cClear(this.cv, this.cx);
+    this.draw_axes();
+  }
+  draw_axes() {
+    let ctx = this.cx;
+    ctx.beginPath();
+    ctx.strokeStyle = "rgb(128,128,128)";
+    ctx.moveTo(this.minx, 0); ctx.lineTo(this.maxx, 0);  
+    ctx.moveTo(0, this.miny); ctx.lineTo(0, this.maxy);  
+    ctx.stroke();
+  }
+  draw() {
+    this.clear();
+    for (const item of this.items) {
+      if (isdef(item.func)) this.plot(item.func, item.color, item.thickness);
+      else {
+        super.draw_item(item);
+      }
+    }
+  }
+  pp(x, y, label = 'hallo', styles = {}) {
+    addKeys({ fg:'silver', bg: 'silver', w: 3, h: 3 }, styles)
+    cEllipse(x, y, styles.w, styles.h, { bg: styles.bg }, 0, this.cx);
+    addKeys({x:x, y:y, offy: 'below 4', offx: 'center', family: 'arial narrow', fz: 20},styles);
+    draw_text(this, label, styles);
+  }
+  plot(func, color, thick, filled = false) {
+    let cx = this.cx;
+    var xx, yy, dx = 4, x0 = 0, y0 = 0, scale = this.scale = 40;
+    var imax = Math.round(this.maxx / dx);
+    var imin = Math.round(this.minx / dx);
+    cx.beginPath();
+    cx.lineWidth = thick;
+    cx.strokeStyle = cx.fillStyle = color;
+    for (var i = imin; i <= imax; i++) {
+      xx = dx * i; yy = scale * func(xx / scale);
+      if (i == imin) cx.moveTo(x0 + xx, y0 - yy);
+      else cx.lineTo(x0 + xx, y0 - yy);
+    }
+    cx.stroke(); if (filled) cx.fill();
+  }
+}
+class GAnagramBROKEN extends Game {
+  constructor(name, o) {
+    super(name, o);
+    if (this.language == 'C') {
+      this.realLanguage = this.language;
+      this.language = chooseRandom('E', 'S', 'F', 'D');
+    }
+  }
+  clear() { super.clear(); if (isdef(this.language)) this.language = this.language; }
+  start_Level() {
+    this.keys = setKeysG(this, filterWordByLengthG, 10);
+    if (this.keys.length < 10) { this.keys = setKeysG(this, filterWordByLengthG, 10, 'all'); }
+  }
+  prompt() {
+    myShowPics(null, {}, {});
+    if (this.hidden) {
+      let d = iDiv(Pictures[0]);
+      animate(d, 'aniAppearMinute', 100000);
+    }
+    setGoal();
+    let w = this.showWord ? Goal.label : '';
+    let wr = `drag letters to form ${w}`;
+    let sp = `forme ${w}`;
+    show_instruction(wr, dTitle, sp);
+    mLinebreak(dTable, 22);
+    let word = Goal.label.toUpperCase();
+    let wlen = word.length;
+    let wTable = getRect(mBy('table')).w;
+    let wmax = wTable / wlen;
+    let gap = 4;
+    let fzMax = wTable / wlen - 3 * gap;
+    let fz = Math.min(70, fzMax);
+    let dpEmpty = createLetterInputsX(word, dTable, { pabottom: 5, bg: 'grey', display: 'inline-block', fz: fz, w: fz, h: fz * 1.1, margin: gap }); 
+    let inputs = blankInputs(dpEmpty, range(0, wlen - 1), false);
+    for (let i = 0; i < inputs.length; i++) {
+      let l = iDiv(inputs[i]);
+      ipadd(l);
+      mClass(l, 'dropzone');
+      l.id = 'input' + i;
+    }
+    this.inputs = inputs;
+    let x = mLinebreak(dTable, 35);
+    fz = Math.min(60, fzMax);
+    let dp = createLetterInputsX(word, dTable, { bg: 'silver', display: 'inline-block', fz: fz, w: fz, h: fz * 1.1, margin: 4 }); 
+    scrambleInputs(dp);
+    let letters = Array.from(dp.children);
+    for (let i = 0; i < letters.length; i++) {
+      let l = letters[i];
+      l.setAttribute('draggable', true);
+      ipadd(l);
+      l.id = 'letter' + i;
+    }
+    this.letters = letters;
+    mLinebreak(dTable, 35);
+    this.bDone = mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
+    if (this.hidden) showFleetingMessage('category: ' + Pictures[0].info.subgroup, 5000);
+    else if (!this.showWord) { showLabelPercentHintAfter(50, 6000); }
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    sayTryAgain();
+    setTimeout(() => {
+      this.inputs.map(x => iDiv(x).innerHTML = '_')
+    }, 1500);
+    return 10;
+  }
+  eval() {
+    let s = this.inputs.map(x => iDiv(x).innerHTML);
+    let w = s = s.join('');
+    let word = Goal.label.toUpperCase();
+    Selected = { answer: w, reqAnswer: word, feedbackUI: iDiv(Goal) };
+    return w == word;
+  }
+  onTimeup() { this.controller.evaluate(); }
+}
+class GameTimed1 extends Game{
+  constructor(name, o) { super(name, o); }
+  clear() { clearInterval(this.TOI); super.clear(); }
+  makeTimer() {
+    if (nundef(this.msTotal)) this.msTotal = 5000;
+    if (nundef(this.msInterval)) this.msInterval = 100;
+    let w = this.wTimerOuter = 200;
+    this.dTimeOuter = mDiv(dTable, { w: w, h: 25, border: 'white', rounding: 10, position: 'relative' });
+    [this.wTimer, this.r, this.g] = [0, 0, 255];
+    this.dTimeInner = mDiv(this.dTimeOuter, { h: 25, w: this.wTimer, rounding: 10, bg: `rgb(${this.r},${this.g},0)`, position: 'absolute', left: 0, top: 0 });
+    this.dTimeDisplay = mDiv(this.dTimeOuter, { patop: 2, align: 'center', h: 25, w: w, position: 'absolute', left: 0, top: 0 });
+    mLinebreak(dTable);
+    this.dPause = mDiv(dTable, { cursor: 'pointer', fz: 12, hpadding: 30, vpadding: 10 }, null, 'click to pause');
+    this.dPause.onclick = () => this.pause();
+  }
+  pause() {
+    clearInterval(this.TOI);
+    this.dPause.innerHTML = 'click to resume...';
+    this.dPause.onclick = () => this.resume();
+  }
+  resume() {
+    this.dPause.innerHTML = 'click to pause...';
+    this.dPause.onclick = () => this.pause();
+    this.TOI = setInterval(this.onTick.bind(this), this.msInterval);
+  }
+  activate() {
+    this.msLeft = valf(this.msTotal, 10000);
+    this.dTimeDisplay.innerHTML = timeConversion(this.msLeft, 'sh');
+    this.TOI = setInterval(this.onTick.bind(this), this.msInterval);
+  }
+  onTick() {
+    this.msLeft -= this.msInterval;
+    this.wTimer += this.wTimerOuter * this.msInterval / this.msTotal;
+    let inc_color = 255 * this.msInterval / this.msTotal; 
+    this.r += inc_color; this.g -= inc_color;
+    mStyle(this.dTimeInner, { w: this.wTimer, bg: `rgb(${this.r},${this.g},0)` });
+    this.dTimeDisplay.innerHTML = timeConversion(this.msLeft, 'sh');
+    if (this.msLeft < 100) {
+      clearInterval(this.TOI);
+      this.dPause.style.opacity = 0;
+      this.onTimeup();
+    }
+  }
+}
+class GSpotit1 extends GameTimed1 {
+  constructor(name, o) { super(name, o); }
+  startGame() { this.correctionFunc = showCorrectUis; }
+  start_Level() {
+    this.colarr = _calc_hex_col_array(this.rows, this.cols);
+    let perCard = arrSum(this.colarr);
+    this.nShared = (this.numCards * (this.numCards - 1)) / 2;
+    this.nUnique = perCard - this.numCards + 1;
+    this.numKeysNeeded = this.nShared + this.numCards * this.nUnique;
+    this.keys = setKeysG(this, (_, x) => !x.includes(' '), this.numKeysNeeded + 1);
+  }
+  deal() {
+    let keys = choose(this.keys, this.numKeysNeeded);
+    let dupls = keys.slice(0, this.nShared); 
+    let uniqs = keys.slice(this.nShared);
+    let infos = [];
+    for (let i = 0; i < this.numCards; i++) {
+      let keylist = uniqs.slice(i * this.nUnique, (i + 1) * this.nUnique);
+      let info = { id: getUID(), shares: {}, keys: keylist, rows: this.rows, cols: this.cols, colarr: this.colarr };
+      infos.push(info);
+    }
+    let iShared = 0;
+    for (let i = 0; i < this.numCards; i++) {
+      for (let j = i + 1; j < this.numCards; j++) {
+        let c1 = infos[i];
+        let c2 = infos[j];
+        let dupl = dupls[iShared++];
+        c1.keys.push(dupl);
+        c1.shares[c2.id] = dupl;
+        c2.shares[c1.id] = dupl;
+        c2.keys.push(dupl);
+      }
+    }
+    for (const info of infos) { shuffle(info.keys); }
+    return infos;
+  }
+  interact(ev) {
+    ev.cancelBubble = true;
+    if (!canAct()) { console.log('no act'); return; }
+    let keyClicked = evToProp(ev, 'key');
+    let id = evToId(ev);
+    if (isdef(keyClicked) && isdef(Items[id])) {
+      this.pause();
+      let item = Items[id];
+      if (Object.values(item.shares).includes(keyClicked)) {
+        let otherCard = spotitFindCardSharingSymbol(item, keyClicked);
+        let cardSymbol = ev.target;
+        let otherSymbol = spotitFindSymbol(otherCard, keyClicked);
+        Selected = { isCorrect: true, feedbackUI: [cardSymbol, otherSymbol] };
+      } else {
+        let cardSymbol = ev.target;
+        Selected = { isCorrect: false, feedbackUI: [cardSymbol], correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 1500 };
+      }
+      this.controller.evaluate.bind(this.controller)();
+    }
+  }
+  getSharedSymbols() {
+    let result = [];
+    for (const item of this.items) {
+      for (const id in item.shares) {
+        let k = item.shares[id];
+        let ui = iGetl(item, k);
+        result.push(ui);
+      }
+    }
+    return result;
+  }
+  eval() { return Selected.isCorrect; }
+  prompt() {
+    this.trials = 1;
+    show_instruction('find common symbol', dTitle);
+    this.makeTimer();
+    mLinebreak(dTable, 25);
+    let infos = this.deal(); 
+    let items = this.items = [];
+    for (const info of infos) {
+      let item = spotitCard(info, dTable, { margin: 10 }, this.interact.bind(this));
+      items.push(item);
+    }
+    this.controller.activateUi.bind(this.controller)();
+  }
+  onTimeup() {
+    Selected = { isCorrect: false, correctUis: this.getSharedSymbols(), correctionDelay: this.items.length * 2000 };
+    this.controller.evaluate.bind(this.controller)();
+  }
+}
+class GAnagram_orig extends Game {
+  constructor(name, o) {
+    super(name, o);
+    if (this.language == 'C') {
+      this.realLanguage = this.language;
+      this.language = chooseRandom('E', 'S', 'F', 'D');
+    }
+  }
+  clear() { super.clear(); if (isdef(this.language)) this.language = this.language; }
+  start_Level() {
+    this.keys = setKeysG(this, filterWordByLengthG, 10);
+    if (this.keys.length < 10) { this.keys = setKeysG(this, filterWordByLengthG, 10, 'all'); }
+  }
+  prompt() {
+    myShowPics(null, {}, {});
+    if (this.hidden) {
+      let d = iDiv(Pictures[0]);
+      animate(d, 'aniAppearMinute', 100000);
+    }
+    setGoal();
+    showInstruction(this.showWord ? Goal.label : '', this.language == 'E' ? 'drag letters to form' : "forme", dTitle, true);
+    mLinebreak(dTable, 25);
+    this.inputs = createDropInputs();
+    let x = mLinebreak(dTable, 50);
+    this.letters = createDragLetters();
+    if (this.hidden) showFleetingMessage('category: ' + Pictures[0].info.subgroup, 5000);
+    else if (!this.showWord) { showLabelPercentHintAfter(50, 6000); }
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    sayTryAgain();
+    setTimeout(() => {
+      this.inputs.map(x => iDiv(x).innerHTML = '_')
+    }, 1500);
+    return 10;
+  }
+  eval(w, word) {
+    Selected = { answer: w, reqAnswer: word, feedbackUI: iDiv(Goal) }; 
+    return w == word;
+  }
+}
+class GAnagram_MESSY extends Game {
+  constructor(name, o) {
+    super(name, o);
+    if (this.language == 'C') {
+      this.realLanguage = this.language;
+      this.language = chooseRandom('E', 'S', 'F', 'D');
+    }
+  }
+  clear() { super.clear(); if (isdef(this.language)) this.language = this.language; }
+  start_Level() {
+    this.keys = setKeysG(this, filterWordByLengthG, 10);
+    if (this.keys.length < 10) { this.keys = setKeysG(this, filterWordByLengthG, 10, 'all'); }
+  }
+  prompt() {
+    myShowPics(null, {}, {});
+    if (this.hidden) {
+      let d = iDiv(Pictures[0]);
+      animate(d, 'aniAppearMinute', 100000);
+    }
+    setGoal();
+    showInstruction(this.showWord ? Goal.label : '', this.language == 'E' ? 'drag letters to form' : "forme", dTitle, true);
+    mLinebreak(dTable, 25);
+    let fz = 120; let word = Goal.label.toUpperCase(); let wlen = word.length;
+    let dpEmpty = createLetterInputsX(word, dTable, { pabottom: 5, bg: 'grey', display: 'inline-block', fz: fz, w: fz, h: fz * 1.1, margin: 4 }); 
+    let inputs = blankInputs(dpEmpty, range(0, wlen - 1), false);
+    for (let i = 0; i < inputs.length; i++) {
+      let l = iDiv(inputs[i]);
+      l.ondragover = ev => ev.preventDefault();
+      l.ondrop = event => {
+        event.preventDefault();
+        var data = event.dataTransfer.getData("Text");
+        event.target.innerHTML = data;
+      }
+      makeDraggableInner(l);
+      mClass(l, 'dropzone');
+      l.id = 'input' + i;
+    }
+    this.inputs = inputs;
+    let x = mLinebreak(dTable, 50);
+    fz = 60; word = Goal.label.toUpperCase(); 
+    let dp = createLetterInputsX(word, dTable, { bg: 'silver', display: 'inline-block', fz: fz, w: fz, h: fz * 1.1, margin: 4 }); 
+    scrambleInputs(dp);
+    let letters = Array.from(dp.children);
+    for (let i = 0; i < letters.length; i++) {
+      let l = letters[i];
+      l.setAttribute('draggable', true);
+      makeDraggableInner(l);
+      l.id = 'letter' + i;
+    }
+    this.letters = letters;
+    if (this.hidden) showFleetingMessage('category: ' + Pictures[0].info.subgroup, 5000);
+    else if (!this.showWord) { showLabelPercentHintAfter(50, 6000); }
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    sayTryAgain();
+    setTimeout(() => {
+      this.inputs.map(x => iDiv(x).innerHTML = '_')
+    }, 1500);
+    return 10;
+  }
+  eval(w, word) {
+    Selected = { answer: w, reqAnswer: word, feedbackUI: iDiv(Goal) }; 
+    return w == word;
+  }
+}
+class GAnagram_PCOnly extends Game {
+  constructor(name, o) {
+    super(name, o);
+    if (this.language == 'C') {
+      this.realLanguage = this.language;
+      this.language = chooseRandom('E', 'S', 'F', 'D');
+    }
+  }
+  clear() { super.clear(); if (isdef(this.language)) this.language = this.language; }
+  start_Level() {
+    this.keys = setKeysG(this, filterWordByLengthG, 10);
+    if (this.keys.length < 10) { this.keys = setKeysG(this, filterWordByLengthG, 10, 'all'); }
+  }
+  prompt() {
+    myShowPics(null, {}, {});
+    if (this.hidden) {
+      let d = iDiv(Pictures[0]);
+      animate(d, 'aniAppearMinute', 100000);
+    }
+    setGoal();
+    showInstruction(this.showWord ? Goal.label : '', this.language == 'E' ? 'drag letters to form' : "forme", dTitle, true);
+    mLinebreak(dTable, 25);
+    let fz = 120; let word = Goal.label.toUpperCase(); let wlen = word.length;
+    let dpEmpty = createLetterInputsX(word, dTable, { pabottom: 5, bg: 'grey', display: 'inline-block', fz: fz, w: fz, h: fz * 1.1, margin: 4 }); 
+    let inputs = blankInputs(dpEmpty, range(0, wlen - 1), false);
+    for (let i = 0; i < inputs.length; i++) {
+      let l = iDiv(inputs[i]);
+      l.ondragover = ev => ev.preventDefault();
+      l.ondrop = event => { event.preventDefault(); var data = event.dataTransfer.getData("Text"); event.target.innerHTML = data; }
+      makeDraggableInner(l);
+      mClass(l, 'dropzone');
+      l.id = 'input' + i;
+    }
+    this.inputs = inputs;
+    let x = mLinebreak(dTable, 50);
+    fz = 60; word = Goal.label.toUpperCase();
+    let dp = createLetterInputsX(word, dTable, { bg: 'silver', display: 'inline-block', fz: fz, w: fz, h: fz * 1.1, margin: 4 }); 
+    scrambleInputs(dp);
+    let letters = Array.from(dp.children);
+    for (let i = 0; i < letters.length; i++) {
+      let l = letters[i];
+      l.setAttribute('draggable', true);
+      makeDraggableInner(l);
+      l.id = 'letter' + i;
+    }
+    this.letters = letters;
+    mLinebreak(dTable, 50);
+    this.bDone = mButton('Done!', this.controller.evaluate.bind(this.controller), dTable, { fz: 28, matop: 10, rounding: 10, padding: 16, border: 8 }, ['buttonClass']);
+    if (this.hidden) showFleetingMessage('category: ' + Pictures[0].info.subgroup, 5000);
+    else if (!this.showWord) { showLabelPercentHintAfter(50, 6000); }
+    this.controller.activateUi.bind(this.controller)();
+  }
+  trialPrompt() {
+    sayTryAgain();
+    setTimeout(() => {
+      this.inputs.map(x => iDiv(x).innerHTML = '_')
+    }, 1500);
+    return 10;
+  }
+  eval() {
+    let s = this.inputs.map(x => iDiv(x).innerHTML);
+    let w = s = s.join('');
+    let word = Goal.label.toUpperCase();
+    Selected = { answer: w, reqAnswer: word, feedbackUI: iDiv(Goal) };
+    return w == word;
+  }
+}
+class CounterClass extends Map {
+  constructor(iter, key = null) {
+    super();
+    this.key = key || (x => x);
+    for (let x of iter) {
+      this.add(x);
+    }
+  }
+  add(x) {
+    x = this.key(x);
+    this.set(x, (this.get(x) || 0) + 1);
   }
 }
 function __pictoG(key, x, y, w, h, fg, bg) {
@@ -20418,88 +17082,6 @@ function _paramsQ(parr) {
   }
   return parr;
 }
-function _parseCodefile(content, fname) {
-  let di = {}, text = '';
-  let dicode = {};
-  let diregion = {};
-  let lines = content.split('\r\n');
-  let classes_started = true;
-  let parsing = false, code, ending, type, key;
-  let firstletters = [];
-  for (const line of lines) {
-    let l = line;
-    if (!l.includes("'//")){
-      l = replaceAllFast(line, '://', ':@@');
-      l = replaceAllFast(l, '//#', '@@#');
-      l = stringBefore(l, '//');
-      l = replaceAllFast(l, '@@#', '//#');
-      l = replaceAllFast(l, ':@@', '://');
-    }
-    if (isEmptyOrWhiteSpace(l.trim())) continue;
-    if (parsing) { 
-      assertion(classes_started, 'parsing but NOT classes_started!!!!');
-      let l1 = replaceAllSpecialChars(l, '\t', '  ');
-      let ch = l1[0];
-      if (' }'.includes(ch)) code += l1 + '\n';
-      if (ch != ' ') {
-        parsing = false;
-        lookupSetOverride(dicode, [key], code);
-        lookupAddIfToList(di, [type], key);
-        lookupSetOverride(diregion, [fname, CODE.region, key], { name: key, code: code, sig: stringBefore(code, ') {'), region: CODE.region, filename: fname });
-        addIf(firstletters, l[0]);
-      }
-    }
-    if (classes_started && startsWith(l, '//#end')) continue;
-    assertion(!startsWith(l, '//#endregion') || !classes_started, 'ASSERTION!!!');
-    if (parsing) continue;
-    if (startsWith(l, '//#region')) {
-      let region = CODE.region = firstWordAfter(l, 'region');
-      if (startsWith(l, '//#region classes')) classes_started = true;
-      if (!classes_started || startsWith(l, '//#region vars')) text += `\n//#region ${fname} ${region}\n`;
-      continue;
-    } else if (startsWith(l, 'var')) {
-      if (classes_started) console.log('line', l)
-      classes_started = false; 
-      let vs = stringAfter(l, 'var').trim().split(',');
-      vs.map(x => firstWord(x)).map(y => lookupAddToList(di, ['var'], y));
-    } else if (startsWith(l, 'const')) {
-      lookupAddToList(di, ['const'], toWords(l)[1]);
-    } else if (startsWith(l, 'class')) {
-      parsing = true;
-      code = l + '\n';
-      type = 'cla';
-      key = firstWordAfter(l, 'class'); 
-    } else if (startsWith(l, 'async') || startsWith(l, 'function')) {
-      parsing = true;
-      code = l + '\n';
-      type = 'func';
-      key = stringBefore(stringAfter(l, 'function').trim(), '(');
-    }
-    if (!classes_started) text += l + '\n';
-  }
-  console.log('first letters', firstletters)
-  for (const k in di) {
-    di[k].sort();
-  }
-  if (isdef(di.cla)) {
-    text += `\n//#region ${fname} classes\n`;
-    for (const k of di.cla) {
-      text += dicode[k];
-    }
-    text += `//#endregion ${fname} classes\n`;
-  }
-  for (const r in diregion[fname]) {
-    if (r == 'classes') continue;
-    text += `\n//#region ${fname} ${r}\n`;
-    let sorted_keys = get_keys(diregion[fname][r]);
-    sorted_keys.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
-    for (const funcname of sorted_keys) { 
-      text += dicode[funcname];
-    }
-    text += `//#endregion ${fname} ${r}\n`;
-  }
-  return { di: di, dicode: dicode, diregion: diregion, text: text };
-}
 function _pickStringForAction(x) {
   if (x.type == 'fixed') return x.val;
   if (x.type == 'obj') return x.ID;
@@ -20862,7 +17444,10 @@ function _setTextFont(items, options, fz) {
   console.log('items', items)
   items.map(x => { let dl = x.live.dLabel; if (isdef(dl)) dl.style.fontSize = fz + 'px'; });
 }
-function _setToList(oval) { if (typeof oval == 'object' && '_set' in oval) return oval._set; else return oval; }
+function _setToList(oval) {
+  if (typeof oval == 'object' && '_set' in oval) return oval._set;
+  return oval;
+}
 function _show_history_popup() {
   if (isdef(mBy('dHistoryPopup')) || isEmpty(Z.fen.history)) return;
   let dpop = mPopup('', dTable, { fz: 16, bg: colorLight('#EDC690', .5), rounding: 8, fg: 'dimgray', top: 0, right: 0, border: 'white' }, 'dHistoryPopup');
@@ -21004,11 +17589,6 @@ async function _start() {
   onpagedeactivated(() => { saveEnv(); dbSave(); });
   await load_syms(); 
   await load_db(); 
-  let superdi = CODE.di = await load_codebase(['../game/aaasuper.js'], true );
-  console.log('superdi',superdi);
-  show_sidebar(sortCaseInsensitive(get_keys(superdi.const)));
-  dTable = mBy('dTable');
-  fiddleInit();
 }
 function _start_game(gamename, players, options) {
 }
@@ -22880,7 +19460,7 @@ function addCatsToKeys() {
   downloadAsYaml(Syms, 'symsWithCats');
 }
 function addChat(msg) { addListItem('chatEvent', msg); }
-function addClass(el, clName) { if (!el) return; el.classList.add(clName); }
+function addClass(clName, el) { if (!el) return; el.classList.add(clName); }
 function addClassInfo(ui, n) {
   if (isdef(ui.firstChild)) {
     let cl1 = Array.from(ui.firstChild.classList); cl1 = isEmpty(cl1) ? cl1 : cl1.join(',');
@@ -22937,11 +19517,59 @@ function addDeckTo(deck, domel, id, flip = false, drag = false) {
   return mobj;
 }
 function addDiv(dParent, { html, w = '100%', h = '100%', bg, fg, border, rounding, margin, padding, float, position, x, y, textAlign, fontSize }) {
-  return addDivU({ dParent: dParent, html: html, w: w, h: h, bg: bg, fg: fg, border: border, rounding: rounding, margin: margin, padding: padding, float: float, position: position, x: x, y: y, textAlign: textAlign, fz: fontSize });
+  let d = document.createElement('div');
+  if (html) d.innerHTML = html;
+  if (bg) d.style.backgroundColor = bg;
+  if (fg) {
+    d.style.color = fg;
+  }
+  if (isNumber(w)) {
+    w = w + 'px';
+  }
+  if (isNumber(h)) {
+    h = h + 'px';
+  }
+  d.style.width = w;
+  d.style.height = h;
+  if (border) {
+    d.style.border = border;
+    d.style.borderRadius = rounding;
+  }
+  if (isNumber(margin)) d.style.margin = margin + 'px';
+  if (isNumber(padding)) d.style.padding = padding + 'px';
+  if (float) d.style.float = float;
+  if (position) d.style.position = position;
+  if (isNumber(x)) d.style.left = x + 'px';
+  if (isNumber(y)) d.style.top = y + 'px';
+  if (textAlign) d.style.textAlign = textAlign;
+  if (fontSize) d.style.fontSize = fontSize;
+  dParent.appendChild(d);
+  return d;
 }
-function addDivClass(dParent, id, className) { return addDivU({ dParent: dParent, id: id, className: className }); }
-function addDivFill(id, dParent) { return addDivU({ dParent: dParent, id: id, w: '100%', h: '100%' }); }
-function addDivFullClass(dParent, id, className) { return addDivU({ dParent: dParent, id: id, w: '100%', h: '100%', className: className }); }
+function addDivClass(dParent, id, className) {
+  let d = document.createElement('div');
+  dParent.appendChild(d);
+  d.id = id;
+  d.classList.add(className);
+  return d;
+}
+function addDivFill(id, dParent) {
+  let d = document.createElement('div');
+  d.id = id;
+  d.style.width = '100%';
+  d.style.height = '100%';
+  dParent.appendChild(d);
+  return d;
+}
+function addDivFullClass(dParent, id, className) {
+  let d = document.createElement('div');
+  dParent.appendChild(d);
+  d.id = id;
+  d.style.width = '100%';
+  d.style.height = '100%';
+  d.classList.add(className);
+  return d;
+}
 function addDivPos(dParent, x, y, w, h, { gap, bg, fg, border, rounding, textAlign, fontSize } = {}) {
   if (gap > 0) {
     let wCont = dParent.offsetWidth;
@@ -23094,7 +19722,12 @@ function addErrorHandler() {
   };
 }
 function addFilterHighlight(ms) { ms.highC('green'); }
-function addFlexGridDiv(dParent) { return addDivU({ dParent: dParent, className: 'flex-grid' }); }
+function addFlexGridDiv(div) {
+  let d = document.createElement('div');
+  d.classList.add('flex-grid');
+  div.appendChild(d);
+  return d;
+}
 function addfork(root) {
   for (const a of [PI / 4, -PI / 6]) {
     let b = root.branch(a);
@@ -23120,7 +19753,10 @@ function addGArea(gName, areaName = 'a_d_game', x = 0, y = 0, clearFirst = true)
   g.classList.add('gCentered');
   return dNew;
 }
-function addGFill(id, divParent) { return addSvgg(divParent, id, { originInCenter: true }); }
+function addGFill(id, dParent) {
+  let res = addSvgg(dParent, id, { originInCenter: true });
+  return res;
+}
 function addGrid9To(d, centerW, centerH, gap = '2px') {
   return makeGrid9(d, centerW, centerH, gap);
 }
@@ -23481,6 +20117,24 @@ function addOidByParentKeyLocation(oid, key, R) {
     topUids.push({ uid: n1.uid, uidParent: uidParent });
   }
   return topUids;
+}
+function addOnelineVars(superdi, o) { 
+  let [code, type] = [o.code, o.type];
+  let crn = (code.match(/\r\n/g) || []).length;
+  let oneliner = crn == 1; 
+  //let specialword = 'Counter'; //'PORT';
+  if (oneliner && type == 'var' && code.includes(',') && !code.includes('[') && !code.includes('{ ')) {
+    let othervars = stringAfter(code, 'var').trim().split(',');
+    othervars = othervars.map(x => firstWord(x));
+    othervars.shift();
+    for (const v of othervars) {
+      let o1 = jsCopy(o);
+      o1.lead = o.key;
+      o1.key = v; 
+      o1.code = '';
+      lookupSetOverride(superdi, [type, v], o1);
+    }
+  }
 }
 function addonFeatureInit() {
   ADS = null;
@@ -23875,29 +20529,28 @@ function addStateToHistory(prefix = 'auto') {
     console.log('saved state', prefix, 'freeForm', pack.settings.freeForm, 'board', pack.settings.boardFilename)
   }
 }
-function addStyledDiv(dParent, id, html, styleString) { return addDivU({ dParent: dParent, id: id, html: html, styleStr: styleString }); }
+function addStyledDiv(dParent, id, html, styleString) {
+  let d = document.createElement('div');
+  dParent.appendChild(d);
+  d.id = id;
+  d.style.cssText = styleString;
+  if (html) d.innerHTML = html;
+  return d;
+}
 function addSvgg(dParent, gid, { w = '100%', h = '100%', bg, fg, originInCenter = false } = {}) {
   let svg1 = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  if (!dParent.style.width || !dParent.style.height) {
-    let pBounds = getBounds(dParent);
-    w = pBounds.width + 'px';
-    h = pBounds.height + 'px';
-    if (pBounds.width == 0) {
-      w = '100%';
-      h = '100%';
-    }
-  }
-  if (!dParent.style.position) dParent.style.position = 'relative';
   svg1.setAttribute('width', w);
   svg1.setAttribute('height', h);
-  let style = 'margin:0;padding:0;position:absolute;top:0px;left:0px;';
+  let style = 'margin:0;padding:0;position:absolute;top:0px;left:0px;'; 
   if (bg) style += 'background-color:' + bg;
   svg1.setAttribute('style', style);
   dParent.appendChild(svg1);
   let g1 = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  if (gid) g1.id = gid;
+  g1.id = gid;
   svg1.appendChild(g1);
-  if (originInCenter) { g1.style.transform = "translate(50%, 50%)"; } 
+  if (originInCenter) {
+    g1.setAttribute('class', 'gCentered');
+  }
   return g1;
 }
 function addSvggViewbox(dParent, gid, { w = '100%', h = '100%', bg, fg, originInCenter = false } = {}) {
@@ -24783,6 +21436,24 @@ function aMoveTo(d, dTarget, x, y, ms) {
     fill: 'forwards'
   });
 }
+function analyse_tables(user_tables) {
+  user_tables.map(x => console.log('table:', x));
+  let bygame = {}, bytid = {};
+  for (const t of user_tables) {
+    lookupAddToList(bygame, [t.game], t);
+    lookupSet(bytid, [t.id], t);
+  }
+  if (!isEmpty(user_tables)) {
+    Session.cur_table = user_tables[0];
+    Session.cur_tid = Session.cur_table.id;
+  } else {
+    Session.cur_table = null;
+    Session.cur_tid = undefined;
+  }
+  lookupSetOverride(DA, [Session.cur_user, 'tables_by_game'], bygame);
+  lookupSetOverride(DA, [Session.cur_user, 'tables_by_tid'], bytid);
+  return bygame;
+}
 function ani_say(d, fSpeak) {
   if (isdef(fSpeak)) fSpeak(); 
   mClass(d, 'onPulse');
@@ -25272,7 +21943,7 @@ function annotate(sp) {
   }
 }
 function any(arr, cond) {
-  return !isEmpty(arr.filter(cond));
+  return !empty(arr.filter(cond));
 }
 function anyColorToStandardString(cAny, a, allowHsl = false) {
   if (Array.isArray(cAny)) {
@@ -25292,6 +21963,7 @@ function anyColorToStandardString(cAny, a, allowHsl = false) {
     } else if (cAny[0] == 'r' && cAny[1] == 'g') {
       if (a == undefined) return cAny;
       if (cAny[3] == 'a') {
+        console.log('its an rgba string!!!!!');
         if (a < 1) {
           return stringBeforeLast(cAny, ',') + ',' + a + ')';
         } else {
@@ -25357,6 +22029,47 @@ function anyColorToStandardString(cAny, a, allowHsl = false) {
 function anyStartsWith(arr, prefix) {
   return any(arr, el => startsWith(el, prefix));
 }
+function anyString(x, indent = 0, ifDict = 'entries') {
+  if (isLiteral(x)) return x;
+  else if (isListOfLiterals(x)) return x.join(' '); 
+  else if (isEmpty(x)) return x;
+  else if (isList(x)) { return x.map(el => anyString(el, indent + 1, ifDict)).join(' '); }
+  else if (isDict(x)) {
+    let s = '';
+    for (const k in x) { s += '\n' + ' '.repeat(indent) + k + ': ' + anyString(x[k], indent + 1, ifDict); }
+    return s;
+  }
+}
+function anyString2(x, indent = 0, proplist, include = true, toplevelOnly = false) {
+  if (isLiteral(x)) return x;
+  else if (isListOfLiterals(x)) return x.join(' '); 
+  else if (isEmpty(x)) return x;
+  else if (isList(x)) {
+    if (toplevelOnly) proplist = null;
+    return x.map(el => anyString2(el, indent + 1, proplist, include)).join(' ');
+  }
+  else if (isDict(x)) {
+    let plist = proplist;
+    if (toplevelOnly) proplist = null;
+    let s = '';
+    if (isdef(plist)) {
+      if (include) {
+        for (const k of plist) {
+          if (nundef(x[k])) { console.log('continue', x, k); continue; }
+          s += '\n' + ' '.repeat(indent) + k + ': ' + anyString2(x[k], indent + 1, proplist, include);
+        }
+      } else {
+        for (const k of plist) {
+          if (isdef(x[k])) continue;
+          s += '\n' + ' '.repeat(indent) + k + ': ' + anyString2(x[k], indent + 1, proplist, include);
+        }
+      }
+    } else {
+      for (const k in x) { s += '\n' + ' '.repeat(indent) + k + ': ' + anyString2(x[k], indent + 1, proplist, include); }
+    }
+    return s;
+  }
+}
 function anyString3(x, indent = 0, proplist = null, include = true, guard = ['specKey', 'label', 'pool', 'el', 'sub', 'elm', 'cond', 'info', 'o', 'ui', 'source', 'bi']) {
   if (isLiteral(x)) return x;
   else if (isListOfLiterals(x)) return x.join(' '); 
@@ -25374,6 +22087,15 @@ function anyString3(x, indent = 0, proplist = null, include = true, guard = ['sp
     }
     return s;
   }
+}
+function anyToString1(x, indent = 0, ifDict = 'entries') {
+  if (isList(x) && !isEmpty(x)) { return x.join(' '); }
+  else if (isDict(x)) {
+    return ifDict == 'keys' ? Object.keys(x).join(' ')
+      : ifDict == 'entries' ? Object.entries(x).map(([k, v]) => k + ': ' + dictOrListToString(v, 'ifDict', indent + 2)).join('\n')
+        : Object.entries(x).join(' ');
+  }
+  else return x;
 }
 function anyWordContainedInKeys(dict, keywords) {
   let res = [];
@@ -28203,7 +24925,13 @@ function arrByClassName(classname,d){
 function arrChildren(elem) { return [...toElem(elem).children]; }
 function arrClear(arr) { arr.length = 0; }
 function arrCount(arr, func) { return arr.filter(func).length; }
-function arrCreate(n, func) { let res = []; for (let i = 0; i < n; i++) { res.push(func(i)); } return res; }
+function arrCreate(n, func) {
+  let res = [];
+  for (let i = 0; i < n; i++) {
+    res.push(func(i));
+  }
+  return res;
+}
 function arrCycle(arr, count) { return arrRotate(arr, count); }
 function arrCycleSwap(arr, prop, clockwise = true) {
   let n = arr.length;
@@ -30786,6 +27514,22 @@ function calcBoardDimensionsX(nuiBoard, R) {
   nuiBoard.gap = gap;
   nuiBoard.fSize = fSpacing - gap;
 }
+function calcContent_dep(oid, o, path) {
+  if (isString(path)) {
+    if (path[0] != '.') return path;
+    let props = path.split('.').slice(1);
+    let content = isEmpty(props) ? o.obj_type : lookup(o, props);
+    return content;
+  } else if (isDict(path)) {
+    let content = {};
+    for (const k in path) {
+      let c = calcContent_dep(oid, o, path[k]);
+      if (c) content[k] = c;
+    }
+    return content;
+  }
+  return null;
+}
 function calcContentFromData(oid, o, data, R, default_data) {
   if (!o) return data; 
   if (isLiteral(data)) {
@@ -31457,7 +28201,7 @@ function cardGameTest01() {
   rAreas();
 }
 function cardGameTest02() {
-  setBackgroundColor(null, 'random');
+  setBackgroundColor(null,'random');
   mStyle(dTable, { h: 400, bg: 'black', padding: 10 });
   let SPEC = { layout: ['T', 'H A'], showAreaNames: true };
   let s = '';
@@ -31472,7 +28216,7 @@ function cardGameTest02() {
   console.log('m', m, '\ns', s); return;
 }
 function cardGameTest03_OK() {
-  setBackgroundColor(null, 'random');
+  setBackgroundColor(null,'random');
   mStyle(dTable, { h: 400, bg: 'black', padding: 10 });
   let dGrid = mDiv100(dTable, { display: 'inline-grid' });
   let layout = ['T', 'H A'];
@@ -31481,7 +28225,7 @@ function cardGameTest03_OK() {
   createAreas(dGrid, x, 'a');
 }
 function cardGameTest04() {
-  setBackgroundColor(null, 'random');
+  setBackgroundColor(null,'random');
   let dGrid = mDiv(dTable, { bg: 'red', w: '80%', h: 400, padding: 10, display: 'inline-grid', rounding: 10 }, 'dGrid');
   let layout = ['T', 'H A'];
   let x = createGridLayout(dGrid, layout);
@@ -31489,7 +28233,7 @@ function cardGameTest04() {
   createAreas(dGrid, x, 'dGrid');
 }
 function cardGameTest05() {
-  setBackgroundColor(null, 'random');
+  setBackgroundColor(null,'random');
   let dGrid = mDiv(dTable, { gap: 10, bg: 'white', w: '80%', h: 400, padding: 10, display: 'inline-grid', rounding: 10 }, 'dGrid');
   let layout = ['T', 'H A'];
   let areaStyles = { bg: 'random', rounding: 6 };
@@ -31515,7 +28259,7 @@ function cardGameTest05() {
   return items;
 }
 function cardGameTest06_clean_OK() {
-  setBackgroundColor(null, 'random');
+  setBackgroundColor(null,'random');
   let dGrid = mDiv(dTable, { gap: 10, bg: 'white', w: '90%', hmin: 400, padding: 10, display: 'inline-grid', rounding: 10 }, 'dGrid');
   let layout = ['T', 'H A'];
   let areaStyles = { bg: 'green', rounding: 6 };
@@ -31553,7 +28297,7 @@ function cardGameTest07() {
   }
 }
 function cardGameTest07_helper() {
-  setBackgroundColor(null, 'random');
+  setBackgroundColor(null,'random');
   let dGrid = mDiv(dTable, { gap: 10, bg: 'white', w: '90%', padding: 10, display: 'inline-grid', rounding: 10 }, 'dGrid');
   let layout = ['T', 'H A'];
   let areaStyles = { bg: 'green', rounding: 6 };
@@ -31861,7 +28605,15 @@ function cartesi(l1, l2) {
   }
   return res;
 }
-function cartesian(...a) { return a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat()))); }
+function cartesian(s1, s2, sep = '_') {
+  let res = [];
+  for (const el1 of s1) {
+    for (const el2 of s2) {
+      res.push(el1 + '_' + el2);
+    }
+  }
+  return res;
+}
 function cartesianOf(ll) {
   let cart = ll[0];
   for (let i = 1; i < ll.length; i++) {
@@ -32229,6 +28981,11 @@ function check_poll_bot_send_move(obj) {
     BotTicker = setTimeout(poll, DA.poll.ms);
   }
 }
+function check_poll_orig() {
+  let p = DA.long_polling;
+  if (nundef(p)) { console.log('no polling is active!'); return; }
+  to_server(p.data, p.type);
+}
 function check_poll_table_seen(obj) {
   console.assert(isdef(obj.table), 'check_poll_table_seen NO TABLE!!!!');
   let t = obj.table;
@@ -32391,27 +29148,18 @@ function checkGameConfigComplete() {
   }
   return true;
 }
-function checkKey(superdi,key,type) {
-  let ok = true;
+function checkKey(superdi, key, type) {
+  let types = ['const', 'var', 'cla', 'func'];
+  let itype = types.indexOf(type);
   for (const t in superdi) {
-    let types = ['const', 'var', 'cla', 'func'];
-    let itype = types.indexOf(type);
-    let it = types.indexOf(t);
     if (lookup(superdi, [t, key])) {
-      if (t == type) break;
-      else if (type == 'const' && t == 'var') {
-        type = 'var';
-      } else if (type == 'var' && t == 'const') {
-        delete superdi.const[key];
-      } else if (it < itype) {
-        delete superdi.const[key];
-      } else ok = false;
+      let it = types.indexOf(t);
+      if (itype > it) { delete superdi[t][key]; return type; }
+      else if (it > itype) { return type == 'const' ? t : false; }
+      else return type;
     }
   }
-  if (!ok) {
-    console.log('!!dup:', key, type);
-  }
-  return ok?type:ok;
+  return type;
 }
 function checkPlayer(i) {
   id = getidNum(i); document.getElementById(id).checked = true;
@@ -33205,28 +29953,6 @@ function color_areas(nHues = 2, iButtonHue = 0, areaClass = 'area', gridDiv = 'r
     if (idx % pal[0].length == 0) ihue = (ihue + 1) % pal[0].length;
   }
 }
-function color_by_area(colormap_name = 'autumn') {
-  const min = 1e8; 
-  const max = 2e13; 
-  const steps = 50;
-  const ramp = colorMap({
-    colormap: colormap_name,
-    nshades: steps,
-  });
-  function clamp(value, low, high) {
-    return Math.max(low, Math.min(value, high));
-  }
-  function getColor(feature) {
-    let geo = feature.getGeometry(); let type = geo.getType();
-    let isPoly = type.includes('Polygon'); 
-    if (!isPoly) { console.log('not a poly', type); return '#ff0'; }
-    const area = ol.sphere.getArea(feature.getGeometry());
-    const f = Math.pow(clamp((area - min) / (max - min), 0, 1), 1 / 2);
-    const index = Math.round(f * (steps - 1));
-    return ramp[index];
-  }
-  return getColor;
-}
 function color2trans(color, alpha = 0.5) {
   let hex = standardize_color(color);
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -33451,7 +30177,7 @@ function colorDark(c, percent = 50, log = true) {
   let zero1 = -percent / 100;
   return pSBC(zero1, c, undefined, !log);
 }
-function colorDarker(c, zero1 = .8, log = true) {
+function colorDarker(c, zero1 = 2, log = true) {
   c = anyColorToStandardString(c);
   return pSBC(-zero1, c, undefined, !log);
 } 
@@ -33822,15 +30548,15 @@ function colorMixer(rgbA, rgbB, amountToMix) {
 }
 function colorNameToHex(cName) {
   let key = cName.toLowerCase();
-  if (!colorDict) {
-    colorDict = {};
+  if (!ColorDict) {
+    ColorDict = {};
     let names = getColorNames();
     let hexes = getColorHexes();
     for (let i = 0; i < names.length; i++) {
-      colorDict[names[i].toLowerCase()] = '#' + hexes[i];
+      ColorDict[names[i].toLowerCase()] = '#' + hexes[i];
     }
   }
-  return key in colorDict ? colorDict[key] : randomHexColor();
+  return key in ColorDict ? ColorDict[key] : randomHexColor();
 } 
 function colorNameToHexString(str) {
   var ctx = document.createElement('canvas').getContext('2d');
@@ -33992,7 +30718,7 @@ function colorsFromBFA(bg, fg, alpha) {
   return [bg, fg];
 }
 function colorShade(plusMinus1, color, log = true) {
-  let c = anyColorToStandardString(color);
+  c = anyColorToStandardString(color);
   return pSBC(plusMinus1, c, undefined, !log);
 } 
 function colorShades(color) {
@@ -34048,13 +30774,11 @@ function comp_2(id) {
 function comp_last(id) {
   return stringAfterLast(id, '_');
 }
-function compactObjectString(o){
-  let s='';
+function compactObjectString(o) {
+  let s = '';
   for (const k in o) {
     if (isSimple(o[k]) && !isComplexColor(o[k])) {
-      if (isDict(o[k])) {
-        console.log('!!!!!!!!!!!!!!!!isDict',o[k]);
-      }
+      if (isDict(o[k])) { error('!!!!!!!!!!!!!!!!isDict', o[k]); }
       s += k + ':' + o[k] + ' ';
     }
   }
@@ -34237,18 +30961,18 @@ function computePresentedKeys(o, isTableObject) {
   for (const k in o) { if (optout[k]) continue; keys.push(k); }
   return keys;
 }
-function consExpand(o,keys,indent=0){
-  console.log('.'.repeat(indent),o);
-  for(const k in o){
+function consExpand(o, keys, indent = 0) {
+  console.log('.'.repeat(indent), o);
+  for (const k in o) {
     if (!keys.includes(k)) continue;
-    let oNew=o[k];
-    console.log('.'.repeat(indent),k+':')
-    if (isList(oNew)){
-      for(const el of oNew){
-        consExpand(el,keys,indent+2);
+    let oNew = o[k];
+    console.log('.'.repeat(indent), k + ':')
+    if (isList(oNew)) {
+      for (const el of oNew) {
+        consExpand(el, keys, indent + 2);
       }
-    }else if (isDict(oNew)){
-      consExpand(oNew,keys,indent+2);
+    } else if (isDict(oNew)) {
+      consExpand(oNew, keys, indent + 2);
     }
   }
 }
@@ -34802,6 +31526,21 @@ function create_menu(dParent, dir = 'h') {
   mTogglebar({ jitter: false }, flag_toggle, { bg: 'lightgreen' }, { bg: '#eee' }, d);
   mLinebreak(dTable, 10);
 }
+function create_new_table(user, game) {
+  user = valf(user, Session.cur_user);
+  game = valf(game, Session.cur_game);
+  let opt = extract_game_options();
+  let t = {};
+  t.friendly = generate_friendly_table_name();
+  t.game = Session.cur_game;
+  t.host = user;
+  t.players = opt.players;
+  t.fen = GSpotitMulti.start_fen(t.players);
+  t.status = 'created';
+  t.player_init = '';
+  DA.next = get_games;
+  to_server(t, 'create_table');
+}
 function create_new_table_and_join_all(user, game) {
   Session.cut_tid = Session.cur_table = null;
   let t = {};
@@ -35317,6 +32056,40 @@ function createElementFromHTML(htmlString) {
   return div.firstChild;
 }
 function createElementFromHtml(s) { return createElementFromHTML(s); }
+function createEmoji({ key, w, h, unit = 'px', fg, bg, padding, cat, parent, border, rounding }) {
+  let emoji = emojiChars[emojiKeys[key]];
+  console.log('emoji', emoji);
+  if (nundef(key)) key = getRandomKey(emojiChars);
+  let ch = emoji.hexcode;
+  console.log('ch', ch)
+  let family = 'emoOpen';
+  let text = emoji.emoji;
+  if (isdef(parent) && isString(parent)) parent = mBy(parent);
+  console.log(parent);
+  console.log(typeof text, text)
+  cat = isdef(cat) ? cat : isdef(parent) ? getTypeOf(parent) == 'div' ? 'd' : 'g' : isdef(cat) ? cat : 'd';
+  let domel;
+  if (cat == 'd') {
+    let d = document.createElement('div');
+    d.style.textAlign = 'center';
+    if (isdef(bg)) {
+      console.log('bg', bg);
+      d.style.backgroundColor = bg;
+    }
+    d.innerHTML = text;
+    domel = d;
+    if (isdef(padding)) d.style.padding = padding + unit;
+    d.style.display = 'inline-block';
+    d.style.height = h + 2 * padding + unit;
+    d.style.width = d.style.height;
+    if (isdef(border)) d.style.border = border;
+    if (isdef(rounding)) d.style.borderRadius = rounding + unit;
+  } else {
+  }
+  domel.key = key;
+  if (parent) parent.appendChild(domel);
+  return domel;
+}
 function createFakeState() {
   let settings = DB.games.gPerlen2;
   let fakeServer = new FakeServerClass(Socket, PerlenDict, settings, null);
@@ -35862,6 +32635,13 @@ function createMultipleChoiceElements(correctAnswer, wrongAnswers, dParent, dFee
     }
   }
 }
+function createNode(sp, idParent, R) {
+  let n = jsCopy(sp);
+  n.idParent = idParent;
+  let id = n.nid = getUid();
+  n.fullPath = R.NODES[idParent].fullPath + '.' + id;
+  return n;
+}
 function createNumberSequence(n, min, max, step, op = 'plus') {
   let fBuild = x => { return op == 'plus' ? (x + step) : op == 'minus' ? (x - step) : x; };
   if (op == 'minus') min += step * (n - 1);
@@ -35991,6 +32771,46 @@ function createPicto({ key, w = 100, h = 100, unit = 'px', fg = 'blue', bg, padd
   if (parent) parent.appendChild(domel);
   return domel;
 }
+function createPictoSimple({ key, w, h, unit = 'px', fg, bg, padding, cat, parent, border, rounding }) {
+  if (nundef(key)) key = getRandomKey(iconChars);
+  let ch = iconChars[key];
+  let family = (ch[0] == 'f' || ch[0] == 'F') ? 'pictoFa' : 'pictoGame';
+  let text = String.fromCharCode('0x' + ch);
+  cat = isdef(cat) ? cat : isdef(parent) ? getTypeOf(parent) == 'div' ? 'd' : 'g' : isdef(cat) ? cat : 'd';
+  if (nundef(w)) w = 25;
+  if (nundef(h)) h = w;
+  let domel;
+  if (cat == 'd') {
+    let d = document.createElement('div');
+    d.style.textAlign = 'center';
+    d.style.fontFamily = family;
+    d.style.fontWeight = 900;
+    d.style.fontSize = h + unit;
+    if (isdef(bg)) d.style.backgroundColor = bg;
+    if (isdef(fg)) d.style.color = fg;
+    d.innerHTML = text;
+    domel = d;
+    if (isdef(padding)) d.style.padding = padding + unit;
+    d.style.display = 'inline-block';
+    d.style.height = h + 2 * padding + unit;
+    d.style.width = d.style.height;
+    if (isdef(border)) d.style.border = border;
+    if (isdef(rounding)) d.style.borderRadius = rounding + unit;
+  } else {
+  }
+  domel.key = key;
+  if (parent) parent.appendChild(domel);
+  return domel;
+}
+function createPictoX(parent, style, classes, titleOptions, pictoOptions, captionOptions) {
+  let d = mDiv(parent);
+  if (isdef(style)) mStyle(d, style);
+  if (isdef(classes)) mClass(d, ...classes);
+  if (isdef(titleOptions)) { titleOptions.parent = d; createText(titleOptions); }
+  if (isdef(pictoOptions)) { pictoOptions.parent = d; createPicto(pictoOptions); }
+  if (isdef(captionOptions)) { captionOptions.parent = d; createText(captionOptions); }
+  return d;
+}
 function createPlayerZone(pl, namePos = 'top', showColor = false) {
   let id = pl.id;
   let z = createCardZone(id, id, namePos);
@@ -36015,7 +32835,7 @@ function createPrototypesForOid(oid, o, R) {
   }
   R.oidNodes[oid] = nlist;
 }
-function createSampleHex1(rows = 5, topcols = 3, w = 25, h = 25) {
+function createSampleHex1(rows = 5, topcols = 3, w = 50, h = 50) {
   initTable();
   let styles = {
     outer: { bg: 'pink', padding: 25 },
@@ -36101,6 +32921,12 @@ function createStaticUi(area, R) {
   let n = R.tree;
   recUi(n, R, area);
 }
+function createSTree(n, idParent, R) {
+  n = createNode(n, idParent, R);
+  if (isContainerType(n.type)) {
+    let prop = RCONTAINERPROP[n.type];
+  }
+}
 function createSubtitledPage(bg = 'silver', title = 'Aristocracy', subtitle = '', footer = 'a game by F. Ludos') {
   setPageBackground(bg);
   createPageDivsFullVisibleArea({
@@ -36136,6 +32962,11 @@ function createTableZone(showColor = false) {
   let z = createCardZone('table');
   if (showColor) mStyleX(z.div, { bg: 'white' });
   return z;
+}
+function createText({ s, parent, style, classes }) {
+  let d = mText(s, parent);
+  if (isdef(style)) mStyle(d, style);
+  if (isdef(classes)) mClass(d, ...classes);
 }
 function createTooltip(oid) {
   $('#' + oid).unbind('mouseover mouseout');
@@ -36533,7 +33364,7 @@ function cTest03_2HandsRandom() {
 function cTest04_2HandsRandom() {
   let iarr = [33, 7, 1, 2, 3, 4], dParent = dTable, id = 'h1';
   let data = DA[id] = {};
-  let h = data.deck = new Deck();
+  let h = data.deck = new DeckClass();
   h.init(iarr);
   let redo = true;
   h = data;
@@ -36556,7 +33387,7 @@ function cTest04_2HandsRandom() {
   setTimeout(cTest03_2Hands_transferStarts, 1000);
 }
 function cTest05() {
-  setBackgroundColor(null, 'random')
+  setBackgroundColor(null,'random')
   mStyle(dTable, { h: 400, bg: 'black', padding: 10 });
   let SPEC = { layout: ['T T', 'H A'], showAreaNames: true };
   let s = '';
@@ -38451,7 +35282,7 @@ function dropKey(ev) {
   posXY(dElem, targetElem, x, y);
   ev.cancel = true;
 }
-function dropLast(s) { return s.substring(0, s.length - 1); }
+function dropLast(s){return s.substring(0,s.length-1);}
 function dropX(ev) {
   ev.preventDefault();
   let targetElem = findDragTarget(ev); 
@@ -40954,7 +37785,7 @@ function findDescendantWithId(id, parent) {
 function findDOMAncestorOfType(elem, t = 'div') {
   let anc = elem.parentNode;
   while (MSCATS[getTypeOf(anc)] != t) { anc = anc.parentNode; }
-  return anc;
+  this.ancestor = anc;
 }
 function findDragTarget(ev) {
   let targetElem = ev.target;
@@ -41204,10 +38035,10 @@ function firstNumber(s) {
 function firstPositiveNumber(s) {
   return s ? Number(s.match(/\d+/).shift()) : -1;
 }
-function firstWord(s) { return toWords(s)[0]; }
-function firstWordAfter(s, sub) {
+function firstWord(s, allow_ = false) { return toWords(s, allow_)[0]; }
+function firstWordAfter(s, sub, allow_ = false) {
   let s1 = stringAfter(s, sub);
-  let s2 = toWords(s1)[0]
+  let s2 = toWords(s1, allow_)[0]
   return s2;
 }
 function fisherYates(arr) {
@@ -41413,16 +38244,16 @@ function formatDate1(d) {
 }
 function formatDate2(d) { if (nundef(d)) d = new Date(); return d.toISOString().slice(0, 19).replace("T", " "); }
 function formatDate3(d) { if (nundef(d)) d = new Date(); return d.toISOString().slice(0, 19).replace(/-/g, "/").replace("T", " "); }
-function formatjson(j) {
-  let s = JSON.stringify(j);
-  s = s.replace(/\s/g, '');
-  return s;
-}
 function formatJson(o){
   let s='';
   for(const k in o){
     if (isSimple(o[k])) s+=k+':'+o[k]+' ';
   }
+  return s;
+}
+function formatjson(j) {
+  let s = JSON.stringify(j);
+  s = s.replace(/\s/g, '');
   return s;
 }
 function formatll(ll) {
@@ -42010,12 +38841,6 @@ function g9(x, mean, stdev) {
 function gaChar(key){
   return String.fromCharCode('0x'+gaChars[key]); //'f520');
 }
-function Game() {
-    this.panel = new Panel();
-    this.run = function () {
-        this.panel.start();
-    }
-}
 function game_add_default_item(ev) {
   evNoBubble(ev);
   let sz = 50;
@@ -42073,6 +38898,12 @@ function GameButton(label) {
   } 
   document.body.appendChild(this.button);
 } 
+function GameFunc() {
+    this.panel = new Panel();
+    this.run = function () {
+        this.panel.start();
+    }
+}
 function gameItem(name, color) { return mItem(name2id(name), null, { color: isdef(color) ? color : randomColor(), name: name }); }
 function gameloop() {
   for (const item of G.items) {
@@ -42258,6 +39089,10 @@ function gaussian_amp(canvas, stdev) {
   let f = formula(2, amp);
   f = x => formula(x, v, amp);
   return f;
+}
+function gaussian1(x, m = 0, stdev = 2, amp = 1) {
+  let v = stdev * stdev;
+  return amp * Math.E ** (-((x - m) ** 2) / (2 * v)) / Math.sqrt(v * 2 * Math.PI);
 }
 function gaussianRand() {
   var rand = 0;
@@ -44163,6 +40998,12 @@ function get_play(e) {
 function get_play_dep(e) {
   get_data({ username: Session.cur_user, gamename: Session.cur_game, assets: nundef(Syms) }, "play");
 }
+function get_play_NOP(step, move) {
+  Session.cur_menu = 'games';
+  let data = { uname: Session.cur_user, tid: Session.cur_tid };
+  if (isdef(step) && isdef(move)) { data.step = step; data.move = move; }
+  to_server(data, "play");
+}
 function get_play_start() { Session.cur_menu = 'play'; to_server({ uname: Session.cur_user, tid: Session.cur_tid }, 'play_start'); }
 function get_player_options(players, game) { return players.map(x => `${x}:${get_startlevel(x, game)}:${get_preferred_lang(x)}`).join(','); }
 function get_player_score(plname) { ensure_score(plname); return Z.fen.players[plname].score; }
@@ -44416,26 +41257,6 @@ function get_square(board, square) {
 }
 function get_start_data_fen(players, game) { return players.map(x => `${x}:${get_startlevel(x, game)}:${get_preferred_lang(x)}`).join(','); }
 function get_startlevel(user, game) { return lookup(DB.users, [user, 'games', game, 'startlevel']) ?? lookup(DB.games, [game, 'def_startlevel']) ?? 0; }
-function get_style(bg, fg) {
-  let res = new ol.style.Style({
-    fill: new ol.style.Fill({ color: bg }),
-    stroke: new ol.style.Stroke({ color: fg }),
-  });
-  return res;
-}
-function get_style_func(func, bg, fg) {
-  let res = (feature) => {
-    return new ol.style.Style({
-      fill: new ol.style.Fill({
-        color: valf(func(feature), bg)
-      }),
-      stroke: new ol.style.Stroke({
-        color: fg,
-      }),
-    });
-  }
-  return res;
-}
 function get_suitlists_sorted_by_rank(blatt, rankstr = '23456789TJQKA', remove_duplicates = false) {
   let di = {};
   for (const k of blatt) {
@@ -45772,6 +42593,14 @@ function getFuncName() {
 function getFunctionCallerName() {
   return new Error().stack.match(/at (\S+)/g)[1].slice(3);
 }
+function getFunctionSignature(firstline,key) {
+  let sig;
+  if (firstline.includes(') {')) sig = stringBefore(firstline, ') {') + ')';
+  else if (firstline.includes('){')) sig = stringBefore(firstline, '){') + ')';
+  else sig = `function ${key}()`;
+  sig += '{}';
+  return sig;
+}
 function getFunctionsNameThatCalledThisFunction() {
   let c1 = getFunctionsNameThatCalledThisFunction.caller;
   if (nundef(c1)) return 'no caller!';
@@ -46564,6 +43393,9 @@ function getOuterDivForMenuStyle(){
   return createElementFromHtml(`<div style='max-height:430px;text-align: center; animation: appear 4s ease'>`);
 }
 function getPageHeaderDivForPlayer(oid) { return document.getElementById('c_c_' + G.playersAugmented[oid].username); }
+function getPal(ipal, pal) {
+  return pal[ipal % pal.length];
+}
 function getpal(ipal_dep = -1, ihue = 0, bOrf = 'b', pal) {
   let p = empty(pal) || !pal || pal == undefined ? palette : pal;
   if (!p) return randomColor();
@@ -46575,12 +43407,9 @@ function getpal(ipal_dep = -1, ihue = 0, bOrf = 'b', pal) {
   else if (ihue >= nHues) ihue %= nHues;
   return p[ipal_dep][ihue][bOrf];
 }
-function getPal(ipal, pal) {
-  return pal[ipal % pal.length];
-}
 function getPalette(color, type = 'shade') {
   color = anyColorToStandardString(color);
-  return colorPalShade(color);
+  return  colorPalShade(color);
 }
 function getPaletteFromHues(hues) {
   let colors = hues.map(h => colorFromHue(h));
@@ -47330,6 +44159,7 @@ function getTextWidth(text, font) {
 }
 function getTimeElapsed() { return TimeElapsed + msElapsedSince(TimestampStarted); }
 function getTransformInfo(gElement) {
+  testHelpers(gElement);
   var matrix = gElement.getCTM();
   let info = decomposeMatrix(matrix);
   return info;
@@ -48551,7 +45381,7 @@ function gTest04() {
   g.addLayoutControls(d);
 }
 function gTest05() {
-  dTable = toElem('map');
+  initTable();
   let hexPoints = [0, -1, 1, -0.5, 1, 0.5, 0, 1, -1, 0.5, -1, -0.5];
   let styles = {
     outer: { bg: 'pink', padding: 25 },
@@ -48559,9 +45389,9 @@ function gTest05() {
     node: { shape: 'polygon', 'shape-polygon-points': hexPoints, w: 90, h: 100, bg: 'black', fg: 'red', fz: 40 }
   };
   let g = new UIGraph(dTable, styles);
-  let nids = g.addNodes(17);
+  let nids = g.addNodes(7);
   console.log('g', g.getNodeIds(), g.getEdgeIds());
-  g.hex1(5, 2, styles.node.w + 2, styles.node.h + 2);
+  g.hex1(3, 2, styles.node.w + 2, styles.node.h + 2);
   g.addLayoutControls();
   g.disableDD(); 
   g.nodeEvent('click', x => { let id = x.id(); console.log('clicked ' + id); g.mStyle(id, { bg: 'yellow', fg: 'blue' }); });
@@ -48699,7 +45529,7 @@ function gTest12() {
   g.showExtent();
 }
 function gTest13() {
-  let g = createSampleHex1(5, 3, 100, 100); let ids = g.getNodeIds(); let id = ids[0]; g.showExtent();
+  let g = createSampleHex1(3, 2, 100, 100); let ids = g.getNodeIds(); let id = ids[0]; g.showExtent();
   let center = g.getProp(id, 'center');
   console.log('center prop', center);
   center = g.posDict['preset'][id];
@@ -48710,7 +45540,6 @@ function gTest13() {
   let node = g.getNode(id);
   let b = node.renderedBoundingBox();
   pN = { x: b.x1 + b.w / 2, y: b.y1 };
-  return;
   let nNew = g.addNode({ width: 25, height: 25 }, pN);
   console.log('new node', nNew);
   let n1 = g.getNode(nNew);
@@ -49187,6 +46016,11 @@ function has_at_most_n_jolly(j, n = 1) { return j.filter(x => is_jolly(x)).lengt
 function has_farm(uname) { return firstCond(UI.players[uname].buildinglist, x => x.type == 'farm'); }
 function has_jolly(j) { return firstCond(j, x => is_jolly(x)); }
 function has_schweine(fenbuilding) { return !isEmpty(fenbuilding.schweine); }
+function hasChildren(n) {
+  let ch = RCONTAINERPROP[n.type];
+  if (nundef(ch)) ch = 'ch';
+  return isdef(n[ch]);
+}
 function hasClickedUI() { uiPaused |= hasClickedMask; }
 function hasDuplicate(arr, efunc) {
   let di = {};
@@ -50440,7 +47274,7 @@ function iH00_dep(iarr, dParent, styles, id) {
     return mZone(dTable, { wmin: sz.w, h: sz.h, padding: padding, rounding: 10 });
   }
   let data = DA[id] = {};
-  let h = data.deck = new Deck();
+  let h = data.deck = new DeckClass();
   h.init(iarr);
   h = data;
   if (nundef(h.zone)) h.zone = iH00Zone(dParent); else clearElement(h.zone);
@@ -50649,14 +47483,14 @@ function iMagnifyX(ui, item, pos) {
 }
 function iMakeHand(iarr, dParent, styles, id) {
   let data = DA[id] = {};
-  let h = data.deck = new Deck();
+  let h = data.deck = new DeckClass();
   h.init(iarr);
   iPresentHand(data, dParent, styles);
   return data;
 }
 function iMakeHand_test(dParent, iarr, id) {
   let data = DA[id] = {};
-  let h = data.deck = new Deck();
+  let h = data.deck = new DeckClass();
   h.init(iarr);
   iPresentHand_test(dParent, data);
   return data;
@@ -50831,11 +47665,11 @@ function indexOfMax(arr, prop) {
       if (max == null || v[prop] > max) {
         max = v[prop];
         imax = i;
-      }
-    } else {
-      if (max == null || v > max) {
-        max = v;
-        imax = i;
+      } else {
+        if (max == null || v > max) {
+          max = v;
+          imax = i;
+        }
       }
     }
   }
@@ -50866,16 +47700,13 @@ function inferPlayerColorFromNameOrInit(plid, index) {
   let ckeys = getKeys(playerColors);
   return playerColors[ckeys[index] % playerColors.length];
 }
-function inferType(n, defType = 'panel') {
-  if (isdef(n.oid)) {
-    let o = R.getO(n.oid);
-    if (isdef(o.loc)) return DEFS.defaultLoc;
+function inferType(val) {
+  for (const t of ['region', 'power', 'unit', 'faction']) {
+    if (isType(t, val)) {
+      return t;
+    }
   }
-  if (isdef(n.children)) {
-    return DEFS.defaultPanel; //'panel';
-  } else {
-    return DEFS.defaultInfo; //'info'; 
-  }
+  return 'unknown';
 }
 function info_from_fen(fen) {
   let all_attrs = gSet_attributes();
@@ -53220,11 +50051,10 @@ function is_just_my_turn() {
 function is_key_down(key) {
   if (nundef(DA.keystate)) {
     DA.keystate = {};
-    window.addEventListener('keyup', (e) => state[e.key] = false);
-    window.addEventListener('keydown', (e) => { state[e.key] = true; });
+    window.addEventListener('keyup', (e) => DA.keystate[e.key] = false);
+    window.addEventListener('keydown', (e) => { DA.keystate[e.key] = true; });
   }
-  let state = DA.keystate;
-  state.hasOwnProperty(key) && state[key] || false;
+  return DA.keystate.hasOwnProperty(key) && DA.keystate[key] || false;
 }
 function is_lat_lng(p) { return isdef(p.lat); }
 function is_lat_long(p) { return is_lat_lng(p); }
@@ -53443,7 +50273,9 @@ function isError(d) {
   }
   return false;
 }
-function isEvent(param) { return getTypeOf(param) == 'event'; }
+function isEvent(param) {
+  return getTypeOf(param) == 'event';
+}
 function isFaceUp(oCard) { return oCard.obj_type; }
 function isFarbPerle(perle) { return isGermanColorName(perle.key); }
 function isField(o) { return o.neighbors; }
@@ -53587,7 +50419,7 @@ function isListOfLists(lst) {
 function isListOfLiterals(lst) {
   if (!isList(lst)) return false;
   for (const el of lst) {
-    if (!isLiteral(el)) return false;
+    if (isList(el)) return false;
   }
   return true;
 }
@@ -53646,7 +50478,9 @@ function isMyTurn(){
 function isNorthRoom(house, room) { return isCloseTo(room.rect.t, house.rect.t, house.wallWidth); }
 function isNumber(x) { return x !== ' ' && x !== true && x !== false && isdef(x) && (x == 0 || !isNaN(+x)); }
 function isNumberOrTimeString(w) { return isNumber(w) || isTimeString(w); }
-function isNumeric(x) { return !isNaN(+x); }
+function isNumeric(x) {
+  return !isNaN(+x);
+}
 function isObject(v) {
   return '[object Object]' === Object.prototype.toString.call(v);
 };
@@ -53719,7 +50553,15 @@ function IsRepetition() {
 function isSeason(ph) {
   return ['Spring', 'Summer', 'Fall', 'Winter'].includes(ph);
 }
-function isSet(x) { return (isDict(x) && (x.set || x._set)); }
+function isSet(x) {
+  if (isDict(x)) {
+    for (const k in x) {
+      if (k == 'set' || k == '_set') return true;
+      break;
+    }
+  }
+  return false;
+}
 function isSimilar(reqAnswer, answer, lang) {
   if (answer == reqAnswer) return true;
   else if (replaceAll(answer, ' ', '') == replaceAll(reqAnswer, ' ', '')) return true;
@@ -53738,7 +50580,9 @@ function isSimilarSound(reqAnswer, s, lang) {
   }
   return true;
 }
-function isSimple(x) { return isString(x) || isNumeric(x); }
+function isSimple(x) {
+  return isString(x) || isNumeric(x);
+}
 function isSimpleType(type) { return !['list', 'object'].includes(type); }
 function isSingleDigit(s) { return /^[0-9]$/i.test(s); }
 function isSingleton(x) {
@@ -53930,6 +50774,7 @@ function iTrim(item, serialize = true) {
 }
 function iUnhigh(item) { let d = iDiv(item); mStyle(d, { bg: 'transparent' }); }
 function iZMax(n) { if (isdef(n)) ZMax = n; ZMax += 1; return ZMax; }
+function join_table(user, tid) { to_server({ uname: user, tid: tid }, 'join_table'); }
 function joinMultiplayerGame(){
 }
 function jolly_matches(key, j, rankstr = 'A23456789TJQKA') {
@@ -54073,7 +50918,7 @@ function kriegTest00(game) {
   for (let i = 0; i < 2; i++) { game.make_random_move(); game.make_random_move(); game.print_state(); if (game.is_out_of_cards()) { console.log('game over!'); break; } }
 }
 function kriegTest00UI() {
-  setBackgroundColor(null, 'random');
+  setBackgroundColor(null,'random');
   clearElement(dTable)
   let back = new GKriegBack();
   back.load({ pl1: { name: 'felix', hand: ['TH', 'KH'] }, pl2: { name: 'tom', hand: ['9C', 'QC'] } }); back.deck.sort(); back.print_state();
@@ -54615,10 +51460,10 @@ function listFromString(s) {
   let words = s.split(',');
   return words.map(x => x.replace('"', '').trim());
 }
-function listKey(d, key, val, uniqueValues = true) {
-  if (nundef(d[key])) { d[key] = []; }
-  if (uniqueValues) { addIf(d[key], val); } else { d[key].push(val); }
-  return d[key];
+function listKey(d, lastKey, val, uniqueValues = true) {
+  if (nundef(d[lastKey])) d[lastKey] = [];
+  if (uniqueValues) addIf(d[lastKey], val); else d[lastKey].push(val);
+  return d[lastKey];
 }
 function listKeys(dict, keys, val, uniqueValues = true) {
   let d = dict;
@@ -54688,7 +51533,7 @@ async function load_codebase(paths, preserveRegionNames = false) {
     paths = ['basemin', 'board', 'cards', 'gamehelpers', 'select']; 
     paths = paths.map(f => `../basejs/${f}.js`);
   }
-  let superdi = {};
+  let superdi = {cla:{},func:{},const:{},var:{}};
   for (const f of paths) {
     console.log('...processing file', f);
     let current_file = stringBefore(stringAfterLast(f, '/'), '.');
@@ -55154,7 +51999,7 @@ function loadRandomTaeOrPosturePic(dpics) {
 }
 function loadScript(path, callback) {
   var script = document.createElement('script');
-  script.onload = ev => {
+  script.onload = function () {
     if (callback) callback(path);
   };
   script.src = path;
@@ -55539,6 +52384,13 @@ function logVals(title, o) {
   let s = title + ':  ';
   for (const k in o) { s += k + ':' + o[k] + ' '; }
   console.log(s);
+}
+function long_polling_shield_on() {
+  DA.long_polling = { type: 'table_status', data: Session.cur_tid, tid: Session.cur_tid, table: Session.cur_table, polling: true, waiting_for_prop: 'status', waiting_for_val: 'started' };
+  polling_shield_on('waiting for host to start game...');
+  TOMain = setTimeout(() => {
+    check_poll_orig();
+  }, 5000);
 }
 function longest_array(arr) {
   let max = 0;
@@ -58304,6 +55156,14 @@ function MakeMove(move) {
   }
   return BOOL.TRUE;
 }
+function makemove(t) {
+  let myMoves = t.moves[Session.cur_user];
+  Session.cur_step = myMoves.length + 1;
+  myMoves.push(randomNumber(1000, 2000)); 
+  Session.cur_move = arrLast(myMoves);
+  DA.next = get_play_dep(Session.cur_step, Session.cur_move);
+  save_tables();
+}
 function makeNewLayout(g1) {
   let nodes = g1.getNodes();
   let x = 10; let y = 10;
@@ -58950,34 +55810,11 @@ function map_add_layer(key = 'osm') {
   layer.addTo(M.map);
   return layer;
 }
-function map_add_object(o, options={}) {
-  let layer = valf(options.layer, M.map.getLayers()[0]);
-  let [lon, lat] = [valf(options.lon, o.lon, 16), valf(options.lat, o.lat, 48)];
-  let shape = valf(options.shape, 'circle');
-  let center = ol.proj.fromLonLat([lon, lat]);
-  let feature;
-  switch (shape) {
-    default: feature = new ol.Feature({ geometry: new ol.geom.Circle(center, 25000), data: o }); break;
-  }
-  layer.getSource().addFeature(feature);
-  return feature;
-}
 function map_init(dParent, city, zoom) {
   let o=M.cities[city];
   let center = [o.lat,o.lon];
   var map = L.map(dParent, { center: center, minZoom: 2, zoom: zoom });
   return map;
-}
-function map_init_OSM() {
-  return new ol.Map({
-    target: 'map-container',
-    layers: [
-      new ol.layer.Tile({
-        source: new ol.source.OSM(),
-      }),
-    ],
-    view: new ol.View({ center: ol.proj.fromLonLat([0, 0]), zoom: 2, }),
-  });
 }
 function map_moveby(pin, fx, fy) {
   let pos = pin.getLatLng();
@@ -60771,6 +57608,7 @@ function mFlexEvenly(d) {
   styles['justify-content'] = 'space-evenly';
   mStyle(d, styles);
 }
+function mFlexLinebreak(d) { if (isString(d)) d = mBy(d); let lb = mDiv(d); mClass(lb, 'linebreak'); return lb; }
 function mFlexLR(d) { mStyle(d, { display: 'flex', 'justify-content': 'space-between', 'align-items': 'center' }); }
 function mFlexSpacebetween(d) { mFlexLR(d); }
 function mFlexWrap(d) { mFlex(d, 'w'); }
@@ -61627,6 +58465,21 @@ function modLabel(item,newLabel,styles){
   item.label = newLabel;
   return dLabel;
 }
+function more() {
+  let sz = measureText(text, styles, cx);
+  console.log('sz', sz)
+  let [v, h] = [pos[0], pos[1]];
+  let offy = v == 't' ? -sz.h : 'c' ? -sz.h / 2 : 0;
+  let offx = h == 'l' ? -sz.w : 'c' ? -sz.w / 2 : 0;
+  let [x, y] = [styles.x + offx, styles.y + offy];
+  console.log('pos', pos, styles.x, styles.y, x, y)
+  cx.fillText(text, x, y);
+  return;
+  if (pos[1] == 'c') cx.textAlign = 'center';
+  cx.font = `16px Arial`;
+  cx.fillStyle = color;
+  cx.fillText(`${label}`, x, y + (pos[0] == 'b' ? 20 : -10));
+}
 function MOVE(from, to, captured, promoted, flag) { return (from | (to << 7) | (captured << 14) | (promoted << 20) | flag); }
 function move_down(canvas, item) { item.y += 1; canvas.clamp(item); return true; }
 function move_probs(canvas, item) {
@@ -61894,6 +58747,56 @@ function mPic(kItem, dParent, styles, classes) {
   if (isdef(classes)) mClass(dOuter, classes);
   iAdd(item, { div: dOuter, dPic: d });
   return item;
+}
+function mPicButton(key, handler, dParent, styles, classes) {
+  let x = createPicto({
+    key: key, w: 20, h: 20, unit: 'px', fg: 'yellow', bg: 'violet',
+    padding: 2, margin: 0, cat: 'd', parent: dParent, rounding: 4
+  });
+  if (isdef(handler)) x.onclick = handler;
+  if (isdef(styles)) {
+    mStyle(x, styles);
+  }
+  if (isdef(classes)) { mClass(x, ...classes); }
+  else mClass(x, 'picButton');
+  return x;
+}
+function mPicButtonSimple(key, handler, dParent, styles, classes) {
+  let x = createPictoSimple({ key: key, cat: 'd', parent: dParent });
+  if (isdef(handler)) x.onclick = handler;
+  if (isdef(styles)) { mStyle(x, styles); }
+  if (isdef(classes)) { mClass(x, ...classes); }
+  return x;
+}
+function mPicSimple(info, dParent, { w, h, unit = 'px', fg, bg, padding, border, rounding, shape }) {
+  if (nundef(w)) w = 25;
+  if (nundef(h)) h = w;
+  let d = document.createElement('div');
+  if (dParent) dParent.appendChild(d);
+  d.style.textAlign = 'center';
+  d.style.fontFamily = info.family;
+  d.style.fontWeight = 900;
+  d.style.fontSize = h + unit;
+  [bg, fg] = getExtendedColors(bg, fg);
+  if (isdef(bg)) d.style.backgroundColor = bg;
+  if (isdef(fg)) d.style.color = fg;
+  d.innerHTML = info.text;
+  if (isdef(padding)) d.style.padding = padding + unit;
+  d.style.display = 'inline-block';
+  d.style.minHeight = h + padding + unit;
+  d.style.minWidth = w + 2 * padding + unit;
+  if (isdef(border)) d.style.border = border;
+  if (isdef(rounding)) d.style.borderRadius = rounding + unit;
+  else if (isdef(shape) && shape == 'ellipse') {
+    let b = getBounds(d);
+    let vertRadius = b.height / 2;
+    let horRadius = b.width / 2;
+    let r = Math.min(vertRadius, horRadius);
+    console.log(b, r)
+    d.style.borderRadius = `${r}${unit}`;
+  }
+  d.key = info.key;
+  return d;
 }
 function mPicto(n, R, uidParent) {
   let dParent = mBy(n.idUiParent);
@@ -63067,6 +59970,30 @@ function mTranslateByFade(elem, x, y, ms = 800, callback = null) {
   mAnimate(elem, 'transform', [`translateX(${x}px) translateY(${y}px)`], callback, ms, 'ease');
   let a = toElem(elem).animate([{ opacity: .25 }, { opacity: 1 },], { fill: 'both', duration: ms, easing: 'ease' });
 }
+function MUELL() {
+  let [mean, stdev] = [0, 1];
+  let f = x => gaussian_amp(x, mean, stdev);
+  let y = f(0);
+  console.log('y', y);
+  let amp = .9 * (-canvas.miny) / (40 * y);
+  f = x => gaussian_amp(x, mean, stdev, amp);
+  canvas.draw_axes();
+  canvas.plot(f, 'orange', 1);
+  let x = 40 * search_end_point(f, 0, canvas.maxx, .1, .01);
+  console.log('point x', x, canvas.minx, canvas.maxx);
+  y = -40 * f(x / 40)
+  console.log('point y', x, 0, canvas.maxy);
+  console.log('scale', canvas.scale)
+  let xreal = x / 40;
+  let yreal = f(xreal) / (40);
+  x = 0;
+  for (let i = canvas.minx; i < canvas.maxx; i += canvas.scale) {
+    let x1 = Math.round(convert_to_range(x, -4, 4, 50, 150));
+    let x2 = Math.round(convert_to_range(-x, -4, 4, 50, 150));
+    canvas.pp(x * 40, 0, 3, `${x1}`);
+    canvas.pp(-x * 40, 0, 3, `${x2}`); x += 2;
+  }
+}
 function muiCard(key,dParent,styles,classes){
 }
 function multiCartesi() {
@@ -63722,6 +60649,13 @@ function normalizeRTree(R) { return normalizeTree(R.rNodes, R); }
 function normalizeSimpleUidProp(o, prop, num) {
   o[prop] = normalizeVal(o[prop], num);
 }
+function normalizeSpec(sp) {
+  let spNew = {};
+  for (const k in sp) {
+    spNew[k] = recNormalize(sp[k], sp);
+  }
+  return spNew;
+}
 function normalizeSpecKeyProp(o, prop, num) {
   let node1 = o[prop];
   if (isString(node1) && node1.includes('_')) {
@@ -64174,7 +61108,7 @@ function onclick_gameover_screen() {
 }
 function onclick_games() { if (!menu_enabled('games')) return; stop_game(); get_games(); }
 function onclick_header(ev) { if (!is_admin() && ev.path[0].id != 'header') return; open_sidebar(); close_mini_user_info(); }
-function onclick_home() { stop_game(); start_with_assets(); }
+function onclick_home() { window.location = SERVER; }
 function onclick_inno_ut0() { onclick_ut(inno_ut0_create_staged); }
 function onclick_inno_ut1() { onclick_ut(inno_ut1_create_staged); }
 function onclick_inno_ut2() { onclick_ut(inno_ut2_create_staged); }
@@ -66030,6 +62964,21 @@ function onWhichGame(d) {
   if (currentGame == GAME) existingPlayers(onExistingPlayers);
   else restartHost(onHostStarted);
 }
+function open_game(uname, game, fen) {
+  U = {};
+  copyKeys(DB.users[uname], U);
+  U.session = {}; 
+  G = new (classByName(capitalize(game) + 'Multi'))(game, DB.games[game]);
+  Settings = new SettingsClass(G, dAux);
+  if (nundef(U.games[game])) {
+    if (G.controllerType == 'solitaire') { U.games[game] = { nTotal: 0, nCorrect: 0, nCorrect1: 0, startlevel: 0 }; }
+    else U.games[game] = {};
+  }
+  if (isdef(G.maxlevel)) G.level = Math.min(getUserStartLevel(game), G.maxlevel);
+  if (G.id != 'gAristo') Settings.updateGameValues(U, G); 
+  showGameTitle();
+  return G;
+}
 function open_game_options(gamename) { present_game_options(gamename); }
 function open_game_ui() {
   clear_table_all();
@@ -66108,6 +63057,11 @@ function open_prompt() {
 function open_sidebar() {
   DA.left_panel = 'open';
   mBy('left_panel').style.flex = 1;
+}
+function open_table_dep(tid) {
+  let t = DB.tables[tid];
+  Session.cur_tid = tid;
+  makemove();
 }
 function openAux(title, button) {
   resetActiveButton();
@@ -66633,6 +63587,16 @@ function parentHasThisChildAlready(uidParent, oid) {
   }
   return hasThisChild;
 }
+function parse_fen(fen) {
+  let parts = fen.split(':');
+  let opt = parts[0];
+  let glob = parts.length > 1 ? parts[1] : null;
+  let pls = [];
+  for (let i = 2; i < parts.length; i++) {
+    pls.push(parts[i]);
+  }
+  return { opt: opt, glob: glob, pls: pls };
+}
 function parse_table(t) {
   set_start_data_from_fen(t.fen, S.game);  
   if (isString(t.options)) t.options = JSON.parse(t.options); 
@@ -66665,7 +63629,6 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
     if (parsing) {
       let l1 = replaceAllSpecialChars(l, '\t', '  ');
       let ch = l1[0];
-      let oneliner = (type == 'var' && !code.includes('\r\n'));
       if (' }]'.includes(ch)) code += l1 + '\r\n';
       if (ch != ' ') { 
         parsing = false;
@@ -66681,25 +63644,11 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
           else sig = `function ${key}()`;
           sig += '{}';
         } else { sig = `${type} ${key}`; }
-        let addvars = [];
-        if (oneliner && code.includes(',') && !code.includes('[') && !code.includes('{')) {
-          let othervars = stringAfter(l, 'var').trim().split(',');
-          othervars = othervars.map(x => firstWord(x));
-          othervars.shift();
-          for(const v of othervars){
-            let t = checkKey(superdi,key,type);
-            if (t) addvars.push[{name:v,type:t}];
-          }
-        }
         let o = { name: key, code: code, sig: sig, region: regKey, filename: fname, type: type };
         addKeys(info, o);
-        type = checkKey(superdi,key,type);
+        type = checkKey(superdi, key, type);
         if (type) lookupSetOverride(superdi, [type, key], o);
-        for (const v of addvars) {
-          let o = { lead: key, name: v.name, code: '', sig: sig, region: regKey, filename: fname, type: v.type };
-          addKeys(info, o);
-          lookupSetOverride(superdi, [type, v], o);
-        }
+        addOnelineVars(superdi, o); 
         addIf(firstletters, l[0]);
       }
     } else {
@@ -66710,34 +63659,67 @@ function parseCodefile(content, fname, preserveRegionNames = true, info = {}, su
     if (parsing) continue;
     if (startsWith(l, '//#region')) {
       regionOrig = stringAfter(l, 'region').trim();
-      regionName = firstWordAfter(l, 'region');
+      regionName = firstWordAfter(l, 'region', true);
     } else if (startsWith(l, 'var')) {
-      key = firstWordAfter(l, 'var');
-      for (const t of ['const', 'func', 'cla']) if (lookup(superdi, [t, key])) continue;
+      key = firstWordAfter(l, 'var', true);
       parsing = true;
       code = l + '\r\n';
       type = 'var';
     } else if (startsWith(l, 'const')) {
-      key = firstWordAfter(l, 'const');
-      for (const t of ['func', 'cla']) if (lookup(superdi, [t, key])) continue;
-      if (isdef(superdi.var[key])) delete superdi.var[key];
+      key = firstWordAfter(l, 'const', true);
       parsing = true;
       code = l + '\r\n';
       type = 'const';
     } else if (startsWith(l, 'class')) {
-      key = firstWordAfter(l, 'class');
-      for (const t of ['func']) if (lookup(superdi, [t, key])) continue;
-      for (const t of ['var', 'const']) if (lookup(superdi, [t, key])) delete superdi[t][key];
+      key = firstWordAfter(l, 'class', true);
       parsing = true;
       code = l + '\r\n';
       type = 'cla';
-      key = firstWordAfter(l, 'class');
     } else if (startsWith(l, 'async') || startsWith(l, 'function')) {
       key = stringBefore(stringAfter(l, 'function').trim(), '(');
-      for (const t of ['var', 'const', 'cla']) if (lookup(superdi, [t, key])) delete superdi[t][key];
       parsing = true;
       code = l + '\r\n';
       type = 'func';
+    }
+  }
+  return superdi;
+}
+function parseCodefile1(content, fname, preserveRegionNames = true, info = {}, superdi = {}) {
+  let lines = content.split('\r\n');
+  let parsing = false;
+  let code, type, key, star, sig;
+  for (const line of lines) {
+    let l = removeCommentsFromLine(line); if (isEmptyOrWhiteSpace(l.trim())) continue;
+    if (parsing) {
+      let l1 = replaceAllSpecialChars(l, '\t', '  ');
+      let ch = l1[0];
+      if (' }]'.includes(ch)) code += l1 + '\r\n';
+      if (ch != ' ') { 
+        parsing = false;
+        let o = { name: key, code: code, sig: sig, region: type, filename: fname, type: type };
+        addKeys(info, o);
+        lookupSetOverride(superdi, [type, key], o);
+      }
+    }
+    if (startsWith(l, 'async') || startsWith(l, 'function')) {
+      key = stringBefore(stringAfter(l, 'function').trim(), '(');
+      if (key.startsWith('*')) { star = true; key = stringAfter(key, '*').trim(); } else star = false;
+      parsing = true;
+      code = l + '\r\n';
+      type = 'func';
+      sig = getFunctionSignature(l,key);
+    } else if (startsWith(l, 'class')) {
+      key = firstWordAfter(l, 'class', true);
+      parsing = true;
+      code = l + '\r\n';
+      type = 'cla';
+      sig = `class ${key}{}`;
+    } else if (startsWith(l, 'const')) {
+      key = firstWordAfter(l, 'const', true);
+      parsing = true;
+      code = l + '\r\n';
+      type = 'const';
+      sig = `const ${key};`;
     }
   }
   return superdi;
@@ -66753,7 +63735,7 @@ function parseComplexStyleProperty(str) {
 function parseDictionaryName(s) {
   if (nundef(s)) return null;
   let o_keys = s.split('.');
-  if (isEmpty(o_keys)) return null;
+  if (empty(o_keys)) return null;
   odict = window[o_keys[0]];
   if (!odict || typeof odict != 'object') return null;
   if (o_keys.length > 1) odict = lookup(odict, o_keys.slice(1));
@@ -69086,6 +66068,23 @@ function presentFor(me) {
   me.hand.showDeck(dTable, 'right', 0, false);
   showFleetingMessage('click to play a card!');
 }
+function presentGenerations_dep(indices, area, R, genKey = 'G') {
+  d = mBy(area);
+  let level = 0;
+  let depth = 10;
+  let dLevel = [];
+  for (let i = 0; i < depth; i++) {
+    let d1 = dLevel[i] = mDiv(d);
+    mSize(d1, '100%', 'auto');
+    mFlexWrap(d1)
+    mColor(d1, colorTrans('black', i * .1));
+  }
+  let di = 0;
+  for (const i of indices) {
+    let div = dLevel[di]; di++;
+    presentNodes(R.gens[genKey][i], div);
+  }
+}
 function presentInChatList(result, dParent) {
   let d2 = mDiv(dParent, { display: 'flex', gap: 10, margin: 10, padding: 10, bg: 'white', fg: 'dimgray' });
   d2.setAttribute('username', result.username);
@@ -69253,6 +66252,40 @@ function presentPlayers() {
 }
 function presentPlayersSimple() {
 }
+function presentRoot_dep(n, area, lf, ls, lo) {
+  d = mBy(area);
+  let depth = 10;
+  let dLevel = [];
+  for (let i = 0; i < depth; i++) {
+    let d1 = dLevel[i] = mDiv(d);
+    mColor(d1, colorTrans('black', i * .1));
+  }
+  addIf(lo, 'act');
+  addIf(lo, 'ui');
+  maxLevel = 1 + recPresentFilter(n, 0, dLevel, { lstFlatten: lf, lstShow: ls, lstOmit: lo });
+}
+function presentRootPresetLists_dep(n, area) {
+  let lstFlatten = ['type', 'pool', 'source', 'data', 'content'];
+  let lstShow = ['type', 'oid', 'data', 'content', 'pool'];
+  let lstOmit = ['act', 'bi', 'sub', '_id', '_ref', 'children', 'source', 'specKey', 'params', 'cssParams', 'typParams', 'stdParams', 'uid', 'ui'];
+  d = mBy(area);
+  let level = 0;
+  let depth = 10;
+  let dLevel = [];
+  for (let i = 0; i < depth; i++) {
+    let d1 = dLevel[i] = mDiv(d);
+    mColor(d1, colorTrans('black', i * .1));
+  }
+  maxLevel = 1 + recPresentFilter(n, 0, dLevel, { lstFlatten: lstFlatten, lstShow: lstShow, lstOmit: lstOmit });
+  removeInPlace(lstOmit, 'children');
+}
+function presentServerData(sdata, area) {
+  let d = mBy(area);
+  clearElement(d);
+  for (const [k, v] of Object.entries(sdata)) {
+    mNode(v, { title: k, dParent: d, omitEmpty: true });
+  }
+}
 function presentSimpleVal(d, item) {
   let d1 = mDiv(d, { display: 'inline-block', bg: 'random', rounding: 10, margin: 10, padding: 10 });
   d1.innerHTML = item;
@@ -69371,6 +66404,17 @@ async function presentTree(uiRoot, R) {
   } else {
     trace('UNKNOWN presentationStrategy!!!!!!', R.presentationStrategy)
   }
+}
+function presentTree_dep(n, treeProperty, area, R, lf, ls, lo) {
+  d = mBy(area);
+  let depth = 10;
+  let dLevel = [];
+  for (let i = 0; i < depth; i++) {
+    let d1 = dLevel[i] = mDiv(d);
+    mColor(d1, colorTrans('black', i * .1));
+  }
+  let nDict = R.rNodes;
+  maxLevel = 1 + recPresent(n, 0, dLevel, nDict, treeProperty, { lstFlatten: lf, lstShow: ls, lstOmit: lo });
 }
 function presentVisible(id, ms, o_new, o_old, options) {
   let visPlayers = getVisibleList(o_new);
@@ -70940,7 +67984,7 @@ function randomHexColor() {
     s += chooseRandom(['f', 'c', '9', '6', '3', '0']);
   }
   return s;
-}
+} 
 function randomHslaColor(s = 100, l = 70, a = 1) {
   var hue = Math.round(Math.random() * 360);
   return hslToHslaString(hue, s, l, a);
@@ -70968,11 +68012,8 @@ function randomList(len = 3, onlySimple = true, elType) {
   return { content: result, elType: elType };
 }
 function randomName() { return chooseRandom(coin() ? GirlNames : BoyNames); }
-function randomNumber(min = 0, max = 100, step) {
-  if (isdef(step)) {
-    let arr=range(min,max,step); return chooseRandom(arr);
-  }
-  else return Math.floor(Math.random() * (max - min + 1)) + min; 
+function randomNumber(min = 0, max = 100) {
+  return Math.floor(Math.random() * (max - min + 1)) + min; 
 }
 function randomObject(len = 3, onlySimple = true, elTypes) {
   if (nundef(elTypes)) { elTypes = Array.from({ length: len, }, () => randomType(true)); }
@@ -71598,6 +68639,21 @@ function recMergeSpecNode(n, sp, spNew) {
     for (const n1 of n.sub) recMergeSpecNode(n1, sp, spNew);
   }
 }
+function recNormalize(n, sp) {
+  let n1 = jsCopy(n);
+  let t = n1.type = nundef(n.type) ? inferType(n) : n.type;
+  let locProp = 'panel';
+  if (locProp != 'p') {
+    n1.p = n[locProp];
+    delete n1[locProp];
+  }
+  let contProp = 'sub';
+  if (contProp && isdef(n[contProp])) {
+    n1.ch = n[contProp].map(x => recNormalize(x, sp));
+    delete n1[contProp];
+  }
+  return n1;
+}
 function recomputeBestED() {
   for (const k in symbolDict) {
     let info = symbolDict[k];
@@ -71694,6 +68750,30 @@ function recPresent(n, level, dLevel, nDict, treeProp, { lstFlatten, lstShow, ls
   }
   return max;
 }
+function recPresent_dep(n, level, dLevel, { lstFlatten, lstShow, lstOmit } = {}) {
+  let n1 = jsCopy(n);
+  n1 = filterByNoKey(n, lstOmit);
+  mNode(n1, { dParent: dLevel[level], listOfProps: lstFlatten });
+  if (nundef(n.children)) return level;
+  let max = 0;
+  for (const x of n.children) {
+    let newMax = recPresent_dep(x, level + 1, dLevel, { lstFlatten: lstFlatten, lstShow: lstShow, lstOmit: lstOmit });
+    if (newMax > max) max = newMax;
+  }
+  return max;
+}
+function recPresent_dep1(n, level, dLevel, lstFlatten, lstShow) {
+  let n1 = jsCopy(n);
+  n1 = filterByNoKey(n, ['sub', '_id', '_ref', 'children', 'source', 'specKey', 'params', 'cssParams', 'typParams', 'stdParams', 'uid', 'ui'])
+  mNode(n1, { dParent: dLevel[level], listOfProps: lstFlatten });
+  if (nundef(n.children)) return level;
+  let max = 0;
+  for (const x of n.children) {
+    let newMax = recPresent_dep1(x, level + 1, dLevel, lstFlatten, lstShow);
+    if (newMax > max) max = newMax;
+  }
+  return max;
+}
 function recPresentFilter(n, level, dLevel, { lf, ls, lo } = {}) {
   mNodeFilter(n, { dParent: dLevel[level], lstFlatten: lf, lstShow: ls, lstOmit: lo });
   if (nundef(n.children)) return level;
@@ -71748,13 +68828,13 @@ function recShowHintsNext(i, ilist, rc, delay, fProgression) {
   showSayHint(i);
   if (QContextCounter == rc) recShowHints(ilist, rc, delay, fProgression);
 }
-function recShowTree(o, indent, childrenKeys, plus, minus) {
-  showObject(o, indent, true, plus, minus);
+function recShowTree(o, indent, childrenKeys, lstShow, lstOmit) {
+  showObject(o, indent, true, lstShow, lstOmit);
   let chkey = findFirstListKey(o, childrenKeys);
   if (chkey) {
-    console.log(' '.repeat(indent+2) + chkey + ':');
+    console.log(' '.repeat(indent + 2) + chkey + ':');
     for (const ch of o[chkey]) {
-      recShowTree(ch, indent + 4, childrenKeys, plus, minus);
+      recShowTree(ch, indent + 4, childrenKeys, lstShow, lstOmit);
     }
   }
 }
@@ -72128,9 +69208,20 @@ function removeCardsFromTo(deck,iFrom,iTo){
   let n=iTo-iFrom+1;
   return removeNCardsFrom(deck,iFrom,n);
 }
-function removeClass(el, clName) { if (!el) return; el.classList.remove(clName); }
+function removeClass(clName, el) { if (!el) return; el.classList.remove(clName); }
 function removeClickHandler(id) { let ms = UIS[id]; ms.removeHandlers(); }
 function removeColNew(board, cClick) { return reduceBoard(board, board.rows, board.cols - 1, cClick); }
+function removeCommentsFromLine(line) {
+  let l = line;
+  if (!l.includes("'//") && !l.includes("//'") && !l.includes("http")) {
+    l = replaceAllFast(line, '://', '://');
+    l = replaceAllFast(l, '//#', '@@#');
+    l = stringBefore(l, '//');
+    l = replaceAllFast(l, '@@#', '//#');
+    l = replaceAllFast(l, '://', '://');
+  }
+  return l;
+}
 function removeDOM(elem) { purge(elem); }
 function removeDuplicates(keys, prop) {
   let di = {};
@@ -72475,6 +69566,12 @@ function replaceSol(sol, diop) {
   return [result, eq];
 }
 function replaceWhite(s, sby = '_') { let w = toWords(s); return w.join(sby); }
+function report_poll(obj) {
+  polling_shield_off();
+  update_cur_table(obj);
+  status_message_off();
+  get_games();
+}
 function repositionCards(msCollection) {
   if (msCollection.numCards == 0) return;
   let dTitle = msCollection.parts.title;
@@ -72662,6 +69759,19 @@ function resplay_container(targetgroup, ovpercent) {
   mContainerSplay(d, 2, card.w, card.h, arrChildren(d).length, ov * card.w);
   let items = arrChildren(d).map(x => Items[x.id]);
   ui_add_cards_to_hand_container(d, items);
+}
+function rest() {
+  styles.al = 'brv'; 
+  cx.textBaseline = "top";
+  cx.fillText("Top", 5, 100);
+  cx.textBaseline = "bottom";
+  cx.fillText("Bottom", 50, 100);
+  cx.textBaseline = "middle";
+  cx.fillText("Middle", 120, 100);
+  cx.textBaseline = "alphabetic";
+  cx.fillText("Alphabetic", 190, 100);
+  cx.textBaseline = "hanging";
+  cx.fillText("Hanging", 290, 100);
 }
 function restart_selection_process() {
   let [plorder, stage, A, fen, uplayer, pl] = [Z.plorder, Z.stage, Z.A, Z.fen, Z.uplayer, Z.fen.players[Z.uplayer]];
@@ -72883,33 +69993,6 @@ function RGBToHex7(c) {
   }
   return '#' + ((1 << 24) + (n[0] << 16) + (n[1] << 8) + n[2]).toString(16).slice(1);
 }
-function rgbToHsl(r, g, b) {
-  (r /= 255), (g /= 255), (b /= 255);
-  var max = Math.max(r, g, b),
-    min = Math.min(r, g, b);
-  var h,
-    s,
-    l = (max + min) / 2;
-  if (max == min) {
-    h = s = 0; 
-  } else {
-    var d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r:
-        h = (g - b) / d + (g < b ? 6 : 0);
-        break;
-      case g:
-        h = (b - r) / d + 2;
-        break;
-      case b:
-        h = (r - g) / d + 4;
-        break;
-    }
-    h /= 6;
-  }
-  return [h, s, l];
-}
 function RGBToHSL(rgb) {
   let ex = /^rgb\((((((((1?[1-9]?\d)|10\d|(2[0-4]\d)|25[0-5]),\s?)){2}|((((1?[1-9]?\d)|10\d|(2[0-4]\d)|25[0-5])\s)){2})((1?[1-9]?\d)|10\d|(2[0-4]\d)|25[0-5]))|((((([1-9]?\d(\.\d+)?)|100|(\.\d+))%,\s?){2}|((([1-9]?\d(\.\d+)?)|100|(\.\d+))%\s){2})(([1-9]?\d(\.\d+)?)|100|(\.\d+))%))\)$/i;
   if (ex.test(rgb)) {
@@ -72945,6 +70028,33 @@ function RGBToHSL(rgb) {
   } else {
     return 'Invalid input color';
   }
+}
+function rgbToHsl(r, g, b) {
+  (r /= 255), (g /= 255), (b /= 255);
+  var max = Math.max(r, g, b),
+    min = Math.min(r, g, b);
+  var h,
+    s,
+    l = (max + min) / 2;
+  if (max == min) {
+    h = s = 0; 
+  } else {
+    var d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+    h /= 6;
+  }
+  return [h, s, l];
 }
 function rgbToHsv(r, g, b) {
   let v = Math.max(r, g, b);
@@ -74465,6 +71575,11 @@ function send_move() {
   if (me.player_status == 'lamov') me.player_status = 'done';
   let o = { tid: Session.cur_tid, player_status: me.player_status, score: me.score, state: me.state, uname: me.name };
   to_server(o, 'send_move');
+}
+function send_move_dep(game, uname, tid, step, move) {
+  Session.cur_menu = 'games';
+  let data = { game: game, uname: uname, tid: tid, step: step, move: move };
+  to_server(data, "send_move");
 }
 function send_or_sim(o, cmd) {
   Counter.server += 1; 
@@ -77779,12 +74894,13 @@ function showFleetingMessage(msg, dParent, styles = {}, ms = 3000, msDelay = 0, 
     TOFleetingMessage = setTimeout(() => fleetingMessage(msg, dFleetingMessage, styles, ms, fade), 10);
   }
 }
-function showFullObject(o,indent=0){
-  for(const k in o){
-    if (isSimple(o[k])) console.log(' '.repeat(indent),k,o[k]);
+function showFullObject(o, indent = 0, onlySimple = false) {
+  for (const k in o) {
+    if (isSimple(o[k])) console.log(' '.repeat(indent), k, o[k]);
+    else if (!onlySimple) console.log(' '.repeat(indent), k, anyString3(o[k]));
     else {
-      console.log(' '.repeat(indent),k);
-      showFullObject(o[k],indent+2);
+      console.log(' '.repeat(indent), k);
+      showFullObject(o[k], indent + 2);
     }
   }
 }
@@ -78003,8 +75119,8 @@ function showNumberSequence(words, dParent, idForContainerDiv = 'seqContainer', 
   return { words: inputGroups, letters: charInputs };
   return [wi.words, wi.letters];
 }
-function showObject(o, indent = 0, simple = true, plus = null, minus = null) {
-  let s=extendedObjectString(o,indent,simple,plus,minus);
+function showObject(o, indent = 0, simple = true, lstShow = null, lstOmit = null) {
+  let s = extendedObjectString(o, indent, simple, lstShow, lstOmit);
   console.log(s);
 }
 function showPackages(data, domid = 'OLDCODE') {
@@ -78251,7 +75367,7 @@ function showTextHints(items, dParentProp, textProp, removeFirst = true) {
     let dHint = item.dHint = mText(hint, d1);
   }
 }
-function showTree(o, childrenKeys = ['panels', 'elm'], plus, minus) {
+function showTree(o, childrenKeys = ['sub', 'elm'], plus, minus) {
   recShowTree(o, 0, childrenKeys, plus, minus);
 }
 function showTrick() {
@@ -78423,7 +75539,7 @@ function simpleRep(val) {
   } else if (typeof val == 'object') {
     let s = [];
     for (const k in val) {
-      if (isEmpty(val[k])) continue;
+      if (empty(val[k])) continue;
       let s1 = simpleRep(val[k]);
       if (k == '_set') s1 = '{' + s1.substring(1, s1.length - 1) + '}';
       s.push(s1);
@@ -78447,6 +75563,15 @@ function simpleSizes_unused(wGame = 1000, hGame = 800, wSide = 200) {
   setCSSVariable('--wLog', wSide + 'px');
   setCSSVariable('--hStatus', 'auto');
   setCSSVariable('--hTesting', '100%');
+}
+function simplest_game_open_for_move_dep(obj) {
+  for (const k in obj) { if (isdef(Session[k])) copyKeys(obj[k], Session[k]); else Session[k] = obj[k]; }
+  Session.cur_table = Session.table;
+  console.assert(isdef(Session.cur_user) && Session.cur_game == Session.table.game && Session.cur_tid == Session.table.id, "SESSION MISMATCH IN GAME_OPEN_FOR_MOVE!!!!!!!!!!!!!!!!!!!!!");
+  open_game_ui();
+  G = open_game(Session.cur_user, Session.cur_game); 
+  G.make_players(Session.table);
+  G.startGame(Session.cur_fen);
 }
 function simplestPerlenGame() {
   hide('dMainContent');
@@ -79080,7 +76205,7 @@ function splayout(elems, dParent, w, h, x, y, overlap = 20, splay = 'right') {
   function splayRight(elems, d, x, y, overlap) {
     for (const c of elems) {
       mAppend(d, c);
-      mStyleX(c, { position: 'absolute', left: x, top: y });
+      mStyle(c, { position: 'absolute', left: x, top: y });
       x += overlap;
     }
     return [x, y];
@@ -79090,7 +76215,7 @@ function splayout(elems, dParent, w, h, x, y, overlap = 20, splay = 'right') {
     let xLast = x;
     for (const c of elems) {
       mAppend(d, c);
-      mStyleX(c, { position: 'absolute', left: x, top: y });
+      mStyle(c, { position: 'absolute', left: x, top: y });
       x -= overlap;
     }
     return [xLast, y];
@@ -79098,7 +76223,7 @@ function splayout(elems, dParent, w, h, x, y, overlap = 20, splay = 'right') {
   function splayDown(elems, d, x, y, overlap) {
     for (const c of elems) {
       mAppend(d, c);
-      mStyleX(c, { position: 'absolute', left: x, top: y });
+      mStyle(c, { position: 'absolute', left: x, top: y });
       y += overlap;
     }
     return [x, y];
@@ -79108,16 +76233,16 @@ function splayout(elems, dParent, w, h, x, y, overlap = 20, splay = 'right') {
     let yLast = y;
     for (const c of elems) {
       mAppend(d, c);
-      mStyleX(c, { position: 'absolute', left: x, top: y });
+      mStyle(c, { position: 'absolute', left: x, top: y });
       y -= overlap;
     }
     return [x, yLast];
   }
   if (isEmpty(elems)) return { w: 0, h: 0 };
-  mStyleX(dParent, { display: 'block', position: 'relative' });
+  mStyle(dParent, { display: 'block', position: 'relative' });
   [x, y] = (eval('splay' + capitalize(splay)))(elems, dParent, x, y, overlap);
   let isHorizontal = splay == 'right' || splay == 'left';
-  let sz = { w: (isHorizontal ? (x - overlap + w) : w), h: (isHorizontal ? (y - overlap + h) : h) };
+  let sz = { w: (isHorizontal ? (x - overlap + w) : w), h: (isHorizontal ? h : (y - overlap + h)) };
   return sz;
 }
 function splitAtAnyOf(s, sep) {
@@ -80251,6 +77376,17 @@ function start_simple_timer(dtimer, msInterval, onTick, msTotal, onElapsed) {
   timer.start();
 }
 function start_sound(){
+}
+function start_table(uname, tid) {
+  to_server({ uname: uname, tid: tid }, 'start_table');
+}
+function start_table_dep(tid) {
+  let t = DB.tables[tid];
+  Session.cur_tid = tid;
+  t.status = 'started';
+  t.moves = {};
+  t.players.map(x => t.moves[x] = []);
+  makemove(t);
 }
 function start_tests() {
   fentest_wise();
@@ -84399,11 +81535,11 @@ function testCard52Cards() {
 }
 function testCardContent0(card) {
   let dCard = iDiv(card);
-  mRows(dCard, spotItPattern(5, 2), { sz: CSZ / 6, fg: 'random', hmargin: 8, vmargin: 4 }, { 'justify-content': 'center' }, { 'justify-content': 'center' }); return;
-  mRows(dCard, spotItPattern(5, 2), { sz: CSZ / 8, fg: 'random', margin: 6 }, { 'justify-content': 'center' }, { 'justify-content': 'center' }); return;
-  mRows(dCard, cardPattern(13, 'spade suit'), { sz: CSZ / 8, fg: 'random', margin: 6 }, { 'justify-content': 'center' }, { 'justify-content': 'center' }); return;
-  mRows(dCard, [['frog', 'frog', 'frog'], ['frog', 'frog'], ['frog', 'frog', 'frog']], { sz: CSZ / 6, fg: 'random' }, { 'justify-content': 'center' }, { 'justify-content': 'center' }); return;
-  mRows(dCard, [['frog', 'frog', 'frog'], ['frog', 'frog'], ['frog', 'frog', 'frog']], { sz: CSZ / 5, fg: 'random' }, { 'justify-content': 'center' }, { 'justify-content': 'space-evenly' }); return;
+  mRows(dCard, spotItPattern(5, 2), { sz: Card.sz / 6, fg: 'random', hmargin: 8, vmargin: 4 }, { 'justify-content': 'center' }, { 'justify-content': 'center' }); return;
+  mRows(dCard, spotItPattern(5, 2), { sz: Card.sz / 8, fg: 'random', margin: 6 }, { 'justify-content': 'center' }, { 'justify-content': 'center' }); return;
+  mRows(dCard, cardPattern(13, 'spade suit'), { sz: Card.sz / 8, fg: 'random', margin: 6 }, { 'justify-content': 'center' }, { 'justify-content': 'center' }); return;
+  mRows(dCard, [['frog', 'frog', 'frog'], ['frog', 'frog'], ['frog', 'frog', 'frog']], { sz: Card.sz / 6, fg: 'random' }, { 'justify-content': 'center' }, { 'justify-content': 'center' }); return;
+  mRows(dCard, [['frog', 'frog', 'frog'], ['frog', 'frog'], ['frog', 'frog', 'frog']], { sz: Card.sz / 5, fg: 'random' }, { 'justify-content': 'center' }, { 'justify-content': 'space-evenly' }); return;
   mSym('frog', dCard, {}, 'cc'); return;
   mRows(iDiv(card), [[['frog', 3], 'HALLO', 'bee'], ['frog', 'HALLO', 'bee'], ['frog', 'HALLO', 4, 'bee'], 'ja das ist es!']);
   return;
@@ -84415,7 +81551,7 @@ function testCardContent0(card) {
       let dc;
       if (isdef(Syms[c])) {
         dc = mDiv(dCol, { fg: 'black' });
-        ds = mSym(dc, dCol, { sz: CSZ / 5, fg: 'random' });
+        ds = mSym(dc, dCol, { sz: Card.sz / 5, fg: 'random' });
       } else {
         dc = mDiv(dCol, { fg: 'black' }, null, c);
       }
@@ -84814,8 +81950,8 @@ function testInno() {
 }
 function testInnoCardPhantasie() {
   dTable = mDiv(mBy('wrapper'), { position: 'absolute', padding: 10, w: '100vw', h: '100vh', bg: 'white' });
-  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable, { fg: 'black', bg: INNO.color.red, w: CSZ, h: CSZ * .65 });
-  let [dCard, sz, szTitle, gap] = [iDiv(card), CSZ / 4, 24, 8];
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable, { fg: 'black', bg: INNO.color.red, w: Card.sz, h: Card.sz * .65 });
+  let [dCard, sz, szTitle, gap] = [iDiv(card), Card.sz / 4, 24, 8];
   let [dTitle, dMain] = cTitleArea(card, 32);
   let d = mAddContent(dTitle, 'MetalWorking', { bg: INNO.sym.tower.bg, fg: 'white', h: 32, fz: 23, align: 'center', position: 'relative' });
   mAddContent(d, '5', { float: 'right', hpadding: 10 });
@@ -84899,7 +82035,7 @@ function testJustARect(){
   let rect =new MMS({parent:svg,type:'rect'}).setDefaults({w:50,h:50,bg:'red'}).attach();
 }
 function testKarte0() {
-  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = CSZ;
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = Card.sz;
   let suit = mSuit('Pik', d, { h: 300 });  
   let p = suit.firstChild;
   console.log('p', p);
@@ -84990,14 +82126,14 @@ function testKarte3_svg() {
   console.log('card', card); 
   let g = iG(card); console.log('g', g);
   let x = mgSuit('Pik'); console.log('x', x);
-  mgSize(x, CSZ / 2);
+  mgSize(x, Card.sz / 2);
   mgPos(card, x); 
 }
 function testKarte4() {
   mStyle(dTable, { gap: 10 }); let card;
   card = cBlank(dTable);
   let d = iDiv(card);
-  let sz = CSZ;
+  let sz = Card.sz;
   let arr = [];
   let suit = mSuit('Pik');  
   let triangle = mShape('triangle', null, { bg: 'red' }); 
@@ -85036,7 +82172,7 @@ function testKarte8() {
   }
 }
 function testKartePosition1() {
-  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = CSZ / 4;
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = Card.sz / 4;
   let s3 = mSuit('Pik', d); mSuitSize(s3, 30); mSuitTL(s3); console.log('s3', s3);
   let s4 = mSuit('Treff', d); mSuitSize(s4, 30); mSuitPos(s4, 'bottom', 'right'); console.log('s4', s4); 
   let s5 = mSuit('Herz', d, { sz: 30 }); mSuitPos(s5, 'bottom', 'left'); console.log('s5', s5); 
@@ -85044,27 +82180,30 @@ function testKartePosition1() {
   return;
   console.log('suit', suit);
   mPos(suit, 0, 0); 
-  mPos(suit1, -10, CHEIGHT - sz); 
-  mPos(suit1, -10 * sz / 100, CHEIGHT - sz); 
+  mPos(suit1, -10, Card.h - sz); 
+  mPos(suit1, -10 * sz / 100, Card.h - sz); 
 }
 function testKartePosition2() {
-  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = CSZ / 4;
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = Card.sz / 4;
   let s1 = mSuit('Pik', d, { sz: 25 }, 'tl'); console.log('s1', s1);
   let s2 = mSuit('Karo', d, { sz: 50 }, 'tr'); console.log('s2', s2);
   let s3 = mSuit('Herz', d, { sz: 75 }, 'bl'); console.log('s3', s3);
   let s4 = mSuit('Treff', d, { sz: 100 }, 'br'); console.log('s4', s4);
 }
 function testKartePositionSuit() {
-  let dTable = mBy('dTable'); clearElement(dTable); mStyle(dTable, { hmin: 400 })
-  let card = cBlank(dTable); let d = iDiv(card); let sz = card.h / 6;
-  let i = 0;
-  for (let suit of ['H', 'S', 'D', 'C']) {
-    let s1 = mSuit(suit, d, { w: sz, h: sz }); 
-    mPos(s1, sz * i, 0); i++;
-  }
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = Card.sz / 6;
+  let s1 = mSuit('Herz', d, { sz: sz }, 'tc'); 
+  let s2 = mSuit('Herz', d, { sz: sz }, 'cr'); 
+  let s3 = mSuit('Herz', d, { sz: sz }, 'bc'); 
+  let s4 = mSuit('Herz', d, { sz: sz }, 'cl'); 
+  let s5 = mSuit('Pik', d, { sz: sz * 2 }, 'cc'); 
+  s5 = mSuit('Treff', d, { sz: sz * 1.5 }, 'tl'); 
+  s5 = mSuit('Treff', d, { sz: sz * 1.5 }, 'tr'); 
+  s5 = mSuit('Treff', d, { sz: sz * 1.5 }, 'bl'); 
+  s5 = mSuit('Treff', d, { sz: sz * 1.5 }, 'br'); 
 }
 function testKartePositionSuitOuterCenters() {
-  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = CSZ / 4;
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = Card.sz / 4;
   let s1 = mSuit('Pik', d, { sz: 60 }, 'tc'); console.log('s1', s1);
   let s2 = mSuit('Karo', d, { sz: 60 }, 'cr'); console.log('s2', s2);
   let s3 = mSuit('Herz', d, { sz: 60 }, 'bc'); console.log('s3', s3);
@@ -85074,7 +82213,7 @@ function testKarteSizing() {
   mStyle(dTable, { gap: 10 }); let card;
   card = cBlank(dTable);
   let d = iDiv(card);
-  let sz = CSZ;
+  let sz = Card.sz;
   let arr = [];
   let suit = mSuit('Pik');  
   let triangle = mShape('triangle', null, { bg: 'red' }); 
@@ -85318,18 +82457,18 @@ function testPos00() {
   console.log(board_to_fen(board));
 }
 function testPosition3() {
-  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = CSZ / 5;
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = Card.sz / 5;
   let x1 = mShapeR('hex', null, { w: sz, h: sz, bg: 'random' }); console.log('\nx1', x1);
   for (const p of ['tl', 'tc', 'tr', 'cl', 'cc', 'cr', 'bl', 'bc', 'br']) {
     let x2 = x1.cloneNode(); mAppend(d, x2); mPlace(x2, p, 20);
   }
 }
 function testPositionCardSym() {
-  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = CSZ / 5;
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = Card.sz / 5;
   let x1 = mSym('crow', d, { w: sz, h: sz, bg: 'random' }, 'cc'); console.log('\nx1', x1);
 }
 function testPositionPatterns() {
-  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = CSZ / 5;
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = Card.sz / 5;
   let x1 = mShapeR('hex', null, { w: sz, h: sz, bg: 'random' }); console.log('\nx1', x1);
   for (const p of ['tl', 'tc', 'tr', 'cl', 'cc', 'cr', 'bl', 'bc', 'br']) {
     let x2 = x1.cloneNode(); mAppend(d, x2);  
@@ -85337,7 +82476,7 @@ function testPositionPatterns() {
   }
 }
 function testPositionPatterns1() {
-  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = CSZ / 5;
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = Card.sz / 5;
   let x1 = mShapeR('circle', null, { w: sz, h: sz, bg: 'random' }); console.log('\nx1', x1);
   for (const p of ['tl', 'tr', 'bl', 'br']) {
     let x2 = x1.cloneNode(); mAppend(d, x2);  
@@ -85349,7 +82488,7 @@ function testPositionPatterns1() {
   }
 }
 function testPositionShapeR0() {
-  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = CSZ / 4;
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable); let d = iDiv(card); let sz = Card.sz / 4;
   let x1 = mShapeR('triup', d, { sz: sz, bg: 'random' }); console.log('\nx1', x1);
   mPlace(x1, 'tl');
   let x2 = mShapeR('hex', d, { sz: sz, bg: 'random' }); console.log('\nx1', x2);
@@ -85386,8 +82525,8 @@ function testRandomSeriesRec(lst, dInit, G, n, callback) {
   });
 }
 function testRectanglesTextInBoxesW0() {
-  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable, { w: CSZ, h: CSZ * .8 });
-  let [d, sz, szTitle, gap] = [iDiv(card), CSZ / 4, 24, 8];
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable, { w: Card.sz, h: Card.sz * .8 });
+  let [d, sz, szTitle, gap] = [iDiv(card), Card.sz / 4, 24, 8];
   let box = mBoxFromMargins(d, szTitle, 10, sz + gap, sz + gap);
   let r = mMeasure(box);
   text = 'das ist ein sehr langer text ich hoffe er ist auf jeden fall zu lang fuer diese box. denn wenn nicht ist es ein echtes problem. dann muss ich einen anderen test machen!';
@@ -85410,8 +82549,8 @@ function testRectanglesTextInBoxesW0() {
   mPlaceText('hallo das ist noch ein echo!!!', [sz, sz, 'tl'], d, { fg: 'blue' }, { bg: 'orange', border: '1px dashed red', rounding: 10 });
 }
 function testRectanglesW1() {
-  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable, { w: CSZ, h: CSZ * .8 });
-  let [d, sz, szTitle, gap] = [iDiv(card), CSZ / 4, 24, 8];
+  mStyle(dTable, { gap: 10 }); let card = cBlank(dTable, { w: Card.sz, h: Card.sz * .8 });
+  let [d, sz, szTitle, gap] = [iDiv(card), Card.sz / 4, 24, 8];
   let text = 'das ist ein sehr langer text ich hoffe er ist auf jeden fall zu lang fuer diese box. denn wenn nicht ist es ein echtes problem. dann muss ich einen anderen test machen!';
   box = mPlaceText(text, [szTitle, 10, sz + gap, sz + gap], d, { fg: 'dimgrey' }, { bg: 'beige', border: '1px solid grey', rounding: 10 });
   text = 'denn wenn nicht ist es ein echtes problem. dann muss ich einen anderen test machen!';
@@ -86333,8 +83472,8 @@ function toUmlaut(w) {
     return w;
   }
 }
-function toWords(s) {
-  let arr = s.split(/[\W|_]+/);
+function toWords(s, allow_ = false) {
+  let arr = allow_ ? s.split(/[\W]+/) : s.split(/[\W|_]+/);
   return arr.filter(x => !isEmpty(x));
 }
 function toWordsSpeech(s) {
@@ -87602,6 +84741,17 @@ function ui_get_trade_items(uplayer) {
   reindex_items(items);
   return items;
 }
+function ui_ground_zero() {
+  STOPAUS = true;
+  uiActivated = aiActivated = false;
+  clearTimeouts(); 
+  if (isdef(G) && isdef(G.clear)) G.clear();
+  if (isdef(GC) && isdef(GC.clear)) GC.clear();
+  TOMan.clear();
+  clearMarkers();
+  resetUIDs(); 
+  Items = {};
+}
 function ui_make_card_container(n, dParent, styles = { bg: 'random', padding: 10 }) {
   let id = getUID('u');
   let d = mDiv(dParent, styles, id);
@@ -88522,6 +85672,16 @@ function update_car(canvas, item) {
     }
   }
   return false;
+}
+function update_cur_table(obj, color) {
+  let t = Session.cur_table;
+  let tnew = obj.table;
+  if (isdef(obj.player_record)) copyKeys(obj.player_record, tnew);
+  copyKeys(tnew, t);
+  if (isdef(color)) {
+    let d = mBy(`rk_${obj.table.id}`);
+    if (isdef(d)) mStyle(d, { bg: color }); 
+  }
 }
 function update_current_table() {
   let o = Serverdata.table;

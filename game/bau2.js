@@ -5,7 +5,7 @@ async function load_codebase(paths, preserveRegionNames = false) {
 		//paths.push(`../game/done.js`);
 		// let paths = [`../game/aaa.js`];
 	}
-	let superdi = {};
+	let superdi = {cla:{},func:{},const:{},var:{}};
 	for (const f of paths) {
 		console.log('...processing file', f);
 		let current_file = stringBefore(stringAfterLast(f, '/'), '.');

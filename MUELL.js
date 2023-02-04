@@ -1,4 +1,312 @@
 
+
+function addOnelineVars(superdi, o) { //code, type, key, info, iline) {
+	//multiple declarations in 1 line!
+	let [code, type] = [o.code, o.type];
+	let crn = (code.match(/\r\n/g) || []).length;
+	let oneliner = crn == 1; // (type == 'var' && crn == 1); 
+
+	//let specialword = 'Counter'; //'PORT';
+	//if (oneliner && key == specialword) console.log('oneliner', info.path, iline, type);
+
+	//var declaration in a line that contains '[' or '{ ' will NOT be taken into consideration!!!
+	if (oneliner && type == 'var' && code.includes(',') && !code.includes('[') && !code.includes('{ ')) {
+		let othervars = stringAfter(code, 'var').trim().split(',');
+		othervars = othervars.map(x => firstWord(x));
+		othervars.shift();
+		//console.log('othervars',othervars,o.path)
+		for (const v of othervars) {
+			let o1 = jsCopy(o);
+			o1.lead = o.key;
+			o1.key = v; // = { lead: key, name: v, code: '', sig: sig, region: regKey, filename: fname, type: type };
+			o1.code = '';
+			lookupSetOverride(superdi, [type, v], o1);
+		}
+	}
+}
+
+function parseCodefile(content, fname, preserveRegionNames = true, info = {}, superdi = {}) {
+	let defaultRegions = { cla: 'classes', func: 'funcs' };
+	let lines = content.split('\r\n');
+	let parsing = false, code, type, key, regionName, regionOrig;
+	let firstletters = [], firstWords = [], iline = 0;
+	for (const line of lines) {
+		let l = line; iline += 1;
+		if (!l.includes("'//") && !l.includes("//'") && !l.includes("http")) {
+			l = replaceAllFast(line, '://', '://');
+			l = replaceAllFast(l, '//#', '@@#');
+			l = stringBefore(l, '//');
+			l = replaceAllFast(l, '@@#', '//#');
+			l = replaceAllFast(l, '://', '://');
+		}
+		if (isEmptyOrWhiteSpace(l.trim())) continue;
+
+		if (parsing) {
+
+			let l1 = replaceAllSpecialChars(l, '\t', '  ');
+			let ch = l1[0];
+
+			if (' }]'.includes(ch)) code += l1 + '\r\n';
+
+			if (ch != ' ') { //end of parsing!
+				parsing = false;
+
+				//duplicate funcs anzeigen!!!!!!!!!!!!!!!!!!!
+				//if (lookup(superdi,[type,key])) { console.log('==>DUPLICATE FUNC:', fname, regionName, key); }
+
+				if (nundef(regionName)) { regionName = regionOrig = valf(defaultRegions[type], type); }
+				let regKey = preserveRegionNames ? regionOrig : `${regionName} (${fname})`;
+
+				let sig;
+				if (type == 'cla') {
+					sig = `class ${key}{}`;
+				} else if (type == 'func') {
+					let firstline = stringBefore(code, '\r\n');
+					if (firstline.includes(') {')) sig = stringBefore(firstline, ') {') + ')';
+					else if (firstline.includes('){')) sig = stringBefore(firstline, '){') + ')';
+					else sig = `function ${key}()`;
+					sig += '{}';
+				} else { sig = `${type} ${key}`; }
+
+				let o = { name: key, code: code, sig: sig, region: regKey, filename: fname, type: type };
+				addKeys(info, o);
+				type = checkKey(superdi, key, type);
+				if (type) lookupSetOverride(superdi, [type, key], o);
+
+				addOnelineVars(superdi, o); //code, type, key, info, iline - 1);
+
+				addIf(firstletters, l[0]);
+			}
+		} else {
+			//if (nundef(regionOrig)) { regionOrig = regionName = 'funcs'; }
+			let w = l[0] != '/' ? firstWord(l) : l.substring(0, 3);
+			addIf(firstWords, w);
+			//if (!['onload', 'async', 'function', 'class', 'var', 'const', '//#'].includes(w)) { console.log('line', iline, w, l[0]); }
+
+		}
+		if (parsing) continue;
+
+		if (startsWith(l, '//#region')) {
+			regionOrig = stringAfter(l, 'region').trim();
+			regionName = firstWordAfter(l, 'region', true);
+		} else if (startsWith(l, 'var')) {
+			key = firstWordAfter(l, 'var', true);
+			// //var wird nur genommen wenn es keine const,function, oder class mit dem namen gibt
+			// for (const t of ['const', 'func', 'cla']) if (lookup(superdi, [t, key])) continue;
+			parsing = true;
+			code = l + '\r\n';
+			type = 'var';
+		} else if (startsWith(l, 'const')) {
+			key = firstWordAfter(l, 'const', true);
+			//const wird nur genommen wenn es keine function, oder class mit dem namen gibt
+			//for (const t of ['func', 'cla']) if (lookup(superdi, [t, key])) continue;
+			//wenn es var gibt, hau sie aus superrdi raus!!!
+			//if (lookup(superdi,.var[key])) delete superdi.var[key];
+			parsing = true;
+			code = l + '\r\n';
+			type = 'const';
+		} else if (startsWith(l, 'class')) {
+			key = firstWordAfter(l, 'class', true);
+			// //class wird nur genommen wenn es keine function, oder class mit dem namen gibt
+			// for (const t of ['func']) if (lookup(superdi, [t, key])) continue;
+			// //wenn es var oder const gibt, hau sie aus superrdi raus!!!
+			// for (const t of ['var', 'const']) if (lookup(superdi, [t, key])) delete superdi[t][key];
+			parsing = true;
+			code = l + '\r\n';
+			type = 'cla';
+			// key = firstWordAfter(l, 'class');
+		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+			//wenn es var oder const oder class gibt, hau sie aus superrdi raus!!!
+			// for (const t of ['var', 'const', 'cla']) if (lookup(superdi, [t, key])) delete superdi[t][key];
+			parsing = true;
+			code = l + '\r\n';
+			type = 'func';
+		}
+	}
+	return superdi;
+}
+
+function addOnelineVars(superdi, code, type, key, info, iline) {
+	//let specialword = 'Counter'; //'PORT';
+	let crn = (code.match(/\r\n/g) || []).length;
+	let oneliner = crn == 1; // (type == 'var' && crn == 1); 
+	//if (oneliner && key == specialword) console.log('oneliner', info.path, iline, type);
+
+	let addvars = [];
+	//multiple declarations in 1 line!
+
+	if (code.includes(specialword)) {
+		//console.log('PORT',info.path,iline,type);
+		let constsaved = null != lookup(superdi, ['const', specialword]);
+		let varsaved = null != lookup(superdi, ['var', specialword]);
+		//console.log('..const',constsaved,'var',varsaved);
+		//console.log('cond',oneliner); // && code.includes(',') && !code.includes('[') && !code.includes('{'))
+	}
+
+	if (oneliner && code.includes(',') && !code.includes('[') && !code.includes('{ ')) {
+		let thisisit = code.includes(specialword);
+		//if (code.includes('PORT')) console.log('HERE',info.path, type, lookup(superdi,['const','PORT']))
+		let othervars = stringAfter(code, 'var').trim().split(',');
+		othervars = othervars.map(x => firstWord(x));
+		othervars.shift();
+
+		//hier muss noch type geaendert werden as perr other var!!!! falls const=>var aendern muss!!!
+		for (const v of othervars) {
+			let t = checkKey(superdi, key, type);
+			if (v == specialword) console.log('path', info.path, t, type)
+			if (t) addvars.push[{ name: v, type: t }];
+		}
+	}
+	for (const v of addvars) {
+		let o = { lead: key, name: v.name, code: '', sig: sig, region: regKey, filename: fname, type: v.type };
+		addKeys(info, o);
+		lookupSetOverride(superdi, [type, v], o);
+	}
+
+}
+
+function parseCodefile(content, fname, preserveRegionNames = true, info = {}, superdi = {}) {
+	let defaultRegions = { cla: 'classes', func: 'funcs' };
+	let lines = content.split('\r\n');
+	let parsing = false, code, type, key, regionName, regionOrig;
+	let firstletters = [], firstWords = [], iline = 0;
+	for (const line of lines) {
+		let l = line; iline += 1;
+		if (!l.includes("'//") && !l.includes("//'") && !l.includes("http")) {
+			l = replaceAllFast(line, '://', '://');
+			l = replaceAllFast(l, '//#', '@@#');
+			l = stringBefore(l, '//');
+			l = replaceAllFast(l, '@@#', '//#');
+			l = replaceAllFast(l, '://', '://');
+		}
+		if (isEmptyOrWhiteSpace(l.trim())) continue;
+
+		if (parsing) {
+
+			let l1 = replaceAllSpecialChars(l, '\t', '  ');
+			let ch = l1[0];
+
+			if (' }]'.includes(ch)) code += l1 + '\r\n';
+
+			if (ch != ' ') { //end of parsing!
+				parsing = false;
+
+				//duplicate funcs anzeigen!!!!!!!!!!!!!!!!!!!
+				//if (lookup(superdi,[type,key])) { console.log('==>DUPLICATE FUNC:', fname, regionName, key); }
+
+				if (nundef(regionName)) { regionName = regionOrig = valf(defaultRegions[type], type); }
+				let regKey = preserveRegionNames ? regionOrig : `${regionName} (${fname})`;
+
+				let sig;
+				if (type == 'cla') {
+					sig = `class ${key}{}`;
+				} else if (type == 'func') {
+					let firstline = stringBefore(code, '\r\n');
+					if (firstline.includes(') {')) sig = stringBefore(firstline, ') {') + ')';
+					else if (firstline.includes('){')) sig = stringBefore(firstline, '){') + ')';
+					else sig = `function ${key}()`;
+					sig += '{}';
+				} else { sig = `${type} ${key}`; }
+
+				checkOnelinerVar(superdi, code, type, key, info, iline - 1);
+
+				let o = { name: key, code: code, sig: sig, region: regKey, filename: fname, type: type };
+				addKeys(info, o);
+				type = checkKey(superdi, key, type);
+				if (type) lookupSetOverride(superdi, [type, key], o);
+
+				addIf(firstletters, l[0]);
+			}
+		} else {
+			//if (nundef(regionOrig)) { regionOrig = regionName = 'funcs'; }
+			let w = l[0] != '/' ? firstWord(l) : l.substring(0, 3);
+			addIf(firstWords, w);
+			//if (!['onload', 'async', 'function', 'class', 'var', 'const', '//#'].includes(w)) { console.log('line', iline, w, l[0]); }
+
+		}
+		if (parsing) continue;
+
+		if (startsWith(l, '//#region')) {
+			regionOrig = stringAfter(l, 'region').trim();
+			regionName = firstWordAfter(l, 'region');
+		} else if (startsWith(l, 'var')) {
+			key = firstWordAfter(l, 'var');
+			// //var wird nur genommen wenn es keine const,function, oder class mit dem namen gibt
+			// for (const t of ['const', 'func', 'cla']) if (lookup(superdi, [t, key])) continue;
+			parsing = true;
+			code = l + '\r\n';
+			type = 'var';
+		} else if (startsWith(l, 'const')) {
+			key = firstWordAfter(l, 'const');
+			//const wird nur genommen wenn es keine function, oder class mit dem namen gibt
+			//for (const t of ['func', 'cla']) if (lookup(superdi, [t, key])) continue;
+			//wenn es var gibt, hau sie aus superrdi raus!!!
+			//if (lookup(superdi,.var[key])) delete superdi.var[key];
+			parsing = true;
+			code = l + '\r\n';
+			type = 'const';
+		} else if (startsWith(l, 'class')) {
+			key = firstWordAfter(l, 'class');
+			// //class wird nur genommen wenn es keine function, oder class mit dem namen gibt
+			// for (const t of ['func']) if (lookup(superdi, [t, key])) continue;
+			// //wenn es var oder const gibt, hau sie aus superrdi raus!!!
+			// for (const t of ['var', 'const']) if (lookup(superdi, [t, key])) delete superdi[t][key];
+			parsing = true;
+			code = l + '\r\n';
+			type = 'cla';
+			// key = firstWordAfter(l, 'class');
+		} else if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+			//wenn es var oder const oder class gibt, hau sie aus superrdi raus!!!
+			// for (const t of ['var', 'const', 'cla']) if (lookup(superdi, [t, key])) delete superdi[t][key];
+			parsing = true;
+			code = l + '\r\n';
+			type = 'func';
+		}
+	}
+	return superdi;
+}
+
+function checkOnelinerVar(superdi, code, type, key, info, iline) {
+	let specialword='Counter'; //'PORT';
+	let crn = (code.match(/\r\n/g) || []).length;
+	let oneliner = crn == 1; // (type == 'var' && crn == 1); 
+	if (oneliner && code.includes(specialword)) console.log('oneliner', info.path, iline, type);
+
+	let addvars = [];
+	//multiple declarations in 1 line!
+
+	if (code.includes(specialword)) {
+		//console.log('PORT',info.path,iline,type);
+		let constsaved = null != lookup(superdi, ['const', specialword]);
+		let varsaved = null != lookup(superdi, ['var', specialword]);
+		//console.log('..const',constsaved,'var',varsaved);
+		//console.log('cond',oneliner); // && code.includes(',') && !code.includes('[') && !code.includes('{'))
+	}
+
+	if (oneliner && code.includes(',') && !code.includes('[') && !code.includes('{ ')) {
+		let thisisit = code.includes(specialword);
+		//if (code.includes('PORT')) console.log('HERE',info.path, type, lookup(superdi,['const','PORT']))
+		let othervars = stringAfter(code, 'var').trim().split(',');
+		othervars = othervars.map(x => firstWord(x));
+		othervars.shift();
+
+		//hier muss noch type geaendert werden as perr other var!!!! falls const=>var aendern muss!!!
+		for (const v of othervars) {
+			let t = checkKey(superdi, key, type);
+			if (v == specialword) console.log('path', info.path, t, type)
+			if (t) addvars.push[{ name: v, type: t }];
+		}
+	}
+	for (const v of addvars) {
+		let o = { lead: key, name: v.name, code: '', sig: sig, region: regKey, filename: fname, type: v.type };
+		addKeys(info, o);
+		lookupSetOverride(superdi, [type, v], o);
+	}
+
+}
+
 function checkKey(superdi, key, type) {
 
 	//check if already in superdi with a different type

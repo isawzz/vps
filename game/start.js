@@ -6,14 +6,11 @@ async function _start() {
 	await load_syms(); // jetzt gibt es Syms SymKeys ByGroupSubgroup Info KeySets
 	await load_db(); //console.log("DB", DB); //jetzt gibt es DB
 	//let list=await load_codebase();//['../game/aaa.js']); 
-	let superdi = CODE.di = await load_codebase(['../game/aaasuper.js'], true );
-	//downloadCodebase(superdi);
-
-	console.log('superdi',superdi);
-	show_sidebar(sortCaseInsensitive(get_keys(superdi.const)));
-	//wie hab ich das 
-	dTable = mBy('dTable');
-	fiddleInit();
+	// let superdi = CODE.di = await load_codebase(['../game/basemin.js'], true );
+	// console.log('superdi',superdi);
+	// show_sidebar(sortCaseInsensitive(get_keys(superdi.const)));
+	// dTable = mBy('dTable');
+	// fiddleInit();
 }
 
 function show_code(res) {

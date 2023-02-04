@@ -3202,11 +3202,10 @@ function isWhiteSpaceString(s) {
 function is_key_down(key) {
 	if (nundef(DA.keystate)) {
 		DA.keystate = {};
-		window.addEventListener('keyup', (e) => state[e.key] = false);
-		window.addEventListener('keydown', (e) => { state[e.key] = true; });
+		window.addEventListener('keyup', (e) => DA.keystate[e.key] = false);
+		window.addEventListener('keydown', (e) => { DA.keystate[e.key] = true; });
 	}
-	let state = DA.keystate;
-	state.hasOwnProperty(key) && state[key] || false;
+	return DA.keystate.hasOwnProperty(key) && DA.keystate[key] || false;
 }
 
 function is_stringified(obj) {

@@ -5122,13 +5122,12 @@ function fireWheel(node) {
 }
 function fromLocalStorage(name = '_all') { return JSON.parse(localStorage.getItem(name)); }
 function is_key_down(key) {
-  if (nundef(DA.keystate)) {
-    DA.keystate = {};
-    window.addEventListener('keyup', (e) => state[e.key] = false);
-    window.addEventListener('keydown', (e) => { state[e.key] = true; });
-  }
-  let state = DA.keystate;
-  state.hasOwnProperty(key) && state[key] || false;
+	if (nundef(DA.keystate)) {
+		DA.keystate = {};
+		window.addEventListener('keyup', (e) => DA.keystate[e.key] = false);
+		window.addEventListener('keydown', (e) => { DA.keystate[e.key] = true; });
+	}
+	return DA.keystate.hasOwnProperty(key) && DA.keystate[key] || false;
 }
 function saveFileAtClient(name, type, data) {
   if (data != null && navigator.msSaveBlob) return navigator.msSaveBlob(new Blob([data], { type: type }), name);
