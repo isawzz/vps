@@ -8547,11 +8547,11 @@ function checkKey(superdi, key, type) {
 	}
 	return type;
 }
-function addOnelineVars(superdi, o) { 
+function addOnelineVars(superdi, o) {
 	//multiple declarations in 1 line!
 	let [code, type] = [o.code, o.type];
 	let crn = (code.match(/\r\n/g) || []).length;
-	let oneliner = crn == 1; 
+	let oneliner = crn == 1;
 
 	//let specialword = 'Counter'; //'PORT';
 	//if (oneliner && key == specialword) console.log('oneliner', info.path, iline, type);
@@ -8559,14 +8559,16 @@ function addOnelineVars(superdi, o) {
 	//var declaration in a line that contains '[' or '{ ' will NOT be taken into consideration!!!
 	if (oneliner && type == 'var' && code.includes(',') && !code.includes('[') && !code.includes('{ ')) {
 		let othervars = stringAfter(code, 'var').trim().split(',');
-		othervars = othervars.map(x => firstWord(x));
+		othervars = othervars.map(x => firstWord(x, true));
 		othervars.shift();
 		//console.log('othervars',othervars,o.path)
 		for (const v of othervars) {
 			let o1 = jsCopy(o);
 			o1.lead = o.key;
-			o1.key = v; 
+			o1.key = v;
 			o1.code = '';
+			o.sig = `var ${v};`;
+			if (isNumber(v)) { continue; } //console.log('var:',v,o.path); 
 			lookupSetOverride(superdi, [type, v], o1);
 		}
 	}
@@ -8583,16 +8585,16 @@ function addModuleExports(list) {
 }
 function removeCommentsFromLine(line) {
 	let l = line;
-	if (!l.includes("'//") && !l.includes("//'") && !l.includes("http")) {
-		l = replaceAllFast(line, '://', '://');
+	if (!l.includes("`//") && !l.includes("'//") && !l.includes("//'") && !l.includes("http")) {
+		l = replaceAllFast(line, '://', ':@@');
 		l = replaceAllFast(l, '//#', '@@#');
 		l = stringBefore(l, '//');
 		l = replaceAllFast(l, '@@#', '//#');
-		l = replaceAllFast(l, '://', '://');
+		l = replaceAllFast(l, ':@@', '://');
 	}
 	return l;
 }
-function getFunctionSignature(firstline,key) {
+function getFunctionSignature(firstline, key) {
 	let sig;
 	if (firstline.includes(') {')) sig = stringBefore(firstline, ') {') + ')';
 	else if (firstline.includes('){')) sig = stringBefore(firstline, '){') + ')';
@@ -8604,8 +8606,17 @@ function parseCodefile1(content, fname, preserveRegionNames = true, info = {}, s
 	let lines = content.split('\r\n');
 	let parsing = false;
 	let code, type, key, star, sig;
+	let multicomment = false;
+	let iline = 0;
 	for (const line of lines) {
+		iline++;
 		let l = removeCommentsFromLine(line); if (isEmptyOrWhiteSpace(l.trim())) continue;
+
+		if (l.trim().startsWith('/*')) multicomment = true;
+		if (multicomment) {
+			if (l.trim().endsWith('*/')) multicomment = false;
+			continue;
+		}
 
 		if (parsing) {
 
@@ -8619,6 +8630,9 @@ function parseCodefile1(content, fname, preserveRegionNames = true, info = {}, s
 
 				let o = { name: key, code: code, sig: sig, region: type, filename: fname, type: type };
 				addKeys(info, o);
+
+				// if (o.type == 'var' && o.fname == 'chess.js') { o.index = iline; lookupAddIfToList(superdi, ['chessvar'], o.name); }
+				if (o.type == 'var' && o.fname == 'chess.js' && o.name.startsWith('brd_')) { lookupSet(superdi, ['chessvar',o.name], true); }
 				lookupSetOverride(superdi, [type, key], o);
 
 				if (type == 'var') addOnelineVars(superdi, o);
@@ -8630,7 +8644,7 @@ function parseCodefile1(content, fname, preserveRegionNames = true, info = {}, s
 			parsing = true;
 			code = l + '\r\n';
 			type = 'func';
-			sig = getFunctionSignature(l,key);
+			sig = getFunctionSignature(l, key);
 		} else if (startsWith(l, 'class')) {
 			key = firstWordAfter(l, 'class', true);
 			parsing = true;
@@ -8649,6 +8663,7 @@ function parseCodefile1(content, fname, preserveRegionNames = true, info = {}, s
 			parsing = true;
 			code = l + '\r\n';
 			type = 'var';
+			sig = `var ${key};`;
 		}
 	}
 	return superdi;

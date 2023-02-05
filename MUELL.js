@@ -1,5 +1,29 @@
 
 
+function hallo(){
+	for(const k of ['MSCATS']){
+		let co=superdi.const[k];
+		let va=superdi.var[k];
+		if (isdef(co) && isdef(va)){
+			//schau welches neuer ist!
+			let better = co.timestamp>va.timestamp?co:va;
+			//beide als var eintragen!
+			if (better == co){
+				let o=jsCopy(co);
+				o.type = 'var';
+				o.code.replace('const','var');
+				o.sig.replace('const','var');
+				superdi.var[k]=o;
+				delete superdi.const[k];
+			}else{
+				delete superdi.const[k];
+			}
+		}
+	}
+
+
+}
+
 function addOnelineVars(superdi, o) { //code, type, key, info, iline) {
 	//multiple declarations in 1 line!
 	let [code, type] = [o.code, o.type];

@@ -201,17 +201,16 @@ let dirimportant = [
 	'C:\\D\\a03\\nodemaster\\socketstarter',
 	'C:\\D\\a04\\basejs',
 	'C:\\D\\a04\\game',
-
+	'C:\\D\\a04\\y\\v2',
 
 ];
 
 let dirlist = LG ? dirimportant : dirlegacy.concat(dironedrive).concat(dirgit).concat(dirmiddle).concat(dirimportant);
 //#endregion done
 
-const { nundef, firstWordAfter, removeInPlace, stringAfter, isEmpty, dict2list, isdef, jsCopy, sortByFunc, parseCodefile, parseCodefile1, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./game/basemin.js');
+const { replaceAllFast, nundef, firstWordAfter, removeInPlace, stringAfter, isEmpty, dict2list, isdef, jsCopy, sortByFunc, parseCodefile, parseCodefile1, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./y/v2/basemin.js');
 
 //#region funcs done
-
 function endsWith(s, sSub) { let i = s.indexOf(sSub); return i >= 0 && i == s.length - sSub.length; }
 function* entries(obj) {
 	let keys = Object.keys(obj);
@@ -265,6 +264,69 @@ function listFiles(dir) {
 	console.log('files', files);
 }
 function sortBy(arr, key) { arr.sort((a, b) => (a[key] < b[key] ? -1 : 1)); return arr; }
+function sortClassKeys(di) {
+	let classes = dict2list(di.cla, 'key');
+	let classesWithoutExtends = classes.filter(x => !x.code.includes(' extends '));
+
+	let keys = sortCaseInsensitive(classesWithoutExtends.map(x => x.key));
+	let dinew = {};
+	for (const el of keys) { dinew[el] = di.cla[el]; }
+
+	let classesWithExtends = classes.filter(x => x.code.includes(' extends '));
+
+	let MAX = 150, i = 0;
+	console.log('starting class loop')
+	while (!isEmpty(classesWithExtends)) {
+		if (++i > MAX) { console.log("WRONG!!!"); return []; }
+		let o = classesWithExtends.find(x => {
+			let ext = firstWordAfter(x.code, 'extends', true).trim();
+			if (nundef(di.cla[ext])) return true; //Array
+			//console.log('extends:', ext);
+			return isdef(dinew[ext]);
+		});
+		if (isdef(o)) { dinew[o.key] = o; removeInPlace(classesWithExtends, o); }
+	}
+	return Object.keys(dinew);
+}
+function sortConstKeys(di) {
+	let tbd = dict2list(di.const, 'key');
+	let donelist = [];
+
+	tbd = sortBy(tbd, x => x.code.length); //sortCaseInsensitive(tbd.map(x => x.key));
+	//console.log('tbd',tbd)
+	let dinew = {};
+
+	//let keystbd=tbd.map(x=>x.key);
+	let MAX = 3000, i1 = 0, i2 = 0, i3 = 0;
+	console.log('starting const loop')
+	console.log('const keys', tbd.length)
+	while (!isEmpty(tbd)) {
+		if (++i1 > MAX) { console.log("WRONG!!!"); return donelist; }
+
+		//find a key in keystbd which code does NOT contain any other const
+		let o = null;
+		i2 = 0;
+		for (const c of tbd) {
+			if (++i2 > MAX) { console.log("WRONG!!!"); return donelist; }
+			i3 = 0;
+			let ok = true;
+			for (const c1 of tbd) {
+				if (++i3 > MAX) { console.log("WRONG!!!"); return donelist; }
+				//if (c1.key == 'BRAUN' && c.key == 'ColorDict') console.log('BRAUN!!!',c1)
+				if (c1 == c) continue;
+				if (c.code.includes(c1.key)) ok = false;
+			}
+			//if (c.key == 'ColorDict') console.log('ColorDict ok',ok);
+			if (ok) { o = c; break; }
+		}
+
+		//let o = tbd.find(x => tbd.every(y => y.key != x.key && !x.code.includes(y.key)));
+		//console.log('o',o)
+		if (isdef(o)) { donelist.push(o); dinew[o.key] = o; removeInPlace(tbd, o); } // console.log('removing',o.key); }
+	}
+
+	return donelist; //dinew; //Object.keys(dinew);
+}
 function toFile(data, filePath) { fs.writeFileSync(filePath, data, 'utf8'); }
 function toTimestamp(strDate) { const dt = Date.parse(strDate); return dt / 1000; }
 function toYamlFile(data, filePath) { fs.writeFileSync(filePath, yaml.stringify(data), 'utf8'); }
@@ -523,9 +585,9 @@ function test15() {
 
 	let di2 = {};
 	let text = '';
-	for (const varkey in superdi.var) { 
+	for (const varkey in superdi.var) {
 		let code = superdi.var[varkey].code;
-		if (!isEmptyOrWhiteSpace(code)) text += code; 
+		if (!isEmptyOrWhiteSpace(code)) text += code;
 	}
 	let constlist = sortConstKeys(superdi);
 	for (const c of constlist) { text += c.code; }
@@ -539,7 +601,7 @@ function test15() {
 			if (type == 'cla' && isdef(superdi.func[k])) { console.log('skip class', k, superdi.cla[k].path); continue; }
 			res[k] = jsCopy(superdi[type][k]);
 			let code = res[k].code;
-			if (type != 'const' && type !='var') { text += code; } // && !isEmptyOrWhiteSpace(code)) { text += code; }
+			if (type != 'const' && type != 'var') { text += code; } // && !isEmptyOrWhiteSpace(code)) { text += code; }
 			delete res[k].code;
 		}
 		di2[type] = res;
@@ -552,97 +614,76 @@ function test15() {
 	toFile(text, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.js`);
 	toYamlFile(di2, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
 }
-
-
-//#endregion done
-
-function sortClassKeys(di) {
-	let classes = dict2list(di.cla, 'key');
-	let classesWithoutExtends = classes.filter(x => !x.code.includes(' extends '));
-
-	let keys = sortCaseInsensitive(classesWithoutExtends.map(x => x.key));
-	let dinew = {};
-	for (const el of keys) { dinew[el] = di.cla[el]; }
-
-	let classesWithExtends = classes.filter(x => x.code.includes(' extends '));
-
-	let MAX = 150, i = 0;
-	console.log('starting class loop')
-	while (!isEmpty(classesWithExtends)) {
-		if (++i > MAX) { console.log("WRONG!!!"); return []; }
-		let o = classesWithExtends.find(x => {
-			let ext = firstWordAfter(x.code, 'extends', true).trim();
-			if (nundef(di.cla[ext])) return true; //Array
-			//console.log('extends:', ext);
-			return isdef(dinew[ext]);
-		});
-		if (isdef(o)) { dinew[o.key] = o; removeInPlace(classesWithExtends, o); }
-	}
-	return Object.keys(dinew);
-}
-function sortConstKeys(di) {
-	let tbd = dict2list(di.const, 'key');
-	let donelist = [];
-
-	tbd = sortBy(tbd, x => x.code.length); //sortCaseInsensitive(tbd.map(x => x.key));
-	//console.log('tbd',tbd)
-	let dinew = {};
-
-	//let keystbd=tbd.map(x=>x.key);
-	let MAX = 3000, i1 = 0, i2 = 0, i3 = 0;
-	console.log('starting const loop')
-	console.log('const keys', tbd.length)
-	while (!isEmpty(tbd)) {
-		if (++i1 > MAX) { console.log("WRONG!!!"); return dinew; }
-
-		//find a key in keystbd which code does NOT contain any other const
-		let o = null;
-		i2 = 0;
-		for (const c of tbd) {
-			if (++i2 > MAX) { console.log("WRONG!!!"); return dinew; }
-			i3 = 0;
-			let ok = true;
-			for (const c1 of tbd) {
-				if (++i3 > MAX) { console.log("WRONG!!!"); return dinew; }
-				if (c1 == c) continue;
-				if (c.code.includes(c1)) ok = false;
-			}
-			if (ok) { o = c; break; }
-		}
-
-		//let o = tbd.find(x => tbd.every(y => y.key != x.key && !x.code.includes(y.key)));
-		//console.log('o',o)
-		if (isdef(o)) { donelist.push(o); dinew[o.key] = o; removeInPlace(tbd, o); console.log('removing',o.key); }
-	}
-
-	return donelist; //dinew; //Object.keys(dinew);
-}
-
-
 function test16() {
 	let list = getSortedCodefileList(dirlist, 'datetime');
 	let superdi = {};
 	for (const file of list) {
 		//console.log('path', file.path);
-		if (file.path == 'C:\\D\\a04\\game\\all.js') continue;
+		if (file.path.startsWith('C:\\D\\a04\\game\\all')) { console.log('skip file', file.path); continue; }
 		let text = fromFile(file.path);
-		if (text.includes('require') || text.includes('ol.')) continue;
+		if (text.includes('= require(') || text.includes(' ol.')) { console.log('skip file', file.path); continue; }
 		parseCodefile1(text, file.fname, false, file, superdi);
 	}
 
+	//delete some var,func,const
+	for (const k of ['c', 'circle', 'uniqueIdEngine', 'maxWidthPreserver']) { delete superdi.var[k]; }
+	for (const k of ['anyColorToStandardString', 'colorNameToHex']) { delete superdi.func[k]; }
+	for (const k of ['RLAYOUT']) { delete superdi.const[k]; }
+
+	//convert const to var for duplicates
+	let ckeys = Object.keys(superdi.const);
+	for (const k of ckeys) {
+		let co = superdi.const[k];
+		let va = superdi.var[k];
+		if (isdef(co) && isdef(va)) {
+			//schau welches neuer ist!
+			let better = co.timestamp > va.timestamp ? co : va;
+			//beide als var eintragen!
+			if (better == co) {
+				let o = jsCopy(co);
+				o.type = 'var';
+				o.code.replace('const', 'var');
+				o.sig.replace('const', 'var');
+				superdi.var[k] = o;
+				delete superdi.const[k];
+			} else {
+				delete superdi.const[k];
+			}
+		} else if (k == 'MyEasing') {
+			let o = jsCopy(co);
+			o.type = 'var';
+			o.code.replace('const', 'var');
+			o.sig.replace('const', 'var');
+			superdi.var[k] = o;
+			delete superdi.const[k];
+		}
+	}
+
+	//console.log('hallo!!!!!!!!!')
+
 	let di2 = {};
 	let text = '';
-	for (const varkey in superdi.var) { 
-		let code = superdi.var[varkey].code;
-		if (!isEmptyOrWhiteSpace(code)) text += code; 
-	}
+
 	let constlist = sortConstKeys(superdi);
-	for (const c of constlist) { 
+	for (const c of constlist) {
 		let constkey = c.key;
-		if (['cx','PORT','SERVER','SERVERRURL'].some(x=>x==constkey)) {delete superdi.const[constkey]; continue; }
-		if (isdef(superdi.func[constkey]) || isdef(superdi.cla[constkey])) {delete superdi.const[constkey]; continue; }
-		text += c.code; 
+		if (['cx', 'PORT', 'SERVER', 'SERVERRURL'].some(x => x == constkey)) { delete superdi.const[constkey]; continue; }
+		if (isdef(superdi.func[constkey]) || isdef(superdi.cla[constkey])) { delete superdi.const[constkey]; continue; }
+		text += c.code;
 	}
+
+	for (const varkey in superdi.var) {
+		if (['lifeView', 'exp', 'Deck'].some(x => x == varkey)) continue;
+		let o = superdi.var[varkey];
+		if (!isEmptyOrWhiteSpace(o.code) && nundef(superdi.chessvar[varkey])) text += o.code;
+	}
+
+	//sonderbehandlung varchess
+	// for (const varkey in superdi.var) { let o = superdi.var[varkey]; if (o.fname == 'chess.js') text += o.code; }
+	// for (const varkey of superdi.chessvar) { 		let o = superdi.var[varkey]; if (o.fname == 'chess.js') text += o.code; o.code=''; }
+	console.log('chess:',Object.keys(superdi.chessvar));
+	for (const varkey in superdi.chessvar) { let o = superdi.var[varkey]; text += o.code; } //o.code=''; }
+
 	text += '\r\n';
 	for (const type of ['var', 'const', 'cla', 'func']) {
 		let keys = sortCaseInsensitive(Object.keys(superdi[type]));
@@ -652,23 +693,123 @@ function test16() {
 		for (const k of keys) {
 
 			let code = superdi[type][k].code;
-			if (['colorDict','VectorLayer','lCard'].some(x=>code.includes(x))) continue;
-
+			if (['colorDict', 'VectorLayer', 'lCard'].some(x => code.includes(x))) continue;
 
 			if (type == 'cla' && isdef(superdi.func[k])) { console.log('skip class', k, superdi.cla[k].path); continue; }
 			res[k] = jsCopy(superdi[type][k]);
 			//let code = res[k].code;
-			if (type != 'const' && type !='var') { text += code; } // && !isEmptyOrWhiteSpace(code)) { text += code; }
+			if (type != 'const' && type != 'var') { text += code; } // && !isEmptyOrWhiteSpace(code)) { text += code; }
 			delete res[k].code;
 		}
 		di2[type] = res;
-		console.log('',type, Object.keys(di2[type]).length);
+		console.log('', type, Object.keys(di2[type]).length);
+	}
+
+	//global text replacements
+	for (const pair of [['anyColorToStandardString', 'colorFrom']]) {
+		text = replaceAllFast(text, pair[0], pair[1]);
 	}
 	toFile(text, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.js`);
 	toYamlFile(di2, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
 }
-dirlist = ['C:\\D\\a04\\game'];
-test16(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
+
+
+//#endregion done
+
+function test17() {
+	let list = getSortedCodefileList(dirlist, 'datetime');
+	let superdi = {};
+	for (const file of list) {
+		let text = fromFile(file.path);
+		if (text.includes('= require(') || text.includes(' ol.')) { console.log('skip file', file.path); continue; }
+		parseCodefile1(text, file.fname, false, file, superdi);
+	}
+
+	//delete some var,func,const
+	for (const k of ['c', 'circle', 'uniqueIdEngine', 'maxWidthPreserver']) { delete superdi.var[k]; }
+	for (const k of ['anyColorToStandardString', 'colorNameToHex']) { delete superdi.func[k]; }
+	for (const k of ['RLAYOUT']) { delete superdi.const[k]; }
+
+	//convert const to var for duplicates
+	let ckeys = Object.keys(superdi.const);
+	for (const k of ckeys) {
+		let co = superdi.const[k];
+		let va = superdi.var[k];
+		if (isdef(co) && isdef(va)) {
+			//schau welches neuer ist!
+			let better = co.timestamp > va.timestamp ? co : va;
+			//beide als var eintragen!
+			if (better == co) {
+				let o = jsCopy(co);
+				o.type = 'var';
+				o.code.replace('const', 'var');
+				o.sig.replace('const', 'var');
+				superdi.var[k] = o;
+				delete superdi.const[k];
+			} else {
+				delete superdi.const[k];
+			}
+		} else if (k == 'MyEasing') {
+			let o = jsCopy(co);
+			o.type = 'var';
+			o.code.replace('const', 'var');
+			o.sig.replace('const', 'var');
+			superdi.var[k] = o;
+			delete superdi.const[k];
+		}
+	}
+
+	// *** synthesize z_all.js and z_all.yaml ***
+	let di2 = {};
+	let text = '';
+
+	let constlist = sortConstKeys(superdi);
+	for (const c of constlist) {
+		let constkey = c.key;
+		if (['cx', 'PORT', 'SERVER', 'SERVERRURL'].some(x => x == constkey)) { delete superdi.const[constkey]; continue; }
+		if (isdef(superdi.func[constkey]) || isdef(superdi.cla[constkey])) { delete superdi.const[constkey]; continue; }
+		text += c.code;
+	}
+
+	for (const varkey in superdi.var) {
+		if (['lifeView', 'exp', 'Deck'].some(x => x == varkey)) continue;
+		let o = superdi.var[varkey];
+		if (!isEmptyOrWhiteSpace(o.code) && nundef(superdi.chessvar[varkey])) text += o.code;
+	}
+
+	//sonderbehandlung varchess
+	for (const varkey in superdi.chessvar) { let o = superdi.var[varkey]; text += o.code; } //o.code=''; }
+
+	text += '\r\n';
+	for (const type of ['var', 'const', 'cla', 'func']) {
+		let keys = sortCaseInsensitive(Object.keys(superdi[type]));
+
+		if (type == 'cla') keys = sortClassKeys(superdi);
+		let res = {};
+		for (const k of keys) {
+
+			let code = superdi[type][k].code;
+			if (['colorDict', 'VectorLayer', 'lCard'].some(x => code.includes(x))) continue;
+
+			if (type == 'cla' && isdef(superdi.func[k])) { console.log('skip class', k, superdi.cla[k].path); continue; }
+			res[k] = jsCopy(superdi[type][k]);
+			//let code = res[k].code;
+			if (type != 'const' && type != 'var') { text += code; } // && !isEmptyOrWhiteSpace(code)) { text += code; }
+			delete res[k].code;
+		}
+		di2[type] = res;
+		console.log('', type, Object.keys(di2[type]).length);
+	}
+
+	//global text replacements
+	for (const pair of [['anyColorToStandardString', 'colorFrom']]) {
+		text = replaceAllFast(text, pair[0], pair[1]);
+	}
+	toFile(text, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.js`);
+	toYamlFile(di2, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
+}
+//dirlist = ['C:\\D\\a04\\game'];
+//test17(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
 
 //#endregion
 

@@ -5,12 +5,18 @@ async function _start() {
 	onpagedeactivated(() => { saveEnv(); dbSave(); });
 	await load_syms(); // jetzt gibt es Syms SymKeys ByGroupSubgroup Info KeySets
 	await load_db(); //console.log("DB", DB); //jetzt gibt es DB
-	//let list=await load_codebase();//['../game/aaa.js']); 
-	// let superdi = CODE.di = await load_codebase(['../game/basemin.js'], true );
-	// console.log('superdi',superdi);
+	let dicode = CODE.di = await route_path_yaml_dict('../y/z_all.yaml');
+	//console.log('keys', dicode);
+	let kwindow = get_keys(window);
+	//console.log('window', kwindow);
+	test100();
+}
+
+function rest() {
 	// show_sidebar(sortCaseInsensitive(get_keys(superdi.const)));
 	// dTable = mBy('dTable');
 	// fiddleInit();
+
 }
 
 function show_code(res) {
