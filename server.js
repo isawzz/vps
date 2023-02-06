@@ -717,7 +717,9 @@ function test16() {
 //#endregion done
 
 function test17() {
+	console.log('h1')
 	let list = getSortedCodefileList(dirlist, 'datetime');
+	console.log('h1',list)
 	let superdi = {};
 	for (const file of list) {
 		let text = fromFile(file.path);
@@ -774,12 +776,14 @@ function test17() {
 	for (const varkey in superdi.var) {
 		if (['lifeView', 'exp', 'Deck'].some(x => x == varkey)) continue;
 		let o = superdi.var[varkey];
-		if (!isEmptyOrWhiteSpace(o.code) && nundef(superdi.chessvar[varkey])) text += o.code;
+		//console.log('h2',o)
+		if (!isEmptyOrWhiteSpace(o.code) && (nundef(superdi.chessvar) || nundef(superdi.chessvar[varkey]))) text += o.code;
 	}
 
 	//sonderbehandlung varchess
 	for (const varkey in superdi.chessvar) { let o = superdi.var[varkey]; text += o.code; } //o.code=''; }
 
+	let justcode={};
 	text += '\r\n';
 	for (const type of ['var', 'const', 'cla', 'func']) {
 		let keys = sortCaseInsensitive(Object.keys(superdi[type]));
@@ -795,6 +799,8 @@ function test17() {
 			res[k] = jsCopy(superdi[type][k]);
 			//let code = res[k].code;
 			if (type != 'const' && type != 'var') { text += code; } // && !isEmptyOrWhiteSpace(code)) { text += code; }
+			
+			justcode[k]=res[k].code;
 			delete res[k].code;
 		}
 		di2[type] = res;
@@ -804,11 +810,15 @@ function test17() {
 	//global text replacements
 	for (const pair of [['anyColorToStandardString', 'colorFrom']]) {
 		text = replaceAllFast(text, pair[0], pair[1]);
+		for(const k in justcode){
+			justcode[k]=replaceAllFast(justcode[k],pair[0],pair[1]);
+		} 
 	}
 	toFile(text, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.js`);
 	toYamlFile(di2, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
+	toYamlFile(justcode, `C:\\D\\a03\\nodemaster\\z_allcode${LG ? 'LG' : ''}.yaml`);
 }
-//dirlist = ['C:\\D\\a04\\game'];
+dirlist = ['C:\\D\\a04\\game'];
 //test17(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
 
 //#endregion

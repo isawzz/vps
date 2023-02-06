@@ -55,7 +55,14 @@ function test100() {
 	console.log('tbd', tbd);
 
 	// console.log('alltext', alltext);
+	//jetzt mach ich einen text aus nur dem code fuer die dinge die ich tatsaechlich brauche!
+	let tres='';
 
+	for(const k in done){
+		tres+= done[k].code+'\r\n';
+	}
+
+	downloadAsText(tres,'mycode');
 }
 
 
