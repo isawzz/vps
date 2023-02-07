@@ -1,5 +1,212 @@
 
 
+function checkKey(superdi, key, type) {
+	let types = ['const', 'var', 'cla', 'func'];
+	let itype = types.indexOf(type);
+	for (const t in superdi) {
+		if (lookup(superdi, [t, key])) {
+			let it = types.indexOf(t);
+			if (itype > it) { delete superdi[t][key]; return type; }
+			else if (it > itype) { return type == 'const' ? t : false; }
+			else return type;
+		}
+	}
+	return type;
+}
+function addOnelineVars(superdi, o) {
+	//multiple declarations in 1 line!
+	let [code, type] = [o.code, o.type];
+	let crn = (code.match(/\r\n/g) || []).length;
+	let oneliner = crn == 1;
+
+	//let specialword = 'Counter'; //'PORT';
+	//if (oneliner && key == specialword) console.log('oneliner', info.path, iline, type);
+
+	//var declaration in a line that contains '[' or '{ ' will NOT be taken into consideration!!!
+	if (oneliner && type == 'var' && code.includes(',') && !code.includes('[') && !code.includes('{ ')) {
+		let othervars = stringAfter(code, 'var').trim().split(',');
+		othervars = othervars.map(x => firstWord(x, true));
+		othervars.shift();
+		//console.log('othervars',othervars,o.path)
+		for (const v of othervars) {
+			let o1 = jsCopy(o);
+			o1.lead = o.key;
+			o1.key = v;
+			o1.code = '';
+			o1.sig = `var ${v};`;
+			if (isNumber(v)) { continue; } //console.log('var:',v,o.path); 
+			lookupSetOverride(superdi, [type, v], o1);
+		}
+	}
+}
+function addModuleExports(list) {
+	let txt =
+		`if (this && typeof module == "object" && module.exports && this === module.exports) {\r\n`
+		+ `  module.exports = {\r\n`;
+	for (const s of list) {
+		txt += `    ${s},\r\n`
+	};
+	txt += '  }\r\n}';
+	return txt;
+}
+function removeCommentsFromLine(line) {
+	let l = line;
+	if (!l.includes("`//") && !l.includes("'//") && !l.includes("//'") && !l.includes("http")) {
+		l = replaceAllFast(line, '://', ':@@');
+		l = replaceAllFast(l, '//#', '@@#');
+		l = stringBefore(l, '//');
+		l = replaceAllFast(l, '@@#', '//#');
+		l = replaceAllFast(l, ':@@', '://');
+	}
+	return l;
+}
+function getFunctionSignature(firstline, key) {
+	let sig;
+	if (firstline.includes(') {')) sig = stringBefore(firstline, ') {') + ')';
+	else if (firstline.includes('){')) sig = stringBefore(firstline, '){') + ')';
+	else sig = `function ${key}()`;
+	sig += '{}';
+	return sig;
+}
+function parseCodefile1(content, fname, preserveRegionNames = true, info = {}, superdi = {}) {
+	let lines = content.split('\r\n');
+	let parsing = false;
+	let code, type, key, star, sig;
+	let multicomment = false;
+	let iline = 0;
+	for (const line of lines) {
+		iline++;
+		let l = removeCommentsFromLine(line); if (isEmptyOrWhiteSpace(l.trim())) continue;
+
+		if (l.trim().startsWith('/*')) multicomment = true;
+		if (multicomment) {
+			if (l.trim().endsWith('*/')) multicomment = false;
+			continue;
+		}
+
+		if (parsing) {
+
+			let l1 = replaceAllSpecialChars(l, '\t', '  ');
+			let ch = l1[0];
+
+			if (' }]'.includes(ch)) code += l1 + '\r\n';
+
+			if (ch != ' ') { //end of parsing!
+				parsing = false;
+
+				let o = { name: key, code: code, sig: sig, region: type, filename: fname, type: type };
+				addKeys(info, o);
+
+				// if (o.type == 'var' && o.fname == 'chess.js') { o.index = iline; lookupAddIfToList(superdi, ['chessvar'], o.name); }
+				if (o.type == 'var' && o.fname == 'chess.js' && o.name.startsWith('brd_')) { lookupSet(superdi, ['chessvar',o.name], true); }
+				lookupSetOverride(superdi, [type, key], o);
+
+				if (type == 'var') addOnelineVars(superdi, o);
+			}
+		}
+		if (startsWith(l, 'async') || startsWith(l, 'function')) {
+			key = stringBefore(stringAfter(l, 'function').trim(), '(');
+			if (key.startsWith('*')) { star = true; key = stringAfter(key, '*').trim(); } else star = false;
+			parsing = true;
+			code = l + '\r\n';
+			type = 'func';
+			sig = getFunctionSignature(l, key);
+		} else if (startsWith(l, 'class')) {
+			key = firstWordAfter(l, 'class', true);
+			parsing = true;
+			code = l + '\r\n';
+			type = 'cla';
+			sig = `class ${key}{}`;
+		} else if (startsWith(l, 'const')) {
+			//console.log('const',l)
+			key = firstWordAfter(l, 'const', true);
+			parsing = true;
+			code = l + '\r\n';
+			type = 'const';
+			sig = `const ${key};`;
+		} else if (startsWith(l, 'var')) {
+			key = firstWordAfter(l, 'var', true);
+			parsing = true;
+			code = l + '\r\n';
+			type = 'var';
+			sig = `var ${key};`;
+		}
+	}
+	return superdi;
+}
+
+
+function test100() {
+
+	let keys = {};
+	for (const k in CODE.di) { for (const k1 in CODE.di[k]) keys[k1] = CODE.di[k][k1]; }
+	CODE.all = keys;
+
+	CODE.keylist = Object.keys(keys)
+	//console.log('keys',CODE.keylist);
+
+	let inter = intersection(Object.keys(keys), Object.keys(window));
+	//console.log('intersection',inter);
+
+	//7748 in intersection, also ca 400 jeweils extra, ergibt total of 8500 keys ca.
+
+	//fang an in _start
+	let f = CODE.all._start;
+	let f1 = window._start;
+	let f2 = window.test100;
+	//console.log('_start', f)
+	//console.log('_start', f1.toString());
+
+	let text = f1.toString() + '\r\n' + f2.toString();
+	let done = {}, n_old = 0;
+	let tbd = ['_start','test100'], n_new = 1;
+
+	let MAX = 1007, i = 0;
+	let alltext = '';
+
+	while (!isEmpty(tbd)) {
+		if (++i > MAX) break;
+
+		let sym = tbd[0];
+		let o = CODE.all[sym];
+		if (nundef(o)) o = getObjectFromWindow(sym);
+		if (o.type != 'func') { tbd.shift(); lookupSet(done, [o.type, sym], o); continue; }
+		let olive = window[sym];
+		if (nundef(olive)) { tbd.shift(); lookupSet(done, [o.type, sym], o); continue; }
+
+		let text = olive.toString();
+		if (!isEmpty(text)) alltext += text + '\r\n';
+
+		let words = toWords(text, true); //console.log('words', words);
+
+		for (const w of words) {
+			if (nundef(done[w]) && w != sym && isdef(CODE.all[w])) addIf(tbd, w);
+		}
+		tbd.shift();
+		lookupSet(done, [o.type, sym], o); //done[sym] = o;
+	}
+
+	console.log('_______________after', i, 'iter:')
+	console.log('done', done); //Object.keys(done));
+
+	//let funcs = Object.keys(done).filter(x=>CODE.all[x].type == 'func');
+	//console.log('funcs', funcs);
+	console.log('tbd', tbd);
+
+	// console.log('alltext', alltext);
+	//jetzt mach ich einen text aus nur dem code fuer die dinge die ich tatsaechlich brauche!
+	let tres = '';
+
+	for (const k of ['const', 'var', 'cla', 'func']) {
+		for (const k1 in done[k]) {
+			let code = CODE.justcode[k1];
+			if (!isEmptyOrWhiteSpace(code)) tres += code + '\r\n';
+		}
+	}
+
+	downloadAsText(tres, 'mycode', 'js');
+}
+
 function hallo(){
 	for(const k of ['MSCATS']){
 		let co=superdi.const[k];

@@ -151,7 +151,7 @@ let dirimportant = [
 	'C:\\xampp\\htdocs\\aroot\\_other\\caristo',
 	'C:\\xampp\\htdocs\\aroot\\_other\\chatas\\js',
 	'C:\\xampp\\htdocs\\aroot\\_other\\chatas2',
-	'C:\\xampp\\htdocs\\aroot\\_other\\chmultOrig\\js',
+	//'C:\\xampp\\htdocs\\aroot\\_other\\chmultOrig\\js',
 	'C:\\xampp\\htdocs\\aroot\\_other\\feedback',
 	'C:\\xampp\\htdocs\\aroot\\_other\\frontend',
 	'C:\\xampp\\htdocs\\aroot\\_other\\happy',
@@ -208,7 +208,7 @@ let dirimportant = [
 let dirlist = LG ? dirimportant : dirlegacy.concat(dironedrive).concat(dirgit).concat(dirmiddle).concat(dirimportant);
 //#endregion done
 
-const { replaceAllFast, nundef, firstWordAfter, removeInPlace, stringAfter, isEmpty, dict2list, isdef, jsCopy, sortByFunc, parseCodefile, parseCodefile1, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./y/v2/basemin.js');
+const { replaceAllFast, nundef, firstWordAfter, removeInPlace, stringAfter, isEmpty, dict2list, isdef, jsCopy, sortByFunc, parseCodefile, parseCodefile1, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./basejs/servercode.js');
 
 //#region funcs done
 function endsWith(s, sSub) { let i = s.indexOf(sSub); return i >= 0 && i == s.length - sSub.length; }
@@ -675,13 +675,13 @@ function test16() {
 	for (const varkey in superdi.var) {
 		if (['lifeView', 'exp', 'Deck'].some(x => x == varkey)) continue;
 		let o = superdi.var[varkey];
-		if (!isEmptyOrWhiteSpace(o.code) && nundef(superdi.chessvar[varkey])) text += o.code;
+		if (nundef(superdi.chessvar[varkey])) text += o.code;
 	}
 
 	//sonderbehandlung varchess
 	// for (const varkey in superdi.var) { let o = superdi.var[varkey]; if (o.fname == 'chess.js') text += o.code; }
 	// for (const varkey of superdi.chessvar) { 		let o = superdi.var[varkey]; if (o.fname == 'chess.js') text += o.code; o.code=''; }
-	console.log('chess:',Object.keys(superdi.chessvar));
+	console.log('chess:', Object.keys(superdi.chessvar));
 	for (const varkey in superdi.chessvar) { let o = superdi.var[varkey]; text += o.code; } //o.code=''; }
 
 	text += '\r\n';
@@ -698,7 +698,7 @@ function test16() {
 			if (type == 'cla' && isdef(superdi.func[k])) { console.log('skip class', k, superdi.cla[k].path); continue; }
 			res[k] = jsCopy(superdi[type][k]);
 			//let code = res[k].code;
-			if (type != 'const' && type != 'var') { text += code; } // && !isEmptyOrWhiteSpace(code)) { text += code; }
+			if (type != 'const' && type != 'var') { text += code; } 
 			delete res[k].code;
 		}
 		di2[type] = res;
@@ -717,13 +717,11 @@ function test16() {
 //#endregion done
 
 function test17() {
-	console.log('h1')
 	let list = getSortedCodefileList(dirlist, 'datetime');
-	console.log('h1',list)
 	let superdi = {};
 	for (const file of list) {
 		let text = fromFile(file.path);
-		if (text.includes('= require(') || text.includes(' ol.')) { console.log('skip file', file.path); continue; }
+		if (text.includes('= require(') || text.includes(' ol.')) { continue; } //console.log('skip file', file.path); 
 		parseCodefile1(text, file.fname, false, file, superdi);
 	}
 
@@ -770,21 +768,29 @@ function test17() {
 		let constkey = c.key;
 		if (['cx', 'PORT', 'SERVER', 'SERVERRURL'].some(x => x == constkey)) { delete superdi.const[constkey]; continue; }
 		if (isdef(superdi.func[constkey]) || isdef(superdi.cla[constkey])) { delete superdi.const[constkey]; continue; }
-		text += c.code;
+		text += c.code.trim()+'\r\n';
 	}
 
-	for (const varkey in superdi.var) {
-		if (['lifeView', 'exp', 'Deck'].some(x => x == varkey)) continue;
+	let varkeys = Object.keys(superdi.var);
+	for (const varkey of varkeys) {
+		if (['lifeView', 'exp', 'Deck', 'gridsize'].some(x => x == varkey)) {delete superdi.var[varkey]; continue;}
+		if (varkey != 'c52' && varkey.length <= 3 && varkey.toLowerCase() == varkey) {
+			//console.log('discard var', varkey);
+			delete superdi.var[varkey];
+			continue;
+		}
 		let o = superdi.var[varkey];
 		//console.log('h2',o)
-		if (!isEmptyOrWhiteSpace(o.code) && (nundef(superdi.chessvar) || nundef(superdi.chessvar[varkey]))) text += o.code;
+		// if (!isEmptyOrWhiteSpace(o.code) && (nundef(superdi.chessvar) || nundef(superdi.chessvar[varkey]))) text += o.code;
+		if (nundef(superdi.chessvar) || nundef(superdi.chessvar[varkey])) text += o.code.trim()+'\r\n';
 	}
 
 	//sonderbehandlung varchess
-	for (const varkey in superdi.chessvar) { let o = superdi.var[varkey]; text += o.code; } //o.code=''; }
+	for (const varkey in superdi.chessvar) { let o = superdi.var[varkey]; text += o.code.trim()+'\r\n'; } //o.code=''; }
 
-	let justcode={};
+	let justcode = {};
 	text += '\r\n';
+	//console.log('text',text)
 	for (const type of ['var', 'const', 'cla', 'func']) {
 		let keys = sortCaseInsensitive(Object.keys(superdi[type]));
 
@@ -793,14 +799,15 @@ function test17() {
 		for (const k of keys) {
 
 			let code = superdi[type][k].code;
+
 			if (['colorDict', 'VectorLayer', 'lCard'].some(x => code.includes(x))) continue;
 
-			if (type == 'cla' && isdef(superdi.func[k])) { console.log('skip class', k, superdi.cla[k].path); continue; }
+			if (type == 'cla' && isdef(superdi.func[k])) { continue; } //console.log('skip class', k, superdi.cla[k].path); 
 			res[k] = jsCopy(superdi[type][k]);
 			//let code = res[k].code;
-			if (type != 'const' && type != 'var') { text += code; } // && !isEmptyOrWhiteSpace(code)) { text += code; }
-			
-			justcode[k]=res[k].code;
+			if (type != 'const' && type != 'var') { text += code.trim()+'\r\n'; } 
+
+			justcode[k] = res[k].code.trim();
 			delete res[k].code;
 		}
 		di2[type] = res;
@@ -810,15 +817,15 @@ function test17() {
 	//global text replacements
 	for (const pair of [['anyColorToStandardString', 'colorFrom']]) {
 		text = replaceAllFast(text, pair[0], pair[1]);
-		for(const k in justcode){
-			justcode[k]=replaceAllFast(justcode[k],pair[0],pair[1]);
-		} 
+		for (const k in justcode) {
+			justcode[k] = replaceAllFast(justcode[k], pair[0], pair[1]);
+		}
 	}
 	toFile(text, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.js`);
 	toYamlFile(di2, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
 	toYamlFile(justcode, `C:\\D\\a03\\nodemaster\\z_allcode${LG ? 'LG' : ''}.yaml`);
 }
-dirlist = ['C:\\D\\a04\\game'];
+//dirlist = ['C:\\D\\a04\\game'];
 //test17(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
 
 //#endregion

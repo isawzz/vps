@@ -1,7 +1,7 @@
 const DOMCATS = { rect: 'g', g: 'g', circle: 'g', text: 'g', polygon: 'g', line: 'g', body: 'd', svg: 'h', div: 'd', p: 'd', table: 'd', button: 'd', a: 'd', span: 'd', image: 'd', paragraph: 'd', anchor: 'd' };
 const IS_MIRROR = false;
 const FLASK = true;
-const NGROK = false; //'http://849aec381695.ngrok.io/'; // MUSS / am ende!!! 
+const NGROK = false; //'http://849aec381695.ngrok.io/'; // MUSS / am ende!!!
 const SERVER_URL = IS_MIRROR ? 'http://localhost:5555/' : FLASK ? (NGROK ? NGROK : 'http://localhost:' + PORT + '/') : 'http://localhost:5005/';
 const clientData = {};
 const defaultGameplayerAreaName = 'gameplayerArea';
@@ -1383,12 +1383,7 @@ const resetPeep = ({ stage, peep }) => {
 const allPeeps = []
 const availablePeeps = []
 const crowd = []
-const CODE = {
-	paths: [],
-	funcs: {},
-	consts: {},
-	index: [],
-};
+const CODE = {};
 const CODE_VERSION = 1;
 const SHOW_CODE = false;
 const SHOW_CODE_DATA = false;
@@ -1418,6 +1413,118 @@ const immediateStart = true;
 const uiHaltedMask = 1 << 0;
 const beforeActivationMask = 1 << 1;
 const hasClickedMask = 1 << 2;
+const myDom = {
+	points: {
+		text: document.getElementById('points-text'),
+		align: document.getElementById('points-align'),
+		baseline: document.getElementById('points-baseline'),
+		rotation: document.getElementById('points-rotation'),
+		font: document.getElementById('points-font'),
+		weight: document.getElementById('points-weight'),
+		size: document.getElementById('points-size'),
+		height: document.getElementById('points-height'),
+		offsetX: document.getElementById('points-offset-x'),
+		offsetY: document.getElementById('points-offset-y'),
+		color: document.getElementById('points-color'),
+		outline: document.getElementById('points-outline'),
+		outlineWidth: document.getElementById('points-outline-width'),
+		maxreso: document.getElementById('points-maxreso'),
+	},
+	lines: {
+		text: document.getElementById('lines-text'),
+		align: document.getElementById('lines-align'),
+		baseline: document.getElementById('lines-baseline'),
+		rotation: document.getElementById('lines-rotation'),
+		font: document.getElementById('lines-font'),
+		weight: document.getElementById('lines-weight'),
+		placement: document.getElementById('lines-placement'),
+		maxangle: document.getElementById('lines-maxangle'),
+		overflow: document.getElementById('lines-overflow'),
+		size: document.getElementById('lines-size'),
+		height: document.getElementById('lines-height'),
+		offsetX: document.getElementById('lines-offset-x'),
+		offsetY: document.getElementById('lines-offset-y'),
+		color: document.getElementById('lines-color'),
+		outline: document.getElementById('lines-outline'),
+		outlineWidth: document.getElementById('lines-outline-width'),
+		maxreso: document.getElementById('lines-maxreso'),
+	},
+	polygons: {
+		text: document.getElementById('polygons-text'),
+		align: document.getElementById('polygons-align'),
+		baseline: document.getElementById('polygons-baseline'),
+		rotation: document.getElementById('polygons-rotation'),
+		font: document.getElementById('polygons-font'),
+		weight: document.getElementById('polygons-weight'),
+		placement: document.getElementById('polygons-placement'),
+		maxangle: document.getElementById('polygons-maxangle'),
+		overflow: document.getElementById('polygons-overflow'),
+		size: document.getElementById('polygons-size'),
+		height: document.getElementById('polygons-height'),
+		offsetX: document.getElementById('polygons-offset-x'),
+		offsetY: document.getElementById('polygons-offset-y'),
+		color: document.getElementById('polygons-color'),
+		outline: document.getElementById('polygons-outline'),
+		outlineWidth: document.getElementById('polygons-outline-width'),
+		maxreso: document.getElementById('polygons-maxreso'),
+	},
+};
+const getText = function (feature, resolution, dom) {
+	const type = dom.text.value;
+	const maxResolution = dom.maxreso.value;
+	let text = feature.get('name');
+	if (resolution > maxResolution) {
+		text = '';
+	} else if (type == 'hide') {
+		text = '';
+	} else if (type == 'shorten') {
+		text = text.trunc(12);
+	} else if (
+		type == 'wrap' &&
+		(!dom.placement || dom.placement.value != 'line')
+	) {
+		text = stringDivider(text, 16, '\n');
+	}
+	return text;
+};
+const createTextStyle = function (feature, resolution, dom) {
+	const align = dom.align.value;
+	const baseline = dom.baseline.value;
+	const size = dom.size.value;
+	const height = dom.height.value;
+	const offsetX = parseInt(dom.offsetX.value, 10);
+	const offsetY = parseInt(dom.offsetY.value, 10);
+	const weight = dom.weight.value;
+	const placement = dom.placement ? dom.placement.value : undefined;
+	const maxAngle = dom.maxangle ? parseFloat(dom.maxangle.value) : undefined;
+	const overflow = dom.overflow ? dom.overflow.value == 'true' : undefined;
+	const rotation = parseFloat(dom.rotation.value);
+	if (dom.font.value == "'Open Sans'" && !openSansAdded) {
+		const openSans = document.createElement('link');
+		openSans.href = 'https://fonts.googleapis.com/css?family=Open+Sans';
+		openSans.rel = 'stylesheet';
+		document.head.appendChild(openSans);
+		openSansAdded = true;
+	}
+	const font = weight + ' ' + size + '/' + height + ' ' + dom.font.value;
+	const fillColor = dom.color.value;
+	const outlineColor = dom.outline.value;
+	const outlineWidth = parseInt(dom.outlineWidth.value, 10);
+	return new Text({
+		textAlign: align == '' ? undefined : align,
+		textBaseline: baseline,
+		font: font,
+		text: getText(feature, resolution, dom),
+		fill: new Fill({ color: fillColor }),
+		stroke: new Stroke({ color: outlineColor, width: outlineWidth }),
+		offsetX: offsetX,
+		offsetY: offsetY,
+		placement: placement,
+		maxAngle: maxAngle,
+		overflow: overflow,
+		rotation: rotation,
+	});
+};
 var jewel = (function () {
 	var settings = {
 		rows: 8,
@@ -2497,34 +2604,23 @@ var purplegreen = [
 ];
 const AREAS = {};
 const MSCATS = { rect: 'g', g: 'g', circle: 'g', text: 'g', polygon: 'g', line: 'g', body: 'd', svg: 'd', div: 'd', p: 'd', table: 'd', button: 'd', a: 'd', span: 'd', image: 'd', paragraph: 'd', anchor: 'd' };
+var UIS;
 var DEFAULT_OBJECT_AREA = 'area_objects';
 var DEFAULT_PLAYER_AREA = 'area_players';
-var dHelp, counters, timit;
+var dHelp;
 var TT_JUST_UPDATED = -1;
-var x = {
-	"loc":
-	{
-		"actions":
-		{
-			"_set":
-				[{
-					"_tuple":
-						[{
-							"_set":
-								[{ "ID": "91", "val": "Corner[91]", "type": "obj" },
-								{ "ID": "92", "val": "Corner[92]", "type": "obj" },
-								{ "ID": "93", "val": "Corner[93]", "type": "obj" },
-								{ "ID": "94", "val": "Corner[94]", "type": "obj" },
-								{ "ID": "95", "val": "Corner[95]", "type": "obj" },
-								]
-						}]
-				}]
-		}
-	}
-}
 var maxZIndex = 110;
 var USERNAME = 'felix';
 var GAME = 'ttt';
+var S = {};
+var M = {};
+var IdOwner;
+var id2oids;
+var id2uids;
+var oid2ids;
+var G = null;
+var counters;
+var timit;
 var DELETED_IDS = [];
 var DELETED_THIS_ROUND = [];
 var ROOT = null;
@@ -2532,7 +2628,6 @@ var choiceCompleted = false;
 var frozen = false;
 var boatFilters = [];
 var boatHighlighted = null;
-var cnt = 0;
 var S_startGame = GAME;
 var S_username = USERNAME;
 var S_playMode = PLAYMODE;
@@ -2547,7 +2642,7 @@ var S_autoplay = false;
 var S_showEvents = false;
 var S_AIThinkingTime = 30;
 var S_autoplayFunction = (_g) => false;
-var socket = null;
+var socket;
 var loggedIn = false;
 var scenarioQ = [];
 var scenarioRunning = false;
@@ -2573,7 +2668,7 @@ var FUNCS = {};
 var colorPalette;
 var allAreas = {};
 var areaSubTypes = {};
-var vidCache, allGames, playerConfig, c52, C52, cinno, testCards;
+var vidCache;
 var mkMan = null
 var allGamesC = null;
 var playerConfigC = null;
@@ -2583,6 +2678,7 @@ var testCardsC = null
 var allGames = null;
 var playerConfig = null;
 var iconChars = null;
+var c52;
 var testCards = null
 var defaultSpecC = null;
 var userSpecC = null;
@@ -2598,6 +2694,7 @@ var mappingsInitialized;
 var mappingTypes;
 var LOG = {};
 var LOGDIVS = [];
+var tupleGroups;
 var prevGamePlid = null;
 var prevWaitingFor = null;
 var t_total = 0;
@@ -2709,10 +2806,13 @@ var currentNumPlayers;
 var joinCandidate = null;
 var commandChain = [];
 var firstDomLoad = null;
-var faChars, gaChars, faKeys;
+var gaChars;
+var faKeys;
+var faChars;
 var DEF_LIST_TYPE = 'dom';
 var DEF_ITEM_TYPE = 'dom';
 var DEF_DOM_TAG = 'div';
+var path2mainIds;
 var PLAYMODE = 'hotseat';
 var SEED = 1;
 var S_useSimpleCode = false;
@@ -2725,46 +2825,8 @@ var S_useColorHintForObjects = true;
 var view = null;
 var isPlaying = false;
 var isReallyMultiplayer = false;
-var gcs = {
-	ttt: {
-		numPlayers: 2,
-		players: [
-			{ id: 'Player1', playerType: 'me', agentType: null, username: USERNAME },
-			{ id: 'Player2', playerType: 'me', agentType: null, username: USERNAME + '1' },
-		]
-	},
-	s1: {
-		numPlayers: 4,
-		players: [
-			{ id: 'Player1', playerType: 'me', agentType: null, username: USERNAME },
-			{ id: 'Player2', playerType: 'me', agentType: null, username: USERNAME + '1' },
-			{ id: 'Player3', playerType: 'me', agentType: null, username: USERNAME + '2' },
-			{ id: 'Player4', playerType: 'me', agentType: null, username: USERNAME + '3' },
-		]
-	},
-	starter: {
-		numPlayers: 2,
-		players: [
-			{ id: 'Player1', playerType: 'me', agentType: null, username: USERNAME },
-			{ id: 'Player2', playerType: 'me', agentType: null, username: USERNAME + '1' },
-		]
-	},
-	aristocracy: {
-		numPlayers: 2,
-		players: [
-			{ id: 'Player1', playerType: 'me', agentType: null, username: USERNAME },
-			{ id: 'Player2', playerType: 'me', agentType: null, username: USERNAME + '1' },
-		]
-	},
-	catan: {
-		numPlayers: 3,
-		players: [
-			{ id: 'White', playerType: 'me', agentType: null, username: USERNAME },
-			{ id: 'Red', playerType: 'me', agentType: null, username: USERNAME + '1' },
-			{ id: 'Blue', playerType: 'me', agentType: null, username: USERNAME + '2' },
-		]
-	}
-}
+var prevServerData;
+var boats;
 var route_counter = 0;
 const VERSION = '_ui';
 const CACHE_DEFAULTSPEC = false;
@@ -2780,7 +2842,11 @@ var CLICK_TO_SELECT = true;
 var USE_SETTINGS = true;
 var USE_STRUCTURES = true;
 var USE_BEHAVIORS = true;
-var divMain, divPlayer, divOpps, colors, iColor, timit;
+var divPlayer;
+var divOpps;
+var colors;
+var iColor;
+var divMain;
 var FUNCTIONS = {
 	instanceof: 'instanceOf',
 	prop: (o, v) => isdef(o[v]),
@@ -2809,7 +2875,9 @@ var SHOW_DICTIONARIES = false;
 var SHOW_IDS_REFS = false;
 var MAX_CYCLES = 500;
 var CYCLES = 0;
+var sData;
 var WR = {};
+var T;
 var phase = 0;
 var TV = {};
 var _audioSources = {
@@ -2822,7 +2890,12 @@ var _audioSources = {
 	hit: "../base/assets/sounds/hit.wav",
 	mozart: "../base/assets/music/mozart_s39_4.mp3",
 };
-var TOSound, _sndPlayer, _loaded = false, _qSound, _idleSound = true, _sndCounter = 0;
+var _sndPlayer;
+var _loaded = false;
+var _qSound;
+var _idleSound = true;
+var _sndCounter = 0;
+var TOSound;
 var _AUDIOCONTEXT;
 var badges = [];
 var Markers = [];
@@ -2834,15 +2907,16 @@ var DropZoneItems = [];
 var DragSource = null;
 var DragSourceItem = null;
 var DragSourceItems = [];
-var TOFleetingMessage, dFleetingMessage, Animation1;
+var TOFleetingMessage;
 var StateDict = {};
 var EmptyFunc = x => nundef(x) || x == ' ';
 var Avatars = [];
 var AvatarTimeout;
-var LastPositionX = 0, LastPositionY = 0;
+var LastPositionY = 0;
+var LastPositionX = 0;
 var MouseMoveCounter = 0;
 var IsCanvasActive = false;
-var StepCounter = 0, Autoreload = false, KeepSessionUser = false;
+var StepCounter = 0;
 var Toolbar;
 var RecogOutput = false;
 var RecogOutputError = true;
@@ -2858,29 +2932,28 @@ var ActiveButton = null;
 var HistoryOfStates = {};
 var PIECES = { EMPTY: 0, wP: 1, wN: 2, wB: 3, wR: 4, wQ: 5, wK: 6, bP: 7, bN: 8, bB: 9, bR: 10, bQ: 11, bK: 12 };
 var BRD_SQ_NUM = 120;
-var MAXGAMEMOVES = 2048;
-var MAXPOSITIONMOVES = 256;
-var MAXDEPTH = 64;
-var INFINITE = 30000;
-var MATE = 29000;
-var START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-var COLUMNS = { COL_A: 0, COL_B: 1, COL_C: 2, COL_D: 3, COL_E: 4, COL_F: 5, COL_G: 6, COL_H: 7, COL_NONE: 8 };
-var ROWS = { ROW_1: 0, ROW_2: 1, ROW_3: 2, ROW_4: 3, ROW_5: 4, ROW_6: 5, ROW_7: 6, ROW_8: 7, ROW_NONE: 8 };
+var FILES = { FILE_A: 0, FILE_B: 1, FILE_C: 2, FILE_D: 3, FILE_E: 4, FILE_F: 5, FILE_G: 6, FILE_H: 7, FILE_NONE: 8 };
+var RANKS = { RANK_1: 0, RANK_2: 1, RANK_3: 2, RANK_4: 3, RANK_5: 4, RANK_6: 5, RANK_7: 6, RANK_8: 7, RANK_NONE: 8 };
 var COLOURS = { WHITE: 0, BLACK: 1, BOTH: 2 };
+var CASTLEBIT = { WKCA: 1, WQCA: 2, BKCA: 4, BQCA: 8 };
 var SQUARES = {
 	A1: 21, B1: 22, C1: 23, D1: 24, E1: 25, F1: 26, G1: 27, H1: 28,
 	A8: 91, B8: 92, C8: 93, D8: 94, E8: 95, F8: 96, G8: 97, H8: 98, NO_SQ: 99, OFFBOARD: 100
 };
 var BOOL = { FALSE: 0, TRUE: 1 };
-var CASTLEBIT = { WKCA: 1, WQCA: 2, BKCA: 4, BQCA: 8 };
-var ColBrd = new Array(BRD_SQ_NUM);
-var RowBrd = new Array(BRD_SQ_NUM);
-var Sq120ToSq64 = new Array(BRD_SQ_NUM);
-var Sq64ToSq120 = new Array(64);
+var MAXGAMEMOVES = 2048;
+var MAXPOSITIONMOVES = 256;
+var MAXDEPTH = 64;
+var INFINITE = 30000;
+var MATE = 29000;
+var PVENTRIES = 10000;
+var FilesBrd = new Array(BRD_SQ_NUM);
+var RanksBrd = new Array(BRD_SQ_NUM);
+var START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 var PceChar = ".PNBRQKpnbrqk";
 var SideChar = "wb-";
-var RowChar = "12345678";
-var ColChar = "abcdefgh";
+var RankChar = "12345678";
+var FileChar = "abcdefgh";
 var PieceBig = [BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE];
 var PieceMaj = [BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.TRUE];
 var PieceMin = [BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE, BOOL.TRUE, BOOL.FALSE, BOOL.FALSE, BOOL.FALSE];
@@ -2898,14 +2971,15 @@ var BiDir = [-9, -11, 11, 9];
 var KiDir = [-1, -10, 1, 10, -9, -11, 11, 9];
 var DirNum = [0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8];
 var PceDir = [0, 0, KnDir, BiDir, RkDir, KiDir, KiDir, 0, KnDir, BiDir, RkDir, KiDir, KiDir];
-var LoopSlidePce = [PIECES.wB, PIECES.wR, PIECES.wQ, 0, PIECES.bB, PIECES.bR, PIECES.bQ, 0];
 var LoopNonSlidePce = [PIECES.wN, PIECES.wK, 0, PIECES.bN, PIECES.bK, 0];
-var LoopSlideIndex = [0, 4];
 var LoopNonSlideIndex = [0, 3];
-var Kings = [PIECES.wK, PIECES.bK];
+var LoopSlidePce = [PIECES.wB, PIECES.wR, PIECES.wQ, 0, PIECES.bB, PIECES.bR, PIECES.bQ, 0];
+var LoopSlideIndex = [0, 4];
 var PieceKeys = new Array(14 * 120);
 var SideKey;
 var CastleKeys = new Array(16);
+var Sq120ToSq64 = new Array(BRD_SQ_NUM);
+var Sq64ToSq120 = new Array(64);
 var Mirror64 = [
 	56, 57, 58, 59, 60, 61, 62, 63,
 	48, 49, 50, 51, 52, 53, 54, 55,
@@ -2916,6 +2990,7 @@ var Mirror64 = [
 	8, 9, 10, 11, 12, 13, 14, 15,
 	0, 1, 2, 3, 4, 5, 6, 7
 ];
+var Kings = [PIECES.wK, PIECES.bK];
 var CastlePerm = [
 	15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
 	15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
@@ -2930,22 +3005,17 @@ var CastlePerm = [
 	15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
 	15, 15, 15, 15, 15, 15, 15, 15, 15, 15
 ];
-var GameController = {};
 var MFLAGEP = 0x40000
 var MFLAGPS = 0x80000
 var MFLAGCA = 0x1000000
 var MFLAGCAP = 0x7C000
 var MFLAGPROM = 0xF00000
 var NOMOVE = 0
-var RookOpenCol = 10;
-var RookSemiOpenCol = 5;
-var QueenOpenCol = 5;
-var QueenSemiOpenCol = 3;
-var BishopPair = 30;
-var PawnRowsWhite = new Array(10);
-var PawnRowsBlack = new Array(10);
-var PawnIsolated = -10;
-var PawnPassed = [0, 5, 10, 20, 35, 60, 100, 200];
+var BFGameContr = {};
+var BFUserMove = {};
+var BFBoard = {};
+var MvvLvaValue = [0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600];
+var MvvLvaScores = new Array(14 * 14);
 var PawnTable = [
 	0, 0, 0, 0, 0, 0, 0, 0,
 	10, 10, 0, -10, -10, 0, 10, 10,
@@ -2986,59 +3056,9 @@ var RookTable = [
 	25, 25, 25, 25, 25, 25, 25, 25,
 	0, 0, 5, 10, 10, 5, 0, 0
 ];
-var KingE = [
-	-50, -10, 0, 0, 0, 0, -10, -50,
-	-10, 0, 10, 10, 10, 10, 0, -10,
-	0, 10, 20, 20, 20, 20, 10, 0,
-	0, 10, 20, 40, 40, 20, 10, 0,
-	0, 10, 20, 40, 40, 20, 10, 0,
-	0, 10, 20, 20, 20, 20, 10, 0,
-	-10, 0, 10, 10, 10, 10, 0, -10,
-	-50, -10, 0, 0, 0, 0, -10, -50
-];
-var KingO = [
-	0, 5, 5, -10, -10, 0, 10, 5,
-	-30, -30, -30, -30, -30, -30, -30, -30,
-	-50, -50, -50, -50, -50, -50, -50, -50,
-	-70, -70, -70, -70, -70, -70, -70, -70,
-	-70, -70, -70, -70, -70, -70, -70, -70,
-	-70, -70, -70, -70, -70, -70, -70, -70,
-	-70, -70, -70, -70, -70, -70, -70, -70,
-	-70, -70, -70, -70, -70, -70, -70, -70
-];
-var ENDGAME_MAT = 1 * PieceVal[PIECES.wR] + 2 * PieceVal[PIECES.wN] + 2 * PieceVal[PIECES.wP] + PieceVal[PIECES.wK];
-var UserMove = {};
-var MirrorCols = [COLUMNS.COL_H, COLUMNS.COL_G, COLUMNS.COL_F, COLUMNS.COL_E, COLUMNS.COL_D, COLUMNS.COL_C, COLUMNS.COL_B, COLUMNS.COL_A];
-var MirrorRows = [ROWS.ROW_8, ROWS.ROW_7, ROWS.ROW_6, ROWS.ROW_5, ROWS.ROW_4, ROWS.ROW_3, ROWS.ROW_2, ROWS.ROW_1];
-var VictimScore = [0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600];
-var MvvLvaScores = new Array(14 * 14);
-var perft_leafNodes;
-var srch_nodes;
-var srch_fh;
-var srch_fhf;
-var srch_depth;
-var srch_time;
-var srch_start;
-var srch_stop;
-var srch_best;
-var srch_thinking;
-var domUpdate_depth;
-var domUpdate_move;
-var domUpdate_score;
-var domUpdate_nodes;
-var domUpdate_ordering;
-var FILES = { FILE_A: 0, FILE_B: 1, FILE_C: 2, FILE_D: 3, FILE_E: 4, FILE_F: 5, FILE_G: 6, FILE_H: 7, FILE_NONE: 8 };
-var RANKS = { RANK_1: 0, RANK_2: 1, RANK_3: 2, RANK_4: 3, RANK_5: 4, RANK_6: 5, RANK_7: 6, RANK_8: 7, RANK_NONE: 8 };
-var PVENTRIES = 10000;
-var FilesBrd = new Array(BRD_SQ_NUM);
-var RanksBrd = new Array(BRD_SQ_NUM);
-var RankChar = "12345678";
-var FileChar = "abcdefgh";
-var BFGameContr = {};
-var BFUserMove = {};
-var BFBoard = {};
-var MvvLvaValue = [0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600];
+var BishopPair = 30;
 var SearchController = {};
+var perft_leafNodes;
 var BG_CARD_BACK = randomColor();
 var GAME_PLAY_UI = null;
 var PROJECTNAME = 'basinno';
@@ -3054,19 +3074,64 @@ var CURRENT_CHAT_USER = "";
 var CURRENT_GAME = "";
 var CURRENT_FEN = "";
 var SEEN_STATUS = false;
-var Daat = {}, DA = {}, Items, ItemsByKey;
+var DA = {};
+var Items = {};
+var Session = {};
+var Daat = {};
 var FenPositionList;
-var DB, M = {}, S = {}, Z, U = null, PL, G = null, C = null, UI = {}, Users, Tables, Basepath, Serverdata = {}, Clientdata = {};
-var Userdata, Username, Serverdata, Live;
-var Pictures = [];
-var Goal, Selected;
+var Cinno;
+var Syms;
+var SymKeys;
+var KeySets;
+var Categories;
+var ByGroupSubgroup;
+var Dictionary;
+var WordP;
+var C52;
+var U = null;
+var Userdata;
+var Username;
+var Serverdata = {};
+var Live;
+var DB;
+var Goal;
+var Selected;
+var Score;
+var TO = {};
+var TOMain;
+var TOTrial;
+var TOList;
 var IsAnswerCorrect;
-var uiActivated = false, Selected, Turn, Prevturn;
-var Settings, SettingsList, SettingsChanged, SelectedMenuKey;
-var Players, PlayerOnTurn, GC, GameCounter;
-var BestMinusScore = Infinity, BestMinusState, BestPlusScore = -Infinity, BestPlusState;
-var F_END, F_MOVES, F_APPLYMOVE, F_UNDOMOVE, F_EVAL, DMAX, MAXIMIZER, MINIMIZER, SelectedMove, CANCEL_AI;
-var DMM = {}, timit, STARTED;
+var QContextCounter = 0;
+var Pictures = [];
+var aiActivated;
+var auxOpen;
+var GameTimer;
+var STOPAUS = false;
+var uiActivated = false;
+var SettingsList;
+var SettingsChanged;
+var SelectedMenuKey;
+var Settings;
+var PlayerOnTurn;
+var GC;
+var GameCounter;
+var Players;
+var BestMinusState;
+var BestPlusScore = -Infinity;
+var BestPlusState;
+var BestMinusScore = Infinity;
+var F_MOVES;
+var F_APPLYMOVE;
+var F_UNDOMOVE;
+var F_EVAL;
+var DMAX;
+var MAXIMIZER;
+var MINIMIZER;
+var SelectedMove;
+var CANCEL_AI;
+var F_END;
+var DMM = {};
 var ShapeKeys = ['hex', 'hexF', 'tri', 'triDown', 'triLeft', 'triRight'];
 var PolyClips = {
 	hex: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
@@ -3092,60 +3157,186 @@ var ColorNames;
 var levelKeys = ['island', 'justice star', 'materials science', 'mayan pyramid', 'medieval gate',
 	'great pyramid', 'meeple', 'smart', 'stone tower', 'trophy cup', 'viking helmet',
 	'flower star', 'island', 'justice star', 'materials science', 'mayan pyramid',];
+var TOTicker;
+var TCount;
+var dScore;
+var dGameTitle;
+var dTable;
+var dTitle;
 var dLeiste;
-var TOMan, TO, TOMain, TOTrial, TOList, TOTicker, TCount, TOAnim;
+var TESTING = false;
+var TOMan;
 var Speech;
-var BotTicker, POLL_COUNTER = 0;
+var Tid;
+var Tables;
+var BotTicker;
 var Badges = [];
-var Fen, R, Qu, U, G, A;
+var R;
+var Qu;
+var A;
+var Fen;
+var TOAnim;
+var POLL_COUNTER = 0;
 var Waiting_for = null;
-var TestNumber, TestList, TestRunning, TestSuiteRunning;
+var Autoreload = false;
+var KeepSessionUser = false;
+var TestList;
+var TestRunning;
+var TestSuiteRunning;
+var TestNumber;
 var CSZ = 300;
 var CHEIGHT = CSZ;
 var CWIDTH = CSZ * .7
 var CGAP = CSZ * .05;
-var OVD = .25, OVW = 14, OVH = 20;
+var OVW = 14;
+var OVH = 20;
+var OVD = .25;
 var SUITS = 'SHDC';
 var DECKS = 'br';
 var NUMJOKERS = 0;
 var NUMDECKS = 2;
-var dActions, dActions0, dActions1, dActions2, dActions3, dActions4, dActions5, dError;
+var Aristocards;
+var Dinno;
+var InnoById;
+var InnoByName;
+var dTableShield;
+var dLinks;
+var dRechts;
+var dOben;
+var dUnten;
+var dPlayerStats;
+var dMessage;
+var dStatus;
+var dActions0;
+var dActions1;
+var dActions2;
+var dActions3;
+var dActions4;
+var dActions5;
+var dError;
+var dActions;
 const SHAPEFUNCS = { 'circle': agCircle, 'hex': agHex, 'rect': agRect, };
-var MAXITER = 200, ITER = 0;
+var ITER = 0;
+var MAXITER = 200;
 var FLAG_HINT_ONLY = false;
 var FLAG_AI_CANCELED = false;
+var GameController = {};
+var VictimScore = [0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600];
 var RookOpenFile = 10;
 var RookSemiOpenFile = 5;
 var QueenOpenFile = 5;
 var QueenSemiOpenFile = 3;
 var PawnRanksWhite = new Array(10);
 var PawnRanksBlack = new Array(10);
+var PawnIsolated = -10;
+var PawnPassed = [0, 5, 10, 20, 35, 60, 100, 200];
+var KingE = [
+	-50, -10, 0, 0, 0, 0, -10, -50,
+	-10, 0, 10, 10, 10, 10, 0, -10,
+	0, 10, 20, 20, 20, 20, 10, 0,
+	0, 10, 20, 40, 40, 20, 10, 0,
+	0, 10, 20, 40, 40, 20, 10, 0,
+	0, 10, 20, 20, 20, 20, 10, 0,
+	-10, 0, 10, 10, 10, 10, 0, -10,
+	-50, -10, 0, 0, 0, 0, -10, -50
+];
+var KingO = [
+	0, 5, 5, -10, -10, 0, 10, 5,
+	-30, -30, -30, -30, -30, -30, -30, -30,
+	-50, -50, -50, -50, -50, -50, -50, -50,
+	-70, -70, -70, -70, -70, -70, -70, -70,
+	-70, -70, -70, -70, -70, -70, -70, -70,
+	-70, -70, -70, -70, -70, -70, -70, -70,
+	-70, -70, -70, -70, -70, -70, -70, -70,
+	-70, -70, -70, -70, -70, -70, -70, -70
+];
+var ENDGAME_MAT = 1 * PieceVal[PIECES.wR] + 2 * PieceVal[PIECES.wN] + 2 * PieceVal[PIECES.wP] + PieceVal[PIECES.wK];
+var srch_nodes;
+var srch_fh;
+var srch_fhf;
+var srch_depth;
+var srch_time;
+var srch_start;
+var srch_stop;
+var srch_best;
+var srch_thinking;
+var domUpdate_depth;
+var domUpdate_move;
+var domUpdate_score;
+var domUpdate_nodes;
+var domUpdate_ordering;
+var UserMove = {};
 var MirrorFiles = [FILES.FILE_H, FILES.FILE_G, FILES.FILE_F, FILES.FILE_E, FILES.FILE_D, FILES.FILE_C, FILES.FILE_B, FILES.FILE_A];
 var MirrorRanks = [RANKS.RANK_8, RANKS.RANK_7, RANKS.RANK_6, RANKS.RANK_5, RANKS.RANK_4, RANKS.RANK_3, RANKS.RANK_2, RANKS.RANK_1];
-var IconSet, lastIndex;
+var lastIndex;
+var IconSet;
 var CCC = 0;
+var dMain;
 var ActiveChats = {};
+var Step = 0;
 var dCurrent = null;
 var paneOpen = false;
 var DELAY_PANE = 100;
 var DELAY_DISAPPEAR = 100;
 var DELAY_APPEAR = 100;
+var Card = {};
+var TestInfo = {};
 var SOCKETSERVER = 'http://localhost:5000'; //geht im spital
-var Pollmode = 'auto', Globals;
-var Info, ColorDi, Items = {}, DA = {}, Card = {}, TO = {};
+var SERVER = 'localhost';
+var Pollmode = 'auto';
+var ColorDi;
 var Counter = { server: 0 };
-var Config, Syms, SymKeys, ByGroupSubgroup, KeySets, C52, Cinno, C52Cards;
+var Socket = null;
+var Info;
+var Turn;
+var Prevturn;
+var UI = {};
+var Users;
+var Basepath;
+var dUsers;
+var dGames;
+var dTables;
+var dLogo;
+var dLoggedIn;
+var dPlayerNames;
+var dInstruction;
+var dTableName;
+var dGameControls;
+var dUserControls;
+var dMoveControls;
+var dSubmitMove;
+var C52Cards;
+var Config;
+var dFleetingMessage;
+var Animation1;
 var PrevUser = null;
-var FORCE_REDRAW = false, TESTING = false;
-var ColorThiefObject, SelectedItem, SelectedColor;
+var User;
+var Table;
+var PL;
+var Z;
+var FORCE_REDRAW = false;
+var SelectedItem;
+var SelectedColor;
+var ColorThiefObject;
 var FirstLoad = true;
+var Clientdata = {};
 var AGAME = {
 	stage: {
 	}
 };
 var WhichCorner = 0;
 var W_init = 10;
-var is_host, socket, settings, defaults, greenbar, redbar, in_game_screen, lastgreen = 0, lastred = 0, granularity, num_calls = 0, num_painted = 0;
+var settings;
+var defaults;
+var greenbar;
+var redbar;
+var in_game_screen;
+var lastgreen = 0;
+var lastred = 0;
+var granularity;
+var num_calls = 0;
+var num_painted = 0;
+var is_host;
 var DeckA = (function () {
 	//#region variables  
 	var ____fontSize;
@@ -3941,7 +4132,6 @@ var DeckA = (function () {
 	DeckA.Card = _card;
 	DeckA.prefix = prefix;
 	DeckA.translate = translate;
-	//console.log('hallo!')
 	return DeckA;
 })();
 var prefix = DeckA.prefix;
@@ -4756,12 +4946,22 @@ var Script = {
 		this._loadedScripts.push(script);
 	}
 };
-var symbolDict, symbolKeys, symbolList;
-var svgDict, svgKeys, svgList;
-var symByType, symBySet;
-var symKeysByType, symKeysBySet;
-var symListByType, symListBySet;
-var CorrectWords, CorrectWordsExact, CorrectWordsCorrect, CorrectWordsFailed;
+var symbolKeys;
+var symbolList;
+var symbolDict;
+var svgKeys;
+var svgList;
+var svgDict;
+var symBySet;
+var symByType;
+var symKeysBySet;
+var symKeysByType;
+var symListBySet;
+var symListByType;
+var CorrectWordsExact;
+var CorrectWordsCorrect;
+var CorrectWordsFailed;
+var CorrectWords;
 var selectedEmoSetNames = ['all', 'animal', 'body', 'drink', 'emotion', 'food', 'fruit', 'game', 'gesture', 'kitchen', 'object', 'person', 'place', 'plant', 'sports', 'time', 'transport', 'vegetable'];
 var primitiveSetNames = ['all', 'activity', 'animal', 'body', 'drink',
 	'emotion', 'family', 'fantasy', 'food', 'fruit', 'game', 'gesture',
@@ -4833,29 +5033,50 @@ var symbolDictC = null;
 var svgDictC = null;
 var emoCharsC = null;
 var SIGI;
-var pictureSize, TOMain, TOTrial;
-var NumMissingLetters, nMissing, MaxPosMissing;
+var pictureSize;
+var nMissing;
+var MaxPosMissing;
+var NumMissingLetters;
 var inputs = [];
-var th = ['', 'thousand', 'million', 'billion', 'trillion'];
-var dg = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
-var tn = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
-var tw = ['twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
 var uiActivatedTC;
 var NumColors;
 var interim_transcript = '';
 var final_transcript = '';
-var final_confidence, final_confidence2, final_confidence_sum, final_num;
-var interim_confidence, interim_confidence2, interim_confidence_sum, interim_num;
+var final_confidence2;
+var final_confidence_sum;
+var final_num;
+var final_confidence;
+var interim_confidence2;
+var interim_confidence_sum;
+var interim_num;
+var interim_confidence;
 var isRunning = false;
-var hasGotResult, hasGotFinalResult;
-var timeout1, timeout2;
+var recognition;
+var grammar;
+var hasGotFinalResult;
+var hasGotResult;
+var timeout2;
+var timeout1;
 var nextIndex = -1;
-var BestKeysD, BestKeysE, BestKeySets;
-var DeDict, EdDict;
+var cinno;
+var BestKeysE;
+var BestKeySets;
+var BestKeysD;
+var EdDict;
+var DeDict;
 var symKeysByGroupSub;
-var TimestampStarted, TimeElapsed, OnTimeOver = null, TimeElem, TimeLeft;
+var MenuItems;
+var TimeElapsed;
+var OnTimeOver = null;
+var TimeElem;
+var TimeLeft;
+var TimestampStarted;
+var Gamename;
+var Tablename;
 var I;
-var AD, ADS;
+var P;
+var ADS;
+var AD;
 var App;
 var Zones = {};
 var Options = {};
@@ -4868,7 +5089,12 @@ var DOC_CURRENT_FUNC;
 var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
 var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
 var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
-var words, grammar, lang, matchingWords, recognition, speechRecognitionList, hintMessage, resultMessage;
+var lang;
+var matchingWords;
+var speechRecognitionList;
+var hintMessage;
+var resultMessage;
+var words;
 var TESTVAR = 0;
 var testDict = {};
 var QuestionCounter = 0;
@@ -4891,9 +5117,22 @@ var SettingTypesCommon = {
 	showHint: false,
 }
 var FASTSTART = false && EXPERIMENTAL;
-var MSTimeClock, MSTimeDiff, MSTimeStart, MSTimeCallback, MSTimeTO;
+var MSTimeDiff;
+var MSTimeStart;
+var MSTimeCallback;
+var MSTimeTO;
+var MSTimeClock;
+var ClientId;
 var MessageCounter = 0;
-var PerlenDict, BaseColor, HeaderColor, SidebarColor, IsControlKeyDown = false
+var ItemsByKey;
+var BaseColor;
+var HeaderColor;
+var SidebarColor;
+var IsControlKeyDown = false;
+var PerlenDict;
+var dAux;
+var dAuxContent;
+var STARTED;
 var NiceBaseColors = ['#791900']
 var MAGNIFIER_IMAGE;
 var globalSum = 0
@@ -4995,7 +5234,11 @@ var square_coordinates = [
 	[7, 7, 7, 8, 8, 8, 9, 9, 9],
 	[7, 7, 7, 8, 8, 8, 9, 9, 9]
 ]
-var EBEF = null, UBEF = null, GBEF = null;
+var F;
+var dParent;
+var UBEF = null;
+var GBEF = null;
+var EBEF = null;
 var PI = Math.pi, interval_id, angle, factor = .67, tree = [], leaves = [], jittering = false;
 var numlayers = 0;
 var requestAnimFrame = (function () {
@@ -5395,7 +5638,7 @@ const Geo = {
 };
 var meme;
 var obstacles = [];
-var score, hintWord, bestWord, answerCorrect, currentInfo;
+var score;
 var myGameArea = {
 	canvas: document.createElement('canvas'),
 	start: function () {
@@ -5410,10 +5653,23 @@ var myGameArea = {
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	},
 };
-var dRight, dSidebar, dTable, dTitle, dTop;
-var dBottom, dButtons, dCenter, dCode, dConsole, dContent, dFiddle, dFooter, dHeader, dLeft, dMap, dMain, dMenu, dMessage, dPage, dPuppet;
-var FR = 50, CX, CV, AU = {}, CONTEXT = null;
-var _TOSound, _sndPlayer, _loaded = false, _qSound, _idleSound = true, _sndCounter = 0;
+var C = null;
+var dPage;
+var dMap;
+var dHeader;
+var dFooter;
+var dPuppet;
+var dMenu;
+var dLeft;
+var dCenter;
+var dRight;
+var dTop;
+var dBottom;
+var CX;
+var CV;
+var FR = 50;
+var _TOSound;
+var Sayings;
 var SCENEWIDTH = 900;
 var SCENEHEIGHT = 600;
 var FRAMERATE = 30;
@@ -5437,9 +5693,14 @@ var EC = {};
 var EID = {};
 var ET = {};
 var ENN = {};
-var Q, TOQ, AkQ;
+var TOQ;
+var AkQ;
+var Q;
 var QCounter = 0;
-var QCancelAutoreset, TOQRunner, QRunnerRunning = false, QRunning = false;
+var TOQRunner;
+var QRunnerRunning = false;
+var QRunning = false;
+var QCancelAutoreset;
 var resizeObserver = new ResizeObserver(entries => {
 	for (let entry of entries) {
 		let cs = window.getComputedStyle(entry.target);
@@ -5464,7 +5725,19 @@ var xxxxxxxxxx = new ResizeObserver(entries => {
 			entry.target.handleResize(entry);
 	}
 });
-var SERVERURL, Socket = null, SERVER = 'localhost', PORT = 3000, LIVE_SERVER, NODEJS, SINGLECLIENT;
+var PORT = 3000;
+var Globals;
+var LIVE_SERVER;
+var NODEJS;
+var SINGLECLIENT;
+var SERVERURL;
+var dButtons;
+var dCode;
+var dContent;
+var dFiddle;
+var dSidebar;
+var AU = {};
+var CONTEXT = null;
 var game = new GameFunc;
 var UIDHelpers = 0;
 var NAMED_UIDS = {};
@@ -5726,8 +5999,11 @@ var extend = function () {
 var palette = null;
 var activatedTests = [];
 var Epsilon = 1e-10;
+var dConsole;
 var lastUpdate = 0;
-var player, ball, opponent, ai;
+var ball;
+var opponent;
+var player;
 var distance = 24;
 var Ball = function () {
 	var velocity = [0, 0];
@@ -5873,10 +6149,12 @@ var currentCategories = ['nosymbols'];
 var startAtLevel = IS_TESTING ? { gSayPicAuto: 10, gTouchPic: 3, gTouchColors: 6, gWritePic: 10, gMissingLetter: 10, gSayPic: 0 }
 	: { gMissingLetter: 3, gTouchPic: 7, gTouchColors: 8, gWritePic: 10, gSayPic: 0 };
 var gameSequence = IS_TESTING ? ['gSayPicAuto', 'gTouchPic', 'gTouchColors', 'gWritePic', 'gMissingLetter', 'gSayPic']
-	: ['gSayPic', 'gTouchColors', 'gWritePic'];//'gMissingLetter','gTouchPic', 
+	: ['gSayPic', 'gTouchColors', 'gWritePic'];//'gMissingLetter','gTouchPic',
 var currentLevel;
 var currentKeys;
-var OnMicrophoneReady, OnMicrophoneGotResult, OnMicrophoneProblem;
+var OnMicrophoneGotResult;
+var OnMicrophoneProblem;
+var OnMicrophoneReady;
 var skipAnimations = IS_TESTING;
 var skipBadgeAnimation = true;
 var StepByStepMode = false;
@@ -5894,28 +6172,73 @@ var MaxWordLength = 100;
 var NumPics;
 var NumLabels;
 var NextPictureIndex = 0;
-var scoringMode, DefaultScoringMode = 'n';
-var minIncrement = 1, maxIncrement = 5, levelDonePoints = 5;
-var numCorrectAnswers, numTotalAnswers, percentageCorrect;
-var levelIncrement, levelPoints;
-var CurrentSessionData, CurrentGameData, CurrentLevelData;
+var DefaultScoringMode = 'n';
+var scoringMode;
+var maxIncrement = 5;
+var levelDonePoints = 5;
+var minIncrement = 1;
+var numTotalAnswers;
+var percentageCorrect;
+var numCorrectAnswers;
+var levelPoints;
+var levelIncrement;
+var CurrentGameData;
+var CurrentLevelData;
+var CurrentSessionData;
 var SessionScore = 0;
 var LevelChange = true;
 var trialNumber;
 var boundary;
-var isSpeakerRunning, isINTERRUPT;
+var isINTERRUPT;
+var isSpeakerRunning;
 var uiPausedStack = [];
 var uiPaused = 0;
-var dLineTopOuter, dLineTop, dLineTopLeft, dLineTopRight, dLineTopMiddle;
-var dLineTitleOuter, dLineTitle, dLineTitleLeft, dLineTitleRight, dLineTitleMiddle;
-var dLineTableOuter, dLineTable, dLineTableLeft, dLineTableRight, dLineTableMiddle;
-var dLineBottomOuter, dLineBottom, dLineBottomLeft, dLineBottomRight, dLineBottomMiddle;
-var dHint, dFeedback, dInstruction, dScore, dLevel;
+var dLineTop;
+var dLineTopLeft;
+var dLineTopRight;
+var dLineTopMiddle;
+var dLineTopOuter;
+var dLineTitle;
+var dLineTitleLeft;
+var dLineTitleRight;
+var dLineTitleMiddle;
+var dLineTitleOuter;
+var dLineTable;
+var dLineTableLeft;
+var dLineTableRight;
+var dLineTableMiddle;
+var dLineTableOuter;
+var dLineBottom;
+var dLineBottomLeft;
+var dLineBottomRight;
+var dLineBottomMiddle;
+var dLineBottomOuter;
+var dFeedback;
+var dLevel;
+var dHint;
 var inputBox;
 var defaultFocusElement;
 var dSettings = mBy('dSettings');
-var synth, inputForm, inputTxt, voiceSelect, pitch, pitchValue, rate, rateValue, voices, utterance;
-var axiom, rules, factor, angle, max, sentence, interval_id;
+var inputForm;
+var inputTxt;
+var voiceSelect;
+var pitch;
+var pitchValue;
+var rate;
+var rateValue;
+var voices;
+var utterance;
+var synth;
+var hintWord;
+var bestWord;
+var answerCorrect;
+var currentInfo;
+var rules;
+var factor;
+var angle;
+var sentence;
+var interval_id;
+var axiom;
 var Simple = {
 	axiom: 'A',
 	rules: [
@@ -5942,8 +6265,22 @@ var Complex = {
 	factor: .5,
 	max: 6,
 };
-var system = Complex, len = 100, angle;
+var system = Complex;
 var numgen = 0;
+var COLUMNS = { COL_A: 0, COL_B: 1, COL_C: 2, COL_D: 3, COL_E: 4, COL_F: 5, COL_G: 6, COL_H: 7, COL_NONE: 8 };
+var ROWS = { ROW_1: 0, ROW_2: 1, ROW_3: 2, ROW_4: 3, ROW_5: 4, ROW_6: 5, ROW_7: 6, ROW_8: 7, ROW_NONE: 8 };
+var ColBrd = new Array(BRD_SQ_NUM);
+var RowBrd = new Array(BRD_SQ_NUM);
+var RowChar = "12345678";
+var ColChar = "abcdefgh";
+var RookOpenCol = 10;
+var RookSemiOpenCol = 5;
+var QueenOpenCol = 5;
+var QueenSemiOpenCol = 3;
+var PawnRowsWhite = new Array(10);
+var PawnRowsBlack = new Array(10);
+var MirrorCols = [COLUMNS.COL_H, COLUMNS.COL_G, COLUMNS.COL_F, COLUMNS.COL_E, COLUMNS.COL_D, COLUMNS.COL_C, COLUMNS.COL_B, COLUMNS.COL_A];
+var MirrorRows = [ROWS.ROW_8, ROWS.ROW_7, ROWS.ROW_6, ROWS.ROW_5, ROWS.ROW_4, ROWS.ROW_3, ROWS.ROW_2, ROWS.ROW_1];
 var brd_side = COLOURS.WHITE;
 var brd_pieces = new Array(BRD_SQ_NUM);
 var brd_enPas = SQUARES.NO_SQ;
@@ -20037,6 +20374,26 @@ function __pictoG(key, x, y, w, h, fg, bg) {
 	let text = String.fromCharCode('0x' + ch);
 }
 function _addFilterHighlight(mobj) { mobj.highC('green'); }
+function _addOnelineVars(superdi, o) {
+	let [code, type] = [o.code, o.type];
+	let crn = (code.match(/\r\n/g) || []).length;
+	let oneliner = crn == 1;
+	//let specialword = 'Counter'; //'PORT';
+	if (oneliner && type == 'var' && code.includes(',') && !code.includes('[') && !code.includes('{ ')) {
+		let othervars = stringAfter(code, 'var').trim().split(',');
+		othervars = othervars.map(x => firstWord(x, true));
+		othervars.shift();
+		for (const v of othervars) {
+			let o1 = jsCopy(o);
+			o1.lead = o.key;
+			o1.key = v;
+			o1.code = '';
+			o1.sig = `var ${v};`;
+			if (isNumber(v)) { continue; }
+			lookupSetOverride(superdi, [type, v], o1);
+		}
+	}
+}
 function _addPicto(dParent, key) {
 	let pic = picto(key, 0, 0, 50, 50, 'red', 'black');
 	dParent.appendChild(pic);
@@ -21753,6 +22110,9 @@ async function _start() {
 	onpagedeactivated(() => { saveEnv(); dbSave(); });
 	await load_syms();
 	await load_db();
+	let dicode = CODE.di = await route_path_yaml_dict('../y/z_all.yaml');
+	let kwindow = get_keys(window);
+	test100();
 }
 function _start_game(gamename, players, options) {
 }
@@ -22838,6 +23198,31 @@ function ack_player(plname) {
 		Z.turn = [get_next_in_list(plname, fen.ack_players)];
 	}
 	turn_send_move_update();
+}
+function action_close(item) {
+	console.log('HALLO CLOSE!!!!!!!!!!!!!!!')
+	let o = fromLocalStorage('app');
+	let duration = get_now() - o.tStart;
+	let factor = valf(item.val, 3);
+	let secs = Math.round(duration / 1000);
+	let mins = Math.round(secs / 60);
+	let res = mins;
+	let points = Math.round(res * factor / 5); if (points == 0) points = 1;
+	let t = new Date(o.tStart).toTimeString().substring(0, 5);
+	let s = `a:${t},${res},${points}`;
+	console.log('string:', s);
+	setTimeout(() => navigator.clipboard.writeText(s), 100)
+}
+function action_open(item) {
+	console.log('HALLO OPEN!!!!!!!!!!!!!!!')
+	let o = { tStart: get_now(), app: 'action' };
+	toLocalStorage(o, 'app');
+	let d = iDiv(item);
+	let d1 = mDiv(d, { fz: 15, position: 'absolute', top: 2, right: 4 }, null, new Date(o.tStart).toTimeString().substring(0, 5));
+	let d2 = mGrid(3, 3, d, { gap: 3, matop: 12 });
+	for (const n of [.5, 1, 2, 3, 5, 8, 12, 20, 50]) {
+		let b = mButton(n, () => item.val = n, d2, { cursor: 'pointer' });
+	}
 }
 function actionOrWaiting(player, dAction, callback) {
 	if ('actions' in dAction) {
@@ -24234,18 +24619,26 @@ function addOnelineVars(superdi, o) {
 	let crn = (code.match(/\r\n/g) || []).length;
 	let oneliner = crn == 1;
 	//let specialword = 'Counter'; //'PORT';
+	let signal = false;
 	if (oneliner && type == 'var' && code.includes(',') && !code.includes('[') && !code.includes('{ ')) {
 		let othervars = stringAfter(code, 'var').trim().split(',');
-		othervars = othervars.map(x => firstWord(x, true));
+		let varkeys = othervars.map(x => firstWord(x, true));
+		assertion(varkeys[0] == o.name, `WTF?!?! ${varkeys[0]} ### ${o.name}?!?!?!?!????????????? addOnelinerVars`);
+		o.code = stringBefore(code, ',') + ';'
 		othervars.shift();
-		for (const v of othervars) {
+		if (signal) console.log('othervars', othervars, varkeys)
+		for (const vcode of othervars) {
 			let o1 = jsCopy(o);
-			o1.lead = o.key;
-			o1.key = v;
-			o1.code = '';
-			o.sig = `var ${v};`;
-			if (isNumber(v)) { continue; }
-			lookupSetOverride(superdi, [type, v], o1);
+			let code1 = vcode.trim();
+			if (!code1.endsWith(';')) code1 += ';';
+			if (signal) console.log('code1', code1);
+			let k1 = o1.name = firstWord(code1, true);
+			if (signal) console.log('k1', k1);
+			o1.code = 'var ' + code1; // + code1.endsWith(';')?'':';'; //'\r\n':';\r\n';
+			o1.sig = `var ${k1};`;
+			if (isNumber(k1)) { continue; }
+			if (signal) console.log('trage ein', k1, o1)
+			lookupSetOverride(superdi, [type, k1], o1);
 		}
 	}
 }
@@ -30223,6 +30616,88 @@ function boaverify_start() {
 	add_verify_content(d);
 	mAppend(d, get_boa_footer2());
 }
+function book_animals_1() {
+	let pics = {};
+	for (const k of KeySets.animals) {
+		let item = miPic(k, dContent)
+		pics[k] = item;
+	}
+	return { pics: pics, play: () => { } };
+}
+function book_blaettern(page) {
+	if (DA.currentpage != page && isNumber(DA.currentpage)) mStyleRemove(dFooter.children[DA.currentpage], 'fg');
+	mStyle(dFooter.children[page], { fg: 'yellow' });
+	DA.currentpage = page;
+	dTitle.innerHTML = DA.currentbook.title + ' pg.' + page;
+}
+function book_cs_1() {
+	let o = mCanvas(dContent, { w: 600, h: 300 }, {}, startloop, pauseloop, 'cc');
+	o.draw = draw_random_walk;
+	return o;
+}
+function book_cs_2() {
+	let o = mCanvas(dContent, { w: 600, h: 300 }, {}, startloop, pauseloop, 'cc');
+	o.draw = draw_perlin_x;
+	return o;
+}
+function book_cs_3() {
+	let o = mCanvas(dContent, { w: 600, h: 300 }, {}, startloop, pauseloop, 'cc');
+	o.draw = draw_perlin_xy;
+	return o;
+}
+function book_cs_4() {
+	let o = mCanvas(dContent, { w: 600, h: 300, bg: 'transparent' }, {}, startloop, pauseloop, 'cc');
+	o.draw = draw_random_walk;
+	return o;
+}
+function book_get(id) { return jsCopy(DB.appdata.book.find(x => x.id == id)); }
+function book_open(item) {
+	console.log('BOOK OPEN!!!!!!!!!!!!!!!');
+	let d = iDiv(item);
+	let dg = mGrid(2, 1, d, { gap: 3, matop: 22 });
+	let books = DB.appdata.book;
+	for (const book of books) {
+		let d1 = mDiv(dg, { fg: rColor(23) }, null, book.title, 'hop1');
+		d1.onclick = () => book_open_title(book.id);
+	}
+}
+function book_open_next_page() {
+	let page = isNumber(DA.currentpage) ? DA.currentpage + 1 : 1;
+	if (page > DA.currentbook.pages) page = 1;
+	book_open_page(page);
+}
+function book_open_page(page) {
+	pauseloop(); iClear(dContent);
+	book_blaettern(page);
+	let book = G = book_get(dContent.getAttribute('book'));
+	let func = window[`book_${book.id}_${page}`];
+	let o = G.canvas = func();
+	iReg(o);
+	dButtons = G.canvas.controls;
+	addKeys(G, window);
+	o.play();
+}
+function book_open_prev_page() {
+	let page = isNumber(DA.currentpage) ? DA.currentpage - 1 : DA.currentbook.pages;
+	if (page < 1) page = DA.currentbook.pages;
+	book_open_page(page);
+}
+function book_open_title(id, page) {
+	clear_all();
+	dTable = mSection({ bg: DB.apps.book.color }, 'dTable', null, null, 'bookgrid');
+	let book = DA.currentbook = book_get(id);
+	dTitle = mDiv(dTable, {}, null, book.title)
+	mButtonX(dTable, () => mClear(dTable), pos = 'tr', sz = 25, color = 'white')
+	dContent = mDiv(dTable, {}, 'dContent'); mCenterCenterFlex(dContent);
+	dContent.setAttribute('book', id);
+	let footer = dFooter = mDiv(dTable, { align: 'center' });
+	maButton('<', () => book_open_prev_page(), footer);
+	for (const p of range(1, book.pages)) {
+		maButton(p, () => book_open_page(p), footer);
+	}
+	maButton('>', () => book_open_next_page(), footer);
+	book_open_page(valf(page, 1));
+}
 function BookMove() {
 	var gameLine = printGameLine();
 	var bookMoves = [];
@@ -31692,6 +32167,12 @@ function capitalize(s) {
 	if (typeof s !== 'string') return '';
 	return s.charAt(0).toUpperCase() + s.slice(1);
 }
+function capitals_in_red(feature) {
+	console.log('feature data', feature.data);
+	let type = lookup(feature, ['data', 'type']);
+	console.log('city', lookup(feature, ['data', 'name']), ':', type)
+	return type == 'capital' ? 'red' : 'yellow';
+}
 function CAPTURED(m) { return (((m) >> 14) & 0xF); }
 function Card(img, bunch, id, reverse) {
 	var self = this;
@@ -32363,6 +32844,13 @@ function centerFit(d, child) {
 	let pady = Math.floor(padding + (hdesChild - bChild.height) / 2);
 	d.style.padding = pady + 'px ' + padx + 'px';
 }
+function cha3(cities) {
+	let list = rChoose(cities, 20);
+	for (const o of list) {
+		map_add_city(o);
+	}
+	console.log('source', ensure_city_layer().getSource().getFeatures().map(x => x.data.city_ascii));
+}
 function chainCancel() {
 	CancelChain = true;
 	clearTimeout(ChainTimeout);
@@ -32403,6 +32891,21 @@ function chainSendRec(akku, msgChain, callback) {
 		callback(akku);
 	}
 }
+function chall4() {
+	let caps = M.capitals;
+	let list = caps;
+	for (const o of list) {
+		map_add_city(o);
+		console.log('city', o)
+	}
+	console.log('source', ensure_city_layer().getSource().getFeatures().map(x => x.data.city_ascii));
+}
+function challenge0() {
+	for (const o of arrTake(cities, 10)) {
+		console.log('o', o)
+		add_circle(Number(o.lng), Number(o.lat), M.map);
+	}
+}
 async function challenge1() {
 	let data = await route_path_json('../base/mapdata/gadm36_AUT_2.json');
 	var mapOptions = {
@@ -32422,6 +32925,12 @@ async function challenge1() {
 		marker.addTo(map);
 		marker.bindTooltip(f.properties.NAME_2, { direction: 'center', permanent: true, className: 'mylabel', offset: L.point({ x: -30, y: 30 }) });
 	}
+}
+function challenge2() {
+	let layer = map_add_layer('city', M.map);
+	let feature = map_add_circle_to_layer(16, 48, layer);
+	feature.data = { hallo: 'Vienna' };
+	console.log('source', layer.getSource().getFeatures());
 }
 function change(arr, n) {
 	for (let i = 0; i < n; i++) {
@@ -37745,19 +38254,19 @@ function describe(d) {
 	console.log('firstChild', d.firstChild);
 	console.log('d', d)
 }
+function DeSelectSq(sq) {
+	$('.Square').each(function (index) {
+		if (PieceIsOnSq(sq, $(this).position().top, $(this).position().left) == BOOL.TRUE) {
+			$(this).removeClass('SqSelected');
+		}
+	});
+}
 function DeselectSq(sq) {
 	if (GameController.BoardFlipped == BOOL.TRUE) {
 		sq = MIRROR120(sq);
 	}
 	$(".Square").each(function (index) {
 		if ((RanksBrd[sq] == 7 - Math.round($(this).position().top / 60)) && (FilesBrd[sq] == Math.round($(this).position().left / 60))) {
-			$(this).removeClass('SqSelected');
-		}
-	});
-}
-function DeSelectSq(sq) {
-	$('.Square').each(function (index) {
-		if (PieceIsOnSq(sq, $(this).position().top, $(this).position().left) == BOOL.TRUE) {
 			$(this).removeClass('SqSelected');
 		}
 	});
@@ -41098,6 +41607,47 @@ function fillout_boa_login() {
 	elem_userid.value = data.userid;
 	elem_pwd.value = data.pwd;
 }
+function filter_codebase() {
+	let words = toWords(mBy('iKeywords').value);
+	console.log('filter_codebase: keywords are', words);
+	let di = CODE.funcs;
+	let di_values = get_values(di);
+	let records = di_values.filter(x => x.body.includes(words[0]));
+	console.log('records', records)
+	AU.ta.value = '';
+	for (const r of records) {
+		let k = r.name;
+		AU.ta.value += di[k].body + '\n';
+	}
+}
+function filter_list() {
+	let words = toWords(mBy('iKeywords').value);
+	console.log('filter_list: keywords are', words);
+	let di = CODE.funcs;
+	let di_values = get_values(di);
+	let records = di_values.filter(x => x.body.includes(words[0]));
+	console.log('records', records)
+	mClear(dSidebar)
+	for (const rec of records) {
+		let key = rec.name;
+		let d = mDiv(dSidebar, { cursor: 'pointer', wmin: 100 }, null, key, 'hop1')
+		let info = rec.body;
+		d.onclick = () => AU.ta.value = info;
+	}
+}
+function filter_sig() {
+	let words = toWords(mBy('iKeywords').value);
+	console.log('filter_sig: keywords are', words);
+	let di = CODE.funcs;
+	let di_values = get_values(di);
+	let records = di_values.filter(x => x.body.includes(words[0]));
+	console.log('records', records)
+	AU.ta.value = '';
+	for (const r of records) {
+		let k = r.name;
+		AU.ta.value += di[k].sig + '\n';
+	}
+}
 function filterByKey(o, desiredKeys) {
 	let o1 = {};
 	for (const k of desiredKeys) {
@@ -41640,6 +42190,22 @@ function fit_points(map, pts, padding = true) {
 	let latlngs = to_lat_lng(pts);
 	let o = L.latLngBounds(latlngs);
 	map.fitBounds(o, { padding: padding ? [25, 25] : [0, 0] });
+}
+function fitbit_open(item) {
+	console.log('FITBIT OPEN!!!!!!!!!!!!!!!')
+	let d = iDiv(item);
+	let d2 = mGrid(2, 1, d, { gap: 3, matop: 22 });
+	let arr = DB.appdata.fitbit;
+	let days = arr.length;
+	let sum = arrSum(arr, 'steps');
+	let opt = DB.apps.fitbit.options;
+	let min_per_day = opt.min;
+	let avg_per_day = opt.avg;
+	let req_sum = avg_per_day * (days + 1);
+	let req_today = Math.max(req_sum - sum, opt.min);
+	let avg = sum / days;
+	let davg = mDiv(d2, {}, null, `avg: ${avg.toFixed(1)}K`);
+	let dtoday = mDiv(d2, {}, null, `req: ${Math.ceil(req_today)}K`);
 }
 function fitFont(text, fz = 20, w2 = 200, h2 = 100) {
 	let e1, e2, r1, r2;
@@ -45044,6 +45610,7 @@ function getAsInt(mobj, styleInfo, prop) {
 }
 function getAux() { return getAuxIds.map(x => UIS[x]); }
 function getAuxIds() { return getList(IdOwner.l); }
+function getAuxVisuals(id) { return getVisuals(id, 'aux') }
 function getAvatar(username) { let d = Avatars[username]; if (nundef(d)) d = makeUserAvatar(username); return d; }
 function getBackgroundColor(img, ctx) {
 	ctx.drawImage(img, 0, 0);
@@ -45145,6 +45712,8 @@ function getBoardScaleFactors(board, { factors, opt, f2nRatio, w, h, margin } = 
 	}
 	return [fw, fh, nw, nh, ew];
 }
+function getBoat(idx) { return UIS[getBoatId(idx)]; }
+function getBoatId(idx) { return firstCond(getList(IdOwner.a), x => pureId(x) == idx.toString()); }
 function getBoatIdByIdx(idx) {
 	if (!IdOwner.a || isEmpty(IdOwner.a)) return null;
 	if (idx < 0) idx += IdOwner.a.length;
@@ -46385,6 +46954,12 @@ function getidAvailable(i) { return 'c_b_mm_plj' + i; }
 function getIdForOid(oid) { return 'm_t_' + oid; }
 function getidNum(i) { return 'c_b_mm_pln' + i; }
 function getidPlayermode(mode) { return 'c_b_mm_' + mode; }
+function getIds(id, type = 'all') {
+	let res = id2uids[id];
+	if (nundef(res)) return [];
+	if (isEmpty(res) || type == 'all') return res;
+	return res.filter(x => isdef(x[type]));
+}
 function getIdsInfobox() { return IdOwner.i ? IdOwner.i : []; }
 function getidSpan(i) { return 'sppl' + i; }
 function getidSpanJoin(i) { return 'spplj' + i; }
@@ -46728,6 +47303,7 @@ function getMainAreaPercent(dParent, bg = 'grey', wPercent = 94, hPercent = 96, 
 	return dArea;
 }
 function getMainId(oid) { return firstCond(oid2ids[oid], x => x[0] == 'm'); }
+function getMainVisual(oid) { return UIS[oid]; }
 function getMatchingPictoKey(o, key) {
 	let sym = o.obj_type;
 	if (sym in S.settings.symbols) { sym = S.settings.symbols[sym]; }
@@ -46873,6 +47449,18 @@ function getNumSeqHintString(i) {
 }
 function getO(n, R) { let oid = n.oid; if (isdef(oid)) return R.getO(oid); else return null; }
 function getObject(id) { return G.table[id]; }
+function getObjectFromWindow(key) {
+	let code, sig, type;
+	let f = window[key];
+	if (typeof f != 'function') return null;
+	code = f.toString();
+	sig = getFunctionSignature(stringBefore(code, '\n'), key);
+	type = 'func';
+	let o = { name: key, code: code, sig: sig, region: type, filename: '', path: '', type: type };
+	CODE.justcode[key] = code;
+	CODE.all[key] = CODE.di[type][key] = o;
+	return o;
+}
 function getObjectsWithSame(olist, props, o, up = true, breakWhenDifferent = true) {
 	let res = [];
 	let val = lookup(o, props);
@@ -47392,6 +47980,7 @@ function getRectInt(elem, relto) {
 	extendRect(r4);
 	return r4;
 }
+function getRelativeIds(id) { return getList(id2ids[id]); }
 function getRelBounds(elem, elRel) {
 	let b1 = elem.getBoundingClientRect();
 	if (!elRel) return b1;
@@ -49311,6 +49900,8 @@ function handle_command(cmd) {
 	console.log('history', G.hist)
 	console.log('current selection', G.selist.map(x => x.name));
 }
+function handle_connect(id) { console.log('connected', id); io.emit('message', 'someone logged in!'); }
+function handle_disconnect(x) { console.log('disconnected', x); io.emit('message', x); }
 function handle_drag_and_drop(e) {
 	if (e.type == "dragover") {
 		e.preventDefault();
@@ -49472,6 +50063,7 @@ function handle_settings(x) {
 	console.log('settings:', settings);
 	console.log('defaults:', defaults);
 }
+function handle_update(x) { console.log('got update', x); io.emit('update', x); }
 function handleAction(x) {
 	return [[x]];
 }
@@ -50352,6 +50944,17 @@ function host_update() {
 }
 function houseTest00() {
 	let s = '"a a b c" "d d e c" "f g e h"'; console.log(getRandomLetterMapping(s)); console.log('_____\n', s, '\n', getLetterSwapEncoding(s));
+}
+function howto_close(item) { toggle_fiddle(); }
+function howto_open(item) {
+	iClear('dTable')
+	if (nundef(item)) item = DB.apps.howto;
+	dSearch = mBy('dSearch'); mClear(dSearch);
+	show_sidebar(CODE.index, show_code);
+	show_code();
+	toggle_apps();
+	mStyle(dSearch, { bg: item.color });
+	mInputLineWithButtons(dSearch, { Code: filter_codebase, Signatures: filter_sig })
 }
 function HPLayout() {
 	if (isdef(UI.DRR)) UI.DRR.remove();
@@ -51339,27 +51942,6 @@ function initAutoplayToActionButtons() {
 function initAux() {
 	dAux = mBy('dAux');
 }
-function initBoardSquares() {
-	var light = 0;
-	var rowName;
-	var colName;
-	var divString;
-	var lightString;
-	var lastLight = 0;
-	for (rowIter = ROWS.ROW_8; rowIter >= ROWS.ROW_1; rowIter--) {
-		light = lastLight ^ 1;
-		lastLight ^= 1;
-		rowName = "row" + (rowIter + 1);
-		for (colIter = COLUMNS.COL_A; colIter <= COLUMNS.COL_H; colIter++) {
-			colName = "col" + (colIter + 1);
-			if (light == 0) lightString = "Light";
-			else lightString = "Dark";
-			divString = "<div class=\"Square clickElement " + rowName + " " + colName + " " + lightString + "\"/>";
-			light ^= 1;
-			$("#Board").append(divString);
-		}
-	}
-}
 function InitBoardSquares() {
 	var light = 0;
 	var rankName;
@@ -51378,6 +51960,27 @@ function InitBoardSquares() {
 			divString = "<div class=\"Square clickElement " + rankName + " " + fileName + " " + lightString + "\"/>";
 			light ^= 1;
 			$("#ChessBoard").append(divString);
+		}
+	}
+}
+function initBoardSquares() {
+	var light = 0;
+	var rowName;
+	var colName;
+	var divString;
+	var lightString;
+	var lastLight = 0;
+	for (rowIter = ROWS.ROW_8; rowIter >= ROWS.ROW_1; rowIter--) {
+		light = lastLight ^ 1;
+		lastLight ^= 1;
+		rowName = "row" + (rowIter + 1);
+		for (colIter = COLUMNS.COL_A; colIter <= COLUMNS.COL_H; colIter++) {
+			colName = "col" + (colIter + 1);
+			if (light == 0) lightString = "Light";
+			else lightString = "Dark";
+			divString = "<div class=\"Square clickElement " + rowName + " " + colName + " " + lightString + "\"/>";
+			light ^= 1;
+			$("#Board").append(divString);
 		}
 	}
 }
@@ -54948,6 +55551,15 @@ function LineMatch(BookLine, gameline) {
 		if (gameline[len] != BookLine[len]) { return BOOL.FALSE; }
 	}
 	return BOOL.TRUE;
+}
+function lineStyleFunction(feature, resolution) {
+	return new Style({
+		stroke: new Stroke({
+			color: 'green',
+			width: 2,
+		}),
+		text: createTextStyle(feature, resolution, myDom.lines),
+	});
 }
 function lineupDecks(msDecks, deckArea) {
 	let x = 0;
@@ -61574,6 +62186,23 @@ function mInputGroup(dParent, styles) {
 	if (isdef(styles)) styles = deepmergeOverride(baseStyles, styles); else styles = baseStyles;
 	return mDiv(dParent, styles);
 }
+function mInputLineWithButtons(dParent, opts) {
+	let html = `
+    <form id="fSearch" action="javascript:void(0);" class='form' autocomplete='off'>
+      <label>Keywords:</label>
+      <input id="iKeywords" type="text" name="keywords" style="flex-grow:1" />
+    </form>
+    `;
+	let elem = mCreateFrom(html);
+	mAppend(dParent, elem);
+	let handler;
+	for (const cap in opts) {
+		handler = opts[cap];
+		mButton(cap, opts[cap], elem, {}, 'hop1');
+	}
+	elem.onsubmit = (ev) => { ev.preventDefault(); };
+	return elem;
+}
 function mInputX(dParent, styles, { textPadding, label, value, submitOnEnter, autoComplete, autoFocus, autoSelect, handler, createContainer } = {}) {
 	let d;
 	if (createContainer) {
@@ -63819,6 +64448,8 @@ function NewGame(fen) {
 		PreSearch();
 	}
 }
+function NewGameAjax() {
+}
 function newGameAjax() {
 	console.log('new Game Ajax');
 	$.ajax({
@@ -63827,8 +64458,6 @@ function newGameAjax() {
 	}).done(function (html) {
 		console.log('result:' + html);
 	});
-}
-function NewGameAjax() {
 }
 function newItemSelection(item, items, onSelectSelected = null) {
 	console.log('===>', item, items)
@@ -64488,6 +65117,15 @@ function onclick_by_suit_ferro() {
 function onclick_cancelmenu() { hide('dMenu'); }
 function onClick_cardgames() { closeLeftPane(); }
 function onclick_chat() { if (!menu_enabled('chat')) return; game_interrupt(); get_chat(); }
+function onclick_cities() {
+	let layer = M.layers.city;
+	let capitals = rChoose(M.capitals, 50);
+	console.log('capitals', capitals);
+	for (const c of M.capitals) {
+		console.log('presenting', c)
+		map_add_object(M.cities[c], { layer: layer });
+	}
+}
 function onclick_clear_selection_ferro() { clear_selection(); }
 function onclick_close_project_editor(ev) {
 	console.log('click!!!')
@@ -67178,8 +67816,8 @@ function parseCodefile1(content, fname, preserveRegionNames = true, info = {}, s
 				let o = { name: key, code: code, sig: sig, region: type, filename: fname, type: type };
 				addKeys(info, o);
 				if (o.type == 'var' && o.fname == 'chess.js' && o.name.startsWith('brd_')) { lookupSet(superdi, ['chessvar', o.name], true); }
-				lookupSetOverride(superdi, [type, key], o);
 				if (type == 'var') addOnelineVars(superdi, o);
+				lookupSetOverride(superdi, [type, key], o);
 			}
 		}
 		if (startsWith(l, 'async') || startsWith(l, 'function')) {
@@ -67972,6 +68610,16 @@ function points_to_waypoints(pts = []) { return pts.map(x => L.latLng(x[0], x[1]
 function points2string(listOfPoints) {
 	return listOfPoints.map(p => '' + p.x + ',' + p.Y).join(' '); //'0,0 100,0 50,80',
 }
+function pointStyleFunction(feature, resolution) {
+	return new Style({
+		image: new CircleStyle({
+			radius: 10,
+			fill: new Fill({ color: 'rgba(255, 0, 0, 0.1)' }),
+			stroke: new Stroke({ color: 'red', width: 1 }),
+		}),
+		text: createTextStyle(feature, resolution, myDom.points),
+	});
+}
 function poll() {
 	if (IS_POLLING_ALLOWED) {
 		if (isdef(DA.poll.func)) DA.poll.data = DA.poll.func(DA.poll.data);
@@ -67997,6 +68645,18 @@ function polling_shield_on(msg) {
 function pollStart() {
 }
 function pollStop() { clearTimeout(TO.poll); Clientdata.AUTORESET = true; }
+function polygonStyleFunction(feature, resolution) {
+	return new Style({
+		stroke: new Stroke({
+			color: 'blue',
+			width: 1,
+		}),
+		fill: new Fill({
+			color: 'rgba(0, 0, 255, 0.1)',
+		}),
+		text: createTextStyle(feature, resolution, myDom.polygons),
+	});
+}
 function polyPointsFrom(w, h, x, y, pointArr) {
 	x -= w / 2;
 	y -= h / 2;
@@ -71091,6 +71751,7 @@ function pTest0() {
 	let d1 = mDiv(dTable);
 	let d2 = present_structured1(d1, state);
 }
+function pureId(id) { return id.substring(4) }
 function purge(elem) {
 	var a = elem.attributes, i, l, n;
 	if (a) {
@@ -73225,17 +73886,6 @@ function resplay_container(targetgroup, ovpercent) {
 	ui_add_cards_to_hand_container(d, items);
 }
 function rest() {
-	styles.al = 'brv';
-	cx.textBaseline = "top";
-	cx.fillText("Top", 5, 100);
-	cx.textBaseline = "bottom";
-	cx.fillText("Bottom", 50, 100);
-	cx.textBaseline = "middle";
-	cx.fillText("Middle", 120, 100);
-	cx.textBaseline = "alphabetic";
-	cx.fillText("Alphabetic", 190, 100);
-	cx.textBaseline = "hanging";
-	cx.fillText("Hanging", 290, 100);
 }
 function restart_selection_process() {
 	let [plorder, stage, A, fen, uplayer, pl] = [Z.plorder, Z.stage, Z.A, Z.fen, Z.uplayer, Z.fen.players[Z.uplayer]];
@@ -74908,6 +75558,11 @@ function selectColor(color) {
 	selected_color = color;
 }
 function selectGame(callback) { let route = '/game/select/' + GAME; _sendRouteJS(route, callback); }
+function selectStyle(feature) {
+	const color = feature.get('COLOR') || '#eeeeee';
+	selected.getFill().setColor(color);
+	return selected;
+}
 function selectText(el) {
 	if (el instanceof HTMLTextAreaElement) { el.select(); return; }
 	var sel, range;
@@ -75817,6 +76472,11 @@ function set_state_numbers(otree) {
 	otree.phase = phase;
 	let plturn = otree.plturn = otree.plorder[iturn];
 	return [step, stage, iturn, round, phase, plturn];
+}
+function set_style_from_options(layer, options = {}) {
+	let style = isdef(options.colorfunc) ? get_style_func(options.colorfunc, valf(options.bg, 'lime'), valf(options.fg, 'orange'))
+		: get_style(valf(options.bg, 'yellow'), valf(options.fg, 'yellow'));
+	layer.setStyle(style);
 }
 function set_tables_by_game(obj, is_set_cur_id = true) {
 	let tables = Session.tables = obj.tables;
@@ -81511,6 +82171,25 @@ function stringBetweenLast(sFull, sStart, sEnd) {
 	let s1 = stringBeforeLast(sFull, isdef(sEnd) ? sEnd : sStart);
 	return stringAfterLast(s1, sStart);
 }
+function stringDivider(str, width, spaceReplacer) {
+	if (str.length > width) {
+		let p = width;
+		while (p > 0 && str[p] != ' ' && str[p] != '-') {
+			p--;
+		}
+		if (p > 0) {
+			let left;
+			if (str.substring(p, p + 1) == '-') {
+				left = str.substring(0, p + 1);
+			} else {
+				left = str.substring(0, p);
+			}
+			const right = str.substring(p + 1);
+			return left + spaceReplacer + stringDivider(right, width, spaceReplacer);
+		}
+	}
+	return str;
+}
 function stringLast(s, n) { return s.substring(s.length - n, s.length); }
 function stringToMatrix(s, rows, cols) {
 	if (isNumber(s)) s = String(s);
@@ -82478,6 +83157,10 @@ function test0_show_all_inno_cards() {
 		if (ci.exp[0] == 'F') inno_present_card(dTable, k);
 	}
 }
+async function test0_simulateClick() {
+	let info = await route_path_yaml_dict('../base/assets/lists/info.yaml');
+	downloadAsYaml(info, 'info');
+}
 function test0_turn_loader_off() {
 	mClassReplace(mBy('loader_holder'), 'loader_off');
 }
@@ -83034,6 +83717,39 @@ function test1_bw_widget_boa() {
 	let d7 = mDiv(d, { bg: '#eee', fg: 'dimgray', padding: 7 }, null, 'CARDS');
 	let d8 = mDiv(d, { bg: 'dodgerblue', fg: 'white' }, null, `<img src='../rechnung/images/rest_bw.jpg'>`);
 }
+async function test1_can_I_get_new_cities(min = 25000) {
+	let info = await route_path_yaml_dict('../base/assets/lists/info.yaml');
+	let text = await route_path_text('../base/mapdata/cities.csv');
+	let cities = M.cities = csv2list(text);
+	let capitals = [];
+	let new_cities = {};
+	let num = 0;
+	for (const o of cities) {
+		let n = o.population;
+		if (nundef(n)) continue;
+		n = Number(n);
+		if (n < min) continue;
+		let w1 = o.city_ascii.toLowerCase();
+		if (nundef(o.country)) {
+			console.log('missing country', o);
+			continue;
+		}
+		num += 1;
+		let land1 = o.country.toLowerCase();
+		for (const k of info.capital) {
+			let w = k.toLowerCase();
+			if (w.includes(w1) && w.includes(land1)) {
+				capitals.push(o);
+				o.capital = 'capital';
+			}
+			let name = o.name = o.city_ascii;
+			if (isdef(new_cities[name]) && new_cities[name].includes('capital')) continue;
+			new_cities[name] = `${o.lng},${o.lat},${o.country},${o.capital},${o.population}`;
+		}
+	}
+	downloadAsYaml(new_cities, 'cities');
+	return new_cities;
+}
 function test1_car_math() {
 	C = new CCanvas(dTable, {}, {}, gameloop_start, gameloop_stop, 'cc', null, true);
 	C.add({ w: 30, h: 25, color: 'red', draw: draw_car, update: update_car, turn_inc: 10, v: { a: 280, mag: 5 } });
@@ -83322,6 +84038,46 @@ function test10_verrueckt() {
 	html = replaceAllFast(html, 'black', 'green');
 	mDiv(dTable, {}, null, html);
 	return;
+}
+function test100() {
+	let keys = {};
+	for (const k in CODE.di) { for (const k1 in CODE.di[k]) keys[k1] = CODE.di[k][k1]; }
+	CODE.all = keys;
+	CODE.keylist = Object.keys(keys)
+	let inter = intersection(Object.keys(keys), Object.keys(window));
+	let done = {};
+	let tbd = ['_start'];
+	let MAX = 1007, i = 0;
+	let alltext = '';
+	while (!isEmpty(tbd)) {
+		if (++i > MAX) break;
+		let sym = tbd[0];
+		let o = CODE.all[sym];
+		if (nundef(o)) o = getObjectFromWindow(sym);
+		if (o.type != 'func') { tbd.shift(); lookupSet(done, [o.type, sym], o); continue; }
+		let olive = window[sym];
+		if (nundef(olive)) { tbd.shift(); lookupSet(done, [o.type, sym], o); continue; }
+		let text = olive.toString();
+		if (!isEmpty(text)) alltext += text + '\r\n';
+		let words = toWords(text, true);
+		for (const w of words) {
+			if (nundef(done[w]) && w != sym && isdef(CODE.all[w])) addIf(tbd, w);
+		}
+		tbd.shift();
+		lookupSet(done, [o.type, sym], o);
+	}
+	let tres = '';
+	for (const k of ['const', 'var', 'cla', 'func']) {
+		console.log('done', k, done[k])
+		let o = done[k]; if (nundef(o)) continue;
+		let klist = get_keys(o);
+		if (k == 'func') klist = sortCaseInsensitive(klist);
+		for (const k1 of klist) {
+			if (isLetter(k1) && k1 == k1.toLowerCase()) continue;
+			let code = CODE.justcode[k1];
+			if (!isEmptyOrWhiteSpace(code)) tres += code;
+		}
+	}
 }
 function test100_partial_sequences() {
 	let hand = ['AHn', '2Hn', '3Hn', '4Hn', '5Hn', '6Hn', '7Hn', '8Hn'];
@@ -83921,6 +84677,10 @@ function test3_3rows() {
 	let dOuter = mDiv(dMain, { bg: 'random', flex: '1 0 auto' }, 'dOuter', 'outer');
 	let dFooter = mDiv(dMain, { bg: 'random' }, 'dFooter', 'footer');
 	mSize(dHeader, '100%', 50);
+}
+function test3_add_cities_layer(color) {
+	let cities = rChoose(M.capitals, 20);
+	for (const c of cities) map_add_city(M.cities[c]);
 }
 function test3_ari_deck_2_hands(otree) {
 	let deck = ui_make_random_deck(10);
@@ -90464,4 +91224,948 @@ function zText(text, dParent, textStyles, hText, vCenter = false) {
 		dText.style.paddingBottom = (extra / 2) + 'px';
 	}
 	return { text: text, div: dText, extra: extra, lines: lines, h: tSize.h, w: tSize.w, fz: textStyles.fz };
+}
+
+
+if (this && typeof module == "object" && module.exports && this === module.exports) {
+	module.exports = {
+		parseCodefile,
+		parseCodefile1,
+		HPLayout,
+		HRPLayout,
+		HSLAToRGBA,
+		HSLToRGB,
+		PHLayout,
+		PRHLayout,
+		RGBAToHSLA,
+		RGBAToHex9,
+		RGBToHSL,
+		RGBToHex7,
+		_calc_hex_col_array,
+		_calc_hex_col_array_old,
+		_deqSound,
+		_enqSound,
+		_evToClass,
+		_gCreate,
+		_gSizeToContent,
+		_mStamp,
+		_rChoose,
+		_selectText,
+		_unfocusOnEnter,
+		_valf,
+		_whenSoundPaused,
+		aFlip,
+		aJumpby,
+		aMove,
+		aRestore,
+		aRollby,
+		aRotate,
+		aRotateAccel,
+		aSvg,
+		aSvgg,
+		aTranslateBy,
+		aTranslateByEase,
+		aTranslateFadeBy,
+		activate_playerstats,
+		activate_ui,
+		addIf,
+		addKeys,
+		addMonthToDate,
+		addRowsCols,
+		addWeekToDate,
+		add_transaction,
+		agCircle,
+		agColoredShape,
+		agEllipse,
+		agG,
+		agHex,
+		agLine,
+		agPoly,
+		agRect,
+		agShape,
+		aggregate_elements,
+		aggregate_player_hands_by_rank,
+		allNumbers,
+		alphaToHex,
+		anim_face_down,
+		anim_face_up,
+		anim_toggle_face,
+		animateProperty,
+		animatePropertyX,
+		animate_card_approx,
+		animate_card_exchange,
+		animate_card_transfer,
+		animate_title,
+		animatedTitle,
+		ari_get_card,
+		ari_get_card_large,
+		ari_make_selectable,
+		ari_make_selected,
+		ari_make_unselectable,
+		ari_make_unselected,
+		ari_show_handsorting_buttons_for,
+		arrAdd,
+		arrAverage,
+		arrBuckets,
+		arrChildren,
+		arrClear,
+		arrCount,
+		arrCycle,
+		arrExtend,
+		arrFirst,
+		arrFlatten,
+		arrFromIndex,
+		arrFromTo,
+		arrFunc,
+		arrIndices,
+		arrLast,
+		arrLastOfLast,
+		arrMax,
+		arrMin,
+		arrMinMax,
+		arrMinus,
+		arrNext,
+		arrNoDuplicates,
+		arrPlus,
+		arrPrev,
+		arrRange,
+		arrRemove,
+		arrRemoveDuplicates,
+		arrRemoveLast,
+		arrRemovip,
+		arrRepeat,
+		arrReplace,
+		arrReplace1,
+		arrReverse,
+		arrRotate,
+		arrShufflip,
+		arrSplitAtIndex,
+		arrSplitByIndices,
+		arrSum,
+		arrSwap,
+		arrTake,
+		arrTakeLast,
+		arrTakeWhile,
+		arrToMatrix,
+		arrWithout,
+		arrZip,
+		arr_get_max,
+		arr_get_min,
+		assertion,
+		audio_beep,
+		audio_onclick_pp,
+		audio_pause,
+		audio_play,
+		audio_playing,
+		audio_toggle,
+		autocomplete,
+		autocomplete_addActive,
+		autocomplete_closeAllLists,
+		autocomplete_removeActive,
+		bCapturedPieces,
+		bCheck,
+		bCreateEmpty,
+		bFreeRayDir,
+		bFreeRayDir1,
+		bFullCol,
+		bFullDiag,
+		bFullDiag2,
+		bFullRow,
+		bGetChunks,
+		bGetChunksWithIndices,
+		bGetCol,
+		bGetCols,
+		bGetRow,
+		bGetRows,
+		bGetSubMatrix,
+		bGetSubMatrixWithIndices,
+		bNei,
+		bNeiDir,
+		bPartialCol,
+		bPartialDiag,
+		bPartialDiag2,
+		bPartialRow,
+		bRayDir,
+		bStrideCol,
+		bStrideColFrom,
+		bStrideDiag2From,
+		bStrideDiagFrom,
+		bStrideRow,
+		bStrideRowFrom,
+		beautify_history,
+		boardArrOmitFirstRowCol,
+		boardToNode,
+		bottom_elem_from_to,
+		bottom_elem_from_to_top,
+		cCenterOrigin,
+		cCircle,
+		cClear,
+		cColor,
+		cEllipse,
+		cLine,
+		cRect,
+		cSetOrigin,
+		cShadow,
+		cStyle,
+		cStyle_dep,
+		calc_hand_value,
+		calculateDaysBetweenDates,
+		cap_each_word,
+		capitalize,
+		cardFromInfo,
+		catanBoard,
+		checkBoardEmpty,
+		checkBoardFull,
+		checkPotentialTTT,
+		checkSudokuRule,
+		checkSudokuRule_trial1,
+		checkWinner,
+		checkWinnerC4,
+		checkWinnerPossible,
+		checkWinnerTTT,
+		choose,
+		chooseRandom,
+		circleCenters,
+		clamp,
+		clearElement,
+		clearFleetingMessage,
+		clear_select,
+		clear_selection,
+		clear_status,
+		clear_timeouts,
+		clear_title,
+		clear_transaction,
+		coin,
+		collect_game_specific_options,
+		colorChannelMixer,
+		colorDark,
+		colorFrom,
+		colorFromHSL,
+		colorHSL,
+		colorHSLBuild,
+		colorHex,
+		colorHue,
+		colorHueWheel,
+		colorIdealText,
+		colorLight,
+		colorMap,
+		colorMix,
+		colorMixer,
+		colorPalette,
+		colorPaletteFromImage,
+		colorPaletteFromUrl,
+		colorRGB,
+		colorShades,
+		colorTrans,
+		colorTransPalette,
+		colorWheel,
+		colorsFromBFA,
+		complexCompare,
+		compute_hidden,
+		contains,
+		continue_after_error,
+		convert_to_range,
+		copyKeys,
+		correctPolys,
+		correct_handsorting,
+		countAll,
+		create_card_assets_c52,
+		create_fen_deck,
+		csv2list,
+		cycle,
+		dSquare,
+		date2locale,
+		dbSave,
+		db_create,
+		db_delete,
+		db_init,
+		db_readall,
+		db_update,
+		deactivate_ui,
+		default_allowDrop,
+		delete_table,
+		destroySudokuRule,
+		dict2list,
+		distance,
+		divInt,
+		doit,
+		downloadAsText,
+		downloadAsYaml,
+		downloadJson,
+		download_all_functions,
+		drawFlatHex,
+		drawHex,
+		drawPlainCircle,
+		drawShape,
+		drawSym,
+		drawText,
+		drawTriangle,
+		draw_from_deck_to,
+		draw_from_deck_to_board,
+		elem_from_to,
+		elem_from_to_top,
+		empty_func,
+		endsWith,
+		ensureColorDict,
+		errlog,
+		evNoBubble,
+		evStop,
+		evToClass,
+		evToClosestId,
+		evToId,
+		evToItem,
+		evToProp,
+		evToTargetAttribute,
+		ev_to_gname,
+		exchange_by_index,
+		expandBoard,
+		face_down,
+		face_down_alt,
+		face_up,
+		ferro_get_card,
+		fillColarr,
+		findAncestorElemOfType,
+		findAncestorElemWithParentOfType,
+		findAttributeInAncestors,
+		findChildOfType,
+		findChildWithClass,
+		findChildWithId,
+		findChildrenOfType,
+		findDescendantOfType,
+		findDescendantWithId,
+		findKeys,
+		findParentWithClass,
+		findParentWithId,
+		find_card,
+		find_index_of_jolly,
+		find_jolly_rank,
+		find_minimum,
+		find_minimum_by_function,
+		fireClick,
+		fireKey,
+		fireWheel,
+		firstCond,
+		firstCondDict,
+		firstCondDictKey,
+		firstCondDictKeys,
+		firstNCond,
+		firstNumber,
+		firstWord,
+		firstWordAfter,
+		fisherYates,
+		fleetingMessage,
+		forAll,
+		formatDate,
+		format_currency,
+		format_date,
+		fromLocalStorage,
+		fromUmlaut,
+		fromYaml,
+		gBg,
+		gCanvas,
+		gCreate,
+		gEllipse,
+		gFg,
+		gG,
+		gHex,
+		gLine,
+		gPoly,
+		gPos,
+		gRect,
+		gRounding,
+		gShape,
+		gSize,
+		gSizeToContent,
+		gStroke,
+		gSvg,
+		genCats,
+		generate_table_name,
+		germanize,
+		getAnimals,
+		getCaretCoordinates,
+		getCenters,
+		getCentersFromAreaSize,
+		getCentersFromRowsCols,
+		getCirclePoints,
+		getColorHexes,
+		getColorNames,
+		getConsonants,
+		getCornerVertices,
+		getEllipsePoints,
+		getFruid,
+		getFunctionCallerName,
+		getFunctionsNameThatCalledThisFunction,
+		getGSGElements,
+		getGlobals,
+		getHexPoly,
+		getKeySets,
+		getLettersExcept,
+		getNature,
+		getPoly,
+		getQuadPoly,
+		getRandomLetter,
+		getRect,
+		getSizeNeeded,
+		getStyleProp,
+		getSudokuPattern,
+		getSudokuPatternFromDB,
+		getTextAreaCurrentLine,
+		getTextAreaCurrentWord,
+		getTextWidth,
+		getTriangleDownPoly,
+		getTriangleUpPoly,
+		getTypeOf,
+		getUID,
+		getVowels,
+		get_admin_player,
+		get_checked_radios,
+		get_container_styles,
+		get_containertitle_styles,
+		get_default_options,
+		get_game_color,
+		get_group_rank,
+		get_img_html,
+		get_joker_info,
+		get_keys,
+		get_logout_button,
+		get_mouse_pos,
+		get_multi_trigger,
+		get_next_human_player,
+		get_next_player,
+		get_now,
+		get_playmode,
+		get_present_order,
+		get_screen_distance,
+		get_sequence_suit,
+		get_texture,
+		get_timestamp,
+		get_user_color,
+		get_user_pic,
+		get_user_pic_and_name,
+		get_user_pic_html,
+		get_values,
+		get_waiting_html,
+		get_weekday,
+		hFunc,
+		hasDuplicate,
+		hasWhiteSpace,
+		has_at_most_n_jolly,
+		has_jolly,
+		hex1Board,
+		hex1Centers,
+		hex1Count,
+		hex1Indices,
+		hexAToHSLA,
+		hexCenters,
+		hexCornerNodes,
+		hexToHSL,
+		hide,
+		hide0,
+		hide_buildings,
+		hslToHex,
+		iAdd,
+		iClear,
+		iDelete,
+		iDiv,
+		iFromRowCol,
+		iG,
+		iMeasure,
+		iReg,
+		iRegister,
+		iRepair,
+		iSvg,
+		iToRowCol,
+		iTrim,
+		i_am_acting_host,
+		i_am_host,
+		i_am_trigger,
+		if_hotseat_autoswitch,
+		if_plural,
+		if_stringified,
+		if_stringified_or_dict,
+		if_stringified_or_list,
+		if_stringified_or_string,
+		incInput,
+		indexOfAny,
+		insertColNew,
+		insertRowNew,
+		intersection,
+		isAlphaNum,
+		isCloseTo,
+		isDOM,
+		isDict,
+		isDictOrList,
+		isDigit,
+		isEmpty,
+		isEmptyOrWhiteSpace,
+		isLetter,
+		isList,
+		isListOf,
+		isLiteral,
+		isNumber,
+		isOppPiece,
+		isOverflown,
+		isString,
+		isSvg,
+		isVisible,
+		isWhiteSpace,
+		isWhiteSpace2,
+		isWhiteSpaceString,
+		is_advanced_user,
+		is_card_key,
+		is_collect_mode,
+		is_joker,
+		is_jolly,
+		is_just_my_turn,
+		is_key_down,
+		is_multi_stage,
+		is_multi_trigger,
+		is_overlapping_set,
+		is_playerdata_set,
+		is_playing,
+		is_shield_mode,
+		is_stringified,
+		isdef,
+		jolly_matches,
+		jsClean,
+		jsCopy,
+		jsCopySafe,
+		jsonToYaml,
+		lastCond,
+		lastDescendantOfType,
+		lastIndexOfAny,
+		last_elem_from_to,
+		lerp,
+		list2dict,
+		load_assets_direct,
+		load_assets_fetch,
+		load_config,
+		load_config_fast,
+		load_config_new,
+		load_db,
+		load_syms,
+		loader_off,
+		loader_on,
+		log_array,
+		log_object,
+		lookup,
+		lookupAddIfToList,
+		lookupAddToList,
+		lookupSet,
+		lookupSetOverride,
+		luxury_card_deco,
+		mAnimate,
+		mAnimateList,
+		mAnimateTo,
+		mAppear,
+		mAppend,
+		mAttrs,
+		mAutocomplete,
+		mBackground,
+		mBoxFromMargins,
+		mButton,
+		mButtonX,
+		mBy,
+		mCanvas,
+		mCard,
+		mCardButton,
+		mCardText,
+		mCenter,
+		mCenterCenter,
+		mCenterCenterFlex,
+		mCenterFlex,
+		mClass,
+		mClass0,
+		mClassRemove,
+		mClassReplace,
+		mClassToggle,
+		mClear,
+		mColFlex,
+		mColorLetters,
+		mColorPickerBehavior,
+		mColorPickerControl,
+		mConfine,
+		mContainerSplay,
+		mCreate,
+		mCreateFrom,
+		mDataTable,
+		mDiv,
+		mDiv100,
+		mDivItem,
+		mDivLR,
+		mDivLine,
+		mDover,
+		mDraggable,
+		mDroppable,
+		mEdit,
+		mEditNumber,
+		mEditRange,
+		mEditX,
+		mEditableInput,
+		mEditableOnEdited,
+		mFade,
+		mFadeClear,
+		mFadeClearShow,
+		mFadeRemove,
+		mFall,
+		mFleeting,
+		mFlex,
+		mFlexColumn,
+		mFlexEvenly,
+		mFlexLR,
+		mFlexSpacebetween,
+		mFlexWrap,
+		mFlip,
+		mForm,
+		mFromPoint,
+		mGetStyle,
+		mGrid,
+		mHide,
+		mIfNotRelative,
+		mImage,
+		mImg,
+		mInput,
+		mInsert,
+		mInsertAfter,
+		mInsertAt,
+		mInsertFirst,
+		mItem,
+		mItemSplay,
+		mLine,
+		mLinebreak,
+		mLinebreakFlex,
+		mLink,
+		mMagnifyOnHoverControl,
+		mMagnifyOnHoverControlPopup,
+		mMagnifyOnHoverControlRemove,
+		mMeasure,
+		mNode,
+		mPlace,
+		mPlayPause,
+		mPopup,
+		mPos,
+		mPulse,
+		mPulse1,
+		mPulse2,
+		mPulse3,
+		mPuppet,
+		mRadio,
+		mRadio1,
+		mRadioGroup,
+		mRadioToggle,
+		mRemove,
+		mRemoveChildrenFromIndex,
+		mRise,
+		mScale,
+		mSearch,
+		mSection,
+		mSelectTableRow,
+		mShield,
+		mShieldsOff,
+		mShow,
+		mShrink,
+		mShrinkTranslate,
+		mShrinkUp,
+		mSize,
+		mSpan,
+		mStamp,
+		mStyle,
+		mStyleGet,
+		mStyleOrClass,
+		mStyleRemove,
+		mStyleTranslate,
+		mStyleUndo,
+		mSuit,
+		mSym,
+		mSymSizeToBox,
+		mSymSizeToFz,
+		mSymSizeToH,
+		mSymSizeToW,
+		mSymText,
+		mTable,
+		mTableCol,
+		mTableCommandify,
+		mTableCommandifyList,
+		mTableHeader,
+		mTableRow,
+		mTableTransition,
+		mTag,
+		mText,
+		mTextWidth,
+		mTextarea,
+		mToggle,
+		mTogglebar,
+		mToolbar,
+		mTranslate,
+		mTranslateBy,
+		mTranslateByFade,
+		mYaml,
+		maButton,
+		makeCategories,
+		makeEdge,
+		makeUnitString,
+		make_card_selectable,
+		make_card_selected,
+		make_card_unselectable,
+		make_card_unselected,
+		make_container_selectable,
+		make_container_selected,
+		make_container_unselectable,
+		make_container_unselected,
+		make_deck_selectable,
+		make_deck_selected,
+		make_deck_unselectable,
+		make_deck_unselected,
+		make_hand_selectable,
+		make_hand_selected,
+		make_hand_unselectable,
+		make_hand_unselected,
+		make_market_selectable,
+		make_market_selected,
+		make_market_unselectable,
+		make_market_unselected,
+		make_string_selectable,
+		make_string_selected,
+		make_string_unselectable,
+		make_string_unselected,
+		map_range,
+		measureText,
+		measure_fieldset,
+		mgSvg,
+		mgTag,
+		mgText,
+		miPic,
+		neighborhood,
+		new_cards_animation,
+		normalize_string,
+		nundef,
+		object2string,
+		old_mButtonX,
+		oneCircleCenters,
+		oneWordKeys,
+		onpagedeactivated,
+		oscillate_between,
+		pSBC,
+		pack_table,
+		parseCodefile,
+		path2UI,
+		path2fen,
+		player_stat_count,
+		plural,
+		polyPointsFrom,
+		pop_top,
+		posToPoint,
+		post_json,
+		printBoard,
+		printMatrix,
+		printState,
+		quadCenters,
+		rAdd,
+		rAddSub,
+		rAddSubRange,
+		rAlphanums,
+		rCard,
+		rChoose,
+		rCoin,
+		rColor,
+		rConsonant,
+		rDate,
+		rDigits,
+		rFloat,
+		rGaussian,
+		rHue,
+		rLetter,
+		rLetters,
+		rName,
+		rNumber,
+		rPassword,
+		rPerlin,
+		rPrimaryColor,
+		rRank,
+		rSuit,
+		rVowel,
+		rWheel,
+		randomColor,
+		range,
+		recConvertLists,
+		reduceBoard,
+		removeColNew,
+		removeDuplicates,
+		removeInPlace,
+		removeRowNew,
+		remove_card_shadow,
+		remove_from_selection,
+		remove_hourglass,
+		remove_player,
+		replaceAll,
+		replaceAllFast,
+		replaceAllSafe,
+		replaceAllSpecialChars,
+		replaceAllX,
+		replaceAtString,
+		replaceEvery,
+		replaceWhite,
+		replace_jolly,
+		resetUIDs,
+		restart_selection_process,
+		return_elem_to_deck_from,
+		reverse,
+		rgb2float,
+		rgb2hex,
+		rgbToHex,
+		rgbaStr,
+		round_change_animation,
+		route_path_json,
+		route_path_text,
+		route_path_yaml_dict,
+		route_post_json,
+		run_for_seconds,
+		sameList,
+		saveFileAtClient,
+		say,
+		selectText,
+		select_add_items,
+		select_clear_previous_level,
+		select_confirm_weiter,
+		select_error,
+		select_highlight,
+		select_last,
+		select_timer,
+		select_toggle,
+		setKeys,
+		setRect,
+		set_card_border,
+		set_card_style,
+		set_card_style_works,
+		set_player,
+		set_player_strategy,
+		set_run_state,
+		set_run_state_local,
+		set_run_state_no_server,
+		set_run_state_vps,
+		set_user,
+		sheriff_card,
+		shield_off,
+		shield_on,
+		show,
+		show0,
+		showFleetingMessage,
+		show_MMM,
+		show_admin_ui,
+		show_fleeting_message,
+		show_game_options,
+		show_games,
+		show_handsorting_buttons_for,
+		show_history,
+		show_history_layout,
+		show_history_popup,
+		show_home_logo,
+		show_hourglass,
+		show_instruction,
+		show_message,
+		show_options_popup,
+		show_player_button,
+		show_playerdatastate,
+		show_polling_signal,
+		show_role,
+		show_settings,
+		show_special_message,
+		show_stage,
+		show_status,
+		show_strategy_popup,
+		show_tables,
+		show_title,
+		show_username,
+		show_users,
+		show_view_buildings_button,
+		show_waiting_for_ack_message,
+		show_waiting_message,
+		show_winners,
+		shuffle,
+		shuffleChildren,
+		shuffle_children,
+		shuffletest,
+		simpleCompare,
+		simulateClick,
+		size2hex,
+		size2tridown,
+		size2triup,
+		sortCaseInsensitive,
+		sortBy,
+		sortByDescending,
+		sortByFunc,
+		sortByFuncDescending,
+		sortByRank,
+		sortCardItemsByRank,
+		sortCardItemsBySuit,
+		sortCardItemsToSequence,
+		sortNumbers,
+		sort_cards,
+		splitAtAnyOf,
+		splitIntoNumbersAndWords,
+		spread_hand,
+		sss,
+		sss1,
+		start_simple_timer,
+		start_transaction,
+		startsWith,
+		staticTitle,
+		status_message_new,
+		stop_simple_timer,
+		stop_timer,
+		stringAfter,
+		stringAfterLast,
+		stringBefore,
+		stringBeforeLast,
+		stringBetween,
+		stringBetweenLast,
+		stringLast,
+		stringToMatrix,
+		stripToKeys,
+		sudokuSampleToIndexMatrix,
+		switch_uname,
+		symbolcolor,
+		tableLayoutMR,
+		timeConversion,
+		toBoardString,
+		toDegree,
+		toElem,
+		toLetters,
+		toLocalStorage,
+		toModulo,
+		toRadian,
+		toUmlaut,
+		toWords,
+		toYaml,
+		to_aristocard,
+		to_commissioncard,
+		to_luxurycard,
+		to_rumorcard,
+		toggleSelection,
+		toggleSelectionOfPicture,
+		toggle_face,
+		toggle_select,
+		top_elem_from_to,
+		top_elem_from_to_top,
+		translateStylesToCy,
+		translateToCssStyle,
+		ui_add_cards_to_deck_container,
+		ui_add_cards_to_hand_container,
+		ui_add_container_title,
+		ui_make_container,
+		ui_make_deck_container,
+		ui_make_hand_container,
+		ui_player_info,
+		ui_type_building,
+		ui_type_church,
+		ui_type_deck,
+		ui_type_hand,
+		ui_type_lead_hand,
+		ui_type_market,
+		ui_type_rank_count,
+		unfocusOnEnter,
+		valf,
+		valfi,
+		valnwhite,
+	};
 }

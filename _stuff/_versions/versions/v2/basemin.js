@@ -8567,7 +8567,7 @@ function addOnelineVars(superdi, o) {
 			o1.lead = o.key;
 			o1.key = v;
 			o1.code = '';
-			o.sig = `var ${v};`;
+			o1.sig = `var ${v};`;
 			if (isNumber(v)) { continue; } //console.log('var:',v,o.path); 
 			lookupSetOverride(superdi, [type, v], o1);
 		}
