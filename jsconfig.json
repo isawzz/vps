@@ -1,3 +1,8 @@
 {
-	"exclude": ["node_modules", "temp","*UCODE*","y*", "_ignore"]
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6"
+  },
+	"include": ["game/**/*","allcode.js"],
+  "exclude": ["node_modules", "temp","*UCODE*","y*", "_ignore","**/*closure*"]
 }
