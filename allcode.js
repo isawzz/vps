@@ -77701,16 +77701,16 @@ function show_click_vocab() {
 		Speech.say(vocab, 1, .8, .9, voice);
 	}));
 }
-function show_code(res,download=false) {
-	if (isdef(res.target)) {res.key=res.target.innerHTML;res.text=CODE.justcode[res.key];}
+function show_code(res, download = false) {
+	if (isdef(res.target)) { res.key = res.target.innerHTML; res.text = CODE.justcode[res.key]; }
 	dTable = mBy('dTable');
 	let ta = dTable.getElementsByTagName('textarea')[0];
 	let text = res.text;
 	if (nundef(ta)) ta = mTextarea(null, null, dTable, { w: '100%' });
-	ta.value += '\r\n'+text;
-	let lines = countAll(ta.value,'\n');
-	console.log('lines',lines,window.innerHeight)
-	if (lines>ta.rows && ta.rows<window.innerHeight/20) ta.rows=lines+2;
+	ta.value += '\r\n' + text;
+	let lines = countAll(ta.value, '\n');
+	console.log('lines', lines, window.innerHeight)
+	if (lines+2 > ta.rows && ta.rows < window.innerHeight / 25) ta.rows = lines + 2;
 	if (download) downloadAsText(text, 'hallo', 'js');
 	//console.log('res', res)
 	return res;

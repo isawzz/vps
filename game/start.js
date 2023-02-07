@@ -9,7 +9,7 @@ async function _start() {
 	let dijustcode = CODE.justcode = await route_path_yaml_dict('../basejs/z_allcode.yaml');
 	let kwindow = get_keys(window);
 
-	show_sidebar(sortCaseInsensitive(get_keys(dicode.const)),show_code);
+	show_sidebar(sortCaseInsensitive(get_keys(dicode.func)),show_code);
 	//test100();
 }
 
