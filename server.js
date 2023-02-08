@@ -201,7 +201,7 @@ let dirimportant = [
 	'C:\\D\\a03\\nodemaster\\socketstarter',
 	'C:\\D\\a04\\basejs',
 	'C:\\D\\a04\\game',
-	'C:\\D\\a04\\y\\v2',
+	// 'C:\\D\\a04\\y\\v2',
 
 ];
 
@@ -698,7 +698,7 @@ function test16() {
 			if (type == 'cla' && isdef(superdi.func[k])) { console.log('skip class', k, superdi.cla[k].path); continue; }
 			res[k] = jsCopy(superdi[type][k]);
 			//let code = res[k].code;
-			if (type != 'const' && type != 'var') { text += code; } 
+			if (type != 'const' && type != 'var') { text += code; }
 			delete res[k].code;
 		}
 		di2[type] = res;
@@ -727,7 +727,7 @@ function test17() {
 
 	//delete some var,func,const
 	for (const k of ['c', 'circle', 'uniqueIdEngine', 'maxWidthPreserver']) { delete superdi.var[k]; }
-	for (const k of ['anyColorToStandardString', 'colorNameToHex']) { delete superdi.func[k]; }
+	for (const k of ['anyColorToStandardString', 'colorNameToHex', 'update']) { delete superdi.func[k]; }
 	for (const k of ['RLAYOUT']) { delete superdi.const[k]; }
 
 	//convert const to var for duplicates
@@ -768,25 +768,33 @@ function test17() {
 		let constkey = c.key;
 		if (['cx', 'PORT', 'SERVER', 'SERVERRURL'].some(x => x == constkey)) { delete superdi.const[constkey]; continue; }
 		if (isdef(superdi.func[constkey]) || isdef(superdi.cla[constkey])) { delete superdi.const[constkey]; continue; }
-		text += c.code.trim()+'\r\n';
+		text += c.code.trim() + '\r\n';
 	}
 
 	let varkeys = Object.keys(superdi.var);
 	for (const varkey of varkeys) {
-		if (['lifeView', 'exp', 'Deck', 'gridsize'].some(x => x == varkey)) {delete superdi.var[varkey]; continue;}
-		if (varkey != 'c52' && varkey.length <= 3 && varkey.toLowerCase() == varkey) {
-			//console.log('discard var', varkey);
-			delete superdi.var[varkey];
-			continue;
-		}
+		if (['lifeView', 'exp', 'Deck', 'gridsize'].some(x => x == varkey)) { delete superdi.var[varkey]; continue; }
+
+		// let ch1 = varkey[0];
+		if (nundef(superdi.chessvar[varkey]) && varkey == varkey.toLowerCase() && varkey != 'c52') { delete superdi.var[varkey]; continue; }
+		// if (varkey != 'c52' && ch1 != 'd' && !varkey.startsWith('brd')) { delete superdi.var[varkey]; continue; }
+		// if (varkey.length <= 3) { delete superdi.var[varkey]; continue; }
+		// let ch2 = varkey[1];
+		// if (ch2 != ch2.toUpperCase) { delete superdi.var[varkey]; continue; }
+
+		// if (varkey != 'c52' && !varkey.startsWith('d') && varkey.length <= 3 && varkey.toLowerCase() == varkey) {
+		// 	//console.log('discard var', varkey);
+		// 	delete superdi.var[varkey];
+		// 	continue;
+		// }
 		let o = superdi.var[varkey];
 		//console.log('h2',o)
 		// if (!isEmptyOrWhiteSpace(o.code) && (nundef(superdi.chessvar) || nundef(superdi.chessvar[varkey]))) text += o.code;
-		if (nundef(superdi.chessvar) || nundef(superdi.chessvar[varkey])) text += o.code.trim()+'\r\n';
+		if (nundef(superdi.chessvar) || nundef(superdi.chessvar[varkey])) text += o.code.trim() + '\r\n';
 	}
 
 	//sonderbehandlung varchess
-	for (const varkey in superdi.chessvar) { let o = superdi.var[varkey]; text += o.code.trim()+'\r\n'; } //o.code=''; }
+	for (const varkey in superdi.chessvar) { let o = superdi.var[varkey]; text += o.code.trim() + '\r\n'; } //o.code=''; }
 
 	let justcode = {};
 	text += '\r\n';
@@ -805,7 +813,7 @@ function test17() {
 			if (type == 'cla' && isdef(superdi.func[k])) { continue; } //console.log('skip class', k, superdi.cla[k].path); 
 			res[k] = jsCopy(superdi[type][k]);
 			//let code = res[k].code;
-			if (type != 'const' && type != 'var') { text += code.trim()+'\r\n'; } 
+			if (type != 'const' && type != 'var') { text += code.trim() + '\r\n'; }
 
 			justcode[k] = res[k].code.trim();
 			delete res[k].code;

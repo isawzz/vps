@@ -20,7 +20,6 @@ _audioSources: "var _audioSources = {\r
 
   };"
 _idleSound: var _idleSound = true;
-_loaded: var _loaded = false;
 _qSound: var _qSound;
 _sndCounter: var _sndCounter = 0;
 _sndPlayer: var _sndPlayer;
@@ -138,15 +137,6 @@ allGames1: "var allGames1 = {\r
 
   };"
 allGamesC: var allGamesC = null;
-angle: var angle;
-animate: "function animate(elem, aniclass, timeoutms) {\r
-
-  \  mClass(elem, aniclass);\r
-
-  \  TOMan.TO.anim = setTimeout(() => mRemoveClass(elem, aniclass),
-  timeoutms);\r
-
-  }"
 Animation1: var Animation1;
 AnimTimer: "var AnimTimer = function () {\r
 
@@ -190,11 +180,8 @@ Autoreload: var Autoreload = false;
 auxOpen: var auxOpen;
 Avatars: var Avatars = [];
 AvatarTimeout: var AvatarTimeout;
-axiom: var axiom;
 B: var B = {};
-badges: var badges = [];
 Badges: var Badges = [];
-ball: var ball;
 Ball: "var Ball = function () {\r
 
   \  var velocity = [0, 0];\r
@@ -719,142 +706,11 @@ BishopTable: "var BishopTable = [\r
   ];"
 BlockServerSend: var BlockServerSend = false;
 BlockServerSend1: var BlockServerSend1 = false;
-bluegreen: "var bluegreen = [\r
-
-  \  '#f7fcfd',\r
-
-  \  '#eff9fb',\r
-
-  \  '#e7f6f8',\r
-
-  \  '#def2f3',\r
-
-  \  '#d2eeeb',\r
-
-  \  '#c4e9e2',\r
-
-  \  '#b1e1d6',\r
-
-  \  '#9cd9c9',\r
-
-  \  '#86d0bb',\r
-
-  \  '#72c7ab',\r
-
-  \  '#5fbe9a',\r
-
-  \  '#4fb587',\r
-
-  \  '#40aa73',\r
-
-  \  '#339d5f',\r
-
-  \  '#268f4d',\r
-
-  \  '#18823e',\r
-
-  \  '#0c7433',\r
-
-  \  '#03652a',\r
-
-  \  '#005522',\r
-
-  \  '#00441b'\r
-
-  ];"
-bluepurple: "var bluepurple = [\r
-
-  \  '#f7fcfd',\r
-
-  \  '#edf5f9',\r
-
-  \  '#e3eef5',\r
-
-  \  '#d7e5f0',\r
-
-  \  '#c9dbeb',\r
-
-  \  '#bcd1e5',\r
-
-  \  '#aec7e0',\r
-
-  \  '#a2bbd9',\r
-
-  \  '#98add2',\r
-
-  \  '#919eca',\r
-
-  \  '#8d8dc1',\r
-
-  \  '#8c7bb9',\r
-
-  \  '#8b69b0',\r
-
-  \  '#8a57a7',\r
-
-  \  '#88449e',\r
-
-  \  '#853192',\r
-
-  \  '#801e84',\r
-
-  \  '#741073',\r
-
-  \  '#62075f',\r
-
-  \  '#4d004b'\r
-
-  ];"
-blues: "var blues = [\r
-
-  \  '#f7fbff',\r
-
-  \  '#ecf4fc',\r
-
-  \  '#e2eef8',\r
-
-  \  '#d8e7f5',\r
-
-  \  '#cde0f1',\r
-
-  \  '#c0d9ed',\r
-
-  \  '#b0d2e8',\r
-
-  \  '#9fc9e2',\r
-
-  \  '#8bbfdd',\r
-
-  \  '#77b4d8',\r
-
-  \  '#63a8d2',\r
-
-  \  '#529ccc',\r
-
-  \  '#4190c5',\r
-
-  \  '#3382be',\r
-
-  \  '#2575b6',\r
-
-  \  '#1a67ad',\r
-
-  \  '#1059a1',\r
-
-  \  '#0a4c92',\r
-
-  \  '#083e7f',\r
-
-  \  '#08306b'\r
-
-  ];"
 boatFilters: var boatFilters = [];
 boatHighlighted: var boatHighlighted = null;
-boats: var boats;
 bodyZoom: var bodyZoom = 1.0;
 BOOL: "var BOOL = { FALSE: 0, TRUE: 1 };"
 BotTicker: var BotTicker;
-boundary: var boundary;
 bPoker: var bPoker = document.createElement('button')
 brd_bookLines: var brd_bookLines = [];
 brd_castlePerm: var brd_castlePerm;
@@ -889,121 +745,7 @@ C52Cards: var C52Cards;
 CACHE_CODE: const CACHE_CODE = false;
 CACHE_DEFAULTSPEC: const CACHE_DEFAULTSPEC = false;
 CACHE_USERSPEC: const CACHE_USERSPEC = false;
-campus: "var campus = {\r
-
-  \  \"type\": \"Feature\",\r
-
-  \  \"properties\": {\r
-
-  \    \"popupContent\": \"This is the Auraria West Campus\",\r
-
-  \    \"style\": {\r
-
-  \      weight: 2,\r
-
-  \      color: \"#999\",\r
-
-  \      opacity: 1,\r
-
-  \      fillColor: \"#B0DE5C\",\r
-
-  \      fillOpacity: 0.8\r
-
-  \    }\r
-
-  \  },\r
-
-  \  \"geometry\": {\r
-
-  \    \"type\": \"MultiPolygon\",\r
-
-  \    \"coordinates\": [\r
-
-  \      [\r
-
-  \        [\r
-
-  \          [-105.00432014465332, 39.74732195489861],\r
-
-  \          [-105.00715255737305, 39.74620006835170],\r
-
-  \          [-105.00921249389647, 39.74468219277038],\r
-
-  \          [-105.01067161560059, 39.74362625960105],\r
-
-  \          [-105.01195907592773, 39.74290029616054],\r
-
-  \          [-105.00989913940431, 39.74078835902781],\r
-
-  \          [-105.00758171081543, 39.74059036160317],\r
-
-  \          [-105.00346183776855, 39.74059036160317],\r
-
-  \          [-105.00097274780272, 39.74059036160317],\r
-
-  \          [-105.00062942504881, 39.74072235994946],\r
-
-  \          [-105.00020027160645, 39.74191033368865],\r
-
-  \          [-105.00071525573731, 39.74276830198601],\r
-
-  \          [-105.00097274780272, 39.74369225589818],\r
-
-  \          [-105.00097274780272, 39.74461619742136],\r
-
-  \          [-105.00123023986816, 39.74534214278395],\r
-
-  \          [-105.00183105468751, 39.74613407445653],\r
-
-  \          [-105.00432014465332, 39.74732195489861]\r
-
-  \        ], [\r
-
-  \          [-105.00361204147337, 39.74354376414072],\r
-
-  \          [-105.00301122665405, 39.74278480127163],\r
-
-  \          [-105.00221729278564, 39.74316428375108],\r
-
-  \          [-105.00283956527711, 39.74390674342741],\r
-
-  \          [-105.00361204147337, 39.74354376414072]\r
-
-  \        ]\r
-
-  \      ], [\r
-
-  \        [\r
-
-  \          [-105.00942707061768, 39.73989736613708],\r
-
-  \          [-105.00942707061768, 39.73910536278566],\r
-
-  \          [-105.00685214996338, 39.73923736397631],\r
-
-  \          [-105.00384807586671, 39.73910536278566],\r
-
-  \          [-105.00174522399902, 39.73903936209552],\r
-
-  \          [-105.00041484832764, 39.73910536278566],\r
-
-  \          [-105.00041484832764, 39.73979836621592],\r
-
-  \          [-105.00535011291504, 39.73986436617916],\r
-
-  \          [-105.00942707061768, 39.73989736613708]\r
-
-  \        ]\r
-
-  \      ]\r
-
-  \    ]\r
-
-  \  }\r
-
-  };"
 CANCEL_AI: var CANCEL_AI;
-canvas: const canvas = document.querySelector('#canvas')
 Card: "function Card(img, bunch, id, reverse) {\r
 
   \  var self = this;\r
@@ -1056,83 +798,6 @@ Card: "function Card(img, bunch, id, reverse) {\r
   \  }\r
 
   }"
-card1: var card1 = cards1['c1'];
-cards1: "var cards1 = {\r
-
-  \  'c1':\r
-
-  \  {\r
-
-  \    desc: \"Move the Robber. Steal 1 resource card from the owner of an
-  adjacent settlement or city.\",\r
-
-  \    name: \"Knight\",\r
-
-  \    obj_type: \"devcard\",\r
-
-  \    visible: { _set: [\"White\", \"Red\", \"Blue\", \"Orange\"] },\r
-
-  \  },\r
-
-  \  'c2':\r
-
-  \  {\r
-
-  \    desc: \"1 Victory Point!\",\r
-
-  \    name: \"Victory Point\",\r
-
-  \    obj_type: \"devcard\",\r
-
-  \    visible: { _set: [\"White\", \"Red\", \"Blue\", \"Orange\"] },\r
-
-  \  },\r
-
-  \  'c3':\r
-
-  \  {\r
-
-  \    desc: \"Take any 2 resources from the bank. Add them to your hand. They
-  can be 2 of the same or 2 different resources.\",\r
-
-  \    name: \"Year of Plenty\",\r
-
-  \    obj_type: \"devcard\",\r
-
-  \    visible: { _set: [\"White\", \"Red\", \"Blue\", \"Orange\"] },\r
-
-  \  },\r
-
-  \  'c4':\r
-
-  \  {\r
-
-  \    desc: \"Place 2 new roads as if you had just built them.\",\r
-
-  \    name: \"Road Building\",\r
-
-  \    obj_type: \"devcard\",\r
-
-  \    visible: { _set: [\"White\", \"Red\", \"Blue\", \"Orange\"] },\r
-
-  \  },\r
-
-  \  'c5':\r
-
-  \  {\r
-
-  \    desc: \"When you play this card, announce 1 type of resource. All other
-  players must give you all their resource cards of that type.\",\r
-
-  \    name: \"Monopoly\",\r
-
-  \    obj_type: \"devcard\",\r
-
-  \    visible: { _set: [\"White\", \"Red\", \"Blue\", \"Orange\"] },\r
-
-  \  },\r
-
-  };"
 CASTLEBIT: "var CASTLEBIT = { WKCA: 1, WQCA: 2, BKCA: 4, BQCA: 8 };"
 CastleKeys: var CastleKeys = new Array(16);
 CastlePerm: "var CastlePerm = [\r
@@ -1168,14 +833,12 @@ CGAP: var CGAP = CSZ * .05;
 CHEIGHT: var CHEIGHT = CSZ;
 choiceCompleted: var choiceCompleted = false;
 Cinno: var Cinno;
-cinno: var cinno;
 CLEAR_LOCAL_STORAGE: const CLEAR_LOCAL_STORAGE = false;
 CLICK_TO_SELECT: var CLICK_TO_SELECT = true;
 Clientdata: var Clientdata = {};
 ClientId: var ClientId;
 ColBrd: var ColBrd = new Array(BRD_SQ_NUM);
 ColChar: var ColChar = "abcdefgh";
-collections: var collections = {};
 ColorDi: var ColorDi;
 ColorNames: var ColorNames;
 colorPalette: "function colorPalette(color, type = 'shade') {\r
@@ -1185,7 +848,6 @@ colorPalette: "function colorPalette(color, type = 'shade') {\r
   \  return colorShades(color);\r
 
   }"
-colors: var colors;
 ColorThiefObject: var ColorThiefObject;
 COLOURS: "var COLOURS = { WHITE: 0, BLACK: 1, BOTH: 2 };"
 COLUMNS: "var COLUMNS = { COL_A: 0, COL_B: 1, COL_C: 2, COL_D: 3, COL_E: 4,
@@ -1210,8 +872,6 @@ Complex: "var Complex = {\r
   };"
 COND: var COND = {};
 Config: var Config;
-container: var container;
-container1: var container1 = document.getElementById('container')
 CONTEXT: var CONTEXT = null;
 coorsField: "var coorsField = {\r
 
@@ -1237,498 +897,7 @@ CorrectWordsCorrect: var CorrectWordsCorrect;
 CorrectWordsExact: var CorrectWordsExact;
 CorrectWordsFailed: var CorrectWordsFailed;
 Counter: "var Counter = { server: 0 };"
-counters: var counters;
-countries: "var countries = [\r
-
-  \  'Afghanistan',\r
-
-  \  'Albania',\r
-
-  \  'Algeria',\r
-
-  \  'Andorra',\r
-
-  \  'Angola',\r
-
-  \  'Anguilla',\r
-
-  \  'Antigua & Barbuda',\r
-
-  \  'Argentina',\r
-
-  \  'Armenia',\r
-
-  \  'Aruba',\r
-
-  \  'Australia',\r
-
-  \  'Austria',\r
-
-  \  'Azerbaijan',\r
-
-  \  'Bahamas',\r
-
-  \  'Bahrain',\r
-
-  \  'Bangladesh',\r
-
-  \  'Barbados',\r
-
-  \  'Belarus',\r
-
-  \  'Belgium',\r
-
-  \  'Belize',\r
-
-  \  'Benin',\r
-
-  \  'Bermuda',\r
-
-  \  'Bhutan',\r
-
-  \  'Bolivia',\r
-
-  \  'Bosnia & Herzegovina',\r
-
-  \  'Botswana',\r
-
-  \  'Brazil',\r
-
-  \  'British Virgin Islands',\r
-
-  \  'Brunei',\r
-
-  \  'Bulgaria',\r
-
-  \  'Burkina Faso',\r
-
-  \  'Burundi',\r
-
-  \  'Cambodia',\r
-
-  \  'Cameroon',\r
-
-  \  'Canada',\r
-
-  \  'Cape Verde',\r
-
-  \  'Cayman Islands',\r
-
-  \  'Central Arfrican Republic',\r
-
-  \  'Chad',\r
-
-  \  'Chile',\r
-
-  \  'China',\r
-
-  \  'Colombia',\r
-
-  \  'Congo',\r
-
-  \  'Cook Islands',\r
-
-  \  'Costa Rica',\r
-
-  \  'Cote D Ivoire',\r
-
-  \  'Croatia',\r
-
-  \  'Cuba',\r
-
-  \  'Curacao',\r
-
-  \  'Cyprus',\r
-
-  \  'Czech Republic',\r
-
-  \  'Denmark',\r
-
-  \  'Djibouti',\r
-
-  \  'Dominica',\r
-
-  \  'Dominican Republic',\r
-
-  \  'Ecuador',\r
-
-  \  'Egypt',\r
-
-  \  'El Salvador',\r
-
-  \  'Equatorial Guinea',\r
-
-  \  'Eritrea',\r
-
-  \  'Estonia',\r
-
-  \  'Ethiopia',\r
-
-  \  'Falkland Islands',\r
-
-  \  'Faroe Islands',\r
-
-  \  'Fiji',\r
-
-  \  'Finland',\r
-
-  \  'France',\r
-
-  \  'French Polynesia',\r
-
-  \  'French West Indies',\r
-
-  \  'Gabon',\r
-
-  \  'Gambia',\r
-
-  \  'Georgia',\r
-
-  \  'Germany',\r
-
-  \  'Ghana',\r
-
-  \  'Gibraltar',\r
-
-  \  'Greece',\r
-
-  \  'Greenland',\r
-
-  \  'Grenada',\r
-
-  \  'Guam',\r
-
-  \  'Guatemala',\r
-
-  \  'Guernsey',\r
-
-  \  'Guinea',\r
-
-  \  'Guinea Bissau',\r
-
-  \  'Guyana',\r
-
-  \  'Haiti',\r
-
-  \  'Honduras',\r
-
-  \  'Hong Kong',\r
-
-  \  'Hungary',\r
-
-  \  'Iceland',\r
-
-  \  'India',\r
-
-  \  'Indonesia',\r
-
-  \  'Iran',\r
-
-  \  'Iraq',\r
-
-  \  'Ireland',\r
-
-  \  'Isle of Man',\r
-
-  \  'Israel',\r
-
-  \  'Italy',\r
-
-  \  'Jamaica',\r
-
-  \  'Japan',\r
-
-  \  'Jersey',\r
-
-  \  'Jordan',\r
-
-  \  'Kazakhstan',\r
-
-  \  'Kenya',\r
-
-  \  'Kiribati',\r
-
-  \  'Kosovo',\r
-
-  \  'Kuwait',\r
-
-  \  'Kyrgyzstan',\r
-
-  \  'Laos',\r
-
-  \  'Latvia',\r
-
-  \  'Lebanon',\r
-
-  \  'Lesotho',\r
-
-  \  'Liberia',\r
-
-  \  'Libya',\r
-
-  \  'Liechtenstein',\r
-
-  \  'Lithuania',\r
-
-  \  'Luxembourg',\r
-
-  \  'Macau',\r
-
-  \  'Macedonia',\r
-
-  \  'Madagascar',\r
-
-  \  'Malawi',\r
-
-  \  'Malaysia',\r
-
-  \  'Maldives',\r
-
-  \  'Mali',\r
-
-  \  'Malta',\r
-
-  \  'Marshall Islands',\r
-
-  \  'Mauritania',\r
-
-  \  'Mauritius',\r
-
-  \  'Mexico',\r
-
-  \  'Micronesia',\r
-
-  \  'Moldova',\r
-
-  \  'Monaco',\r
-
-  \  'Mongolia',\r
-
-  \  'Montenegro',\r
-
-  \  'Montserrat',\r
-
-  \  'Morocco',\r
-
-  \  'Mozambique',\r
-
-  \  'Myanmar',\r
-
-  \  'Namibia',\r
-
-  \  'Nauro',\r
-
-  \  'Nepal',\r
-
-  \  'Netherlands',\r
-
-  \  'Netherlands Antilles',\r
-
-  \  'New Caledonia',\r
-
-  \  'New Zealand',\r
-
-  \  'Nicaragua',\r
-
-  \  'Niger',\r
-
-  \  'Nigeria',\r
-
-  \  'North Korea',\r
-
-  \  'Norway',\r
-
-  \  'Oman',\r
-
-  \  'Pakistan',\r
-
-  \  'Palau',\r
-
-  \  'Palestine',\r
-
-  \  'Panama',\r
-
-  \  'Papua New Guinea',\r
-
-  \  'Paraguay',\r
-
-  \  'Peru',\r
-
-  \  'Philippines',\r
-
-  \  'Poland',\r
-
-  \  'Portugal',\r
-
-  \  'Puerto Rico',\r
-
-  \  'Qatar',\r
-
-  \  'Reunion',\r
-
-  \  'Romania',\r
-
-  \  'Russia',\r
-
-  \  'Rwanda',\r
-
-  \  'Saint Pierre & Miquelon',\r
-
-  \  'Samoa',\r
-
-  \  'San Marino',\r
-
-  \  'Sao Tome and Principe',\r
-
-  \  'Saudi Arabia',\r
-
-  \  'Senegal',\r
-
-  \  'Serbia',\r
-
-  \  'Seychelles',\r
-
-  \  'Sierra Leone',\r
-
-  \  'Singapore',\r
-
-  \  'Slovakia',\r
-
-  \  'Slovenia',\r
-
-  \  'Solomon Islands',\r
-
-  \  'Somalia',\r
-
-  \  'South Africa',\r
-
-  \  'South Korea',\r
-
-  \  'South Sudan',\r
-
-  \  'Spain',\r
-
-  \  'Sri Lanka',\r
-
-  \  'St Kitts & Nevis',\r
-
-  \  'St Lucia',\r
-
-  \  'St Vincent',\r
-
-  \  'Sudan',\r
-
-  \  'Suriname',\r
-
-  \  'Swaziland',\r
-
-  \  'Sweden',\r
-
-  \  'Switzerland',\r
-
-  \  'Syria',\r
-
-  \  'Taiwan',\r
-
-  \  'Tajikistan',\r
-
-  \  'Tanzania',\r
-
-  \  'Thailand',\r
-
-  \  \"Timor L'Este\",\r
-
-  \  'Togo',\r
-
-  \  'Tonga',\r
-
-  \  'Trinidad & Tobago',\r
-
-  \  'Tunisia',\r
-
-  \  'Turkey',\r
-
-  \  'Turkmenistan',\r
-
-  \  'Turks & Caicos',\r
-
-  \  'Tuvalu',\r
-
-  \  'Uganda',\r
-
-  \  'Ukraine',\r
-
-  \  'United Arab Emirates',\r
-
-  \  'United Kingdom',\r
-
-  \  'United States of America',\r
-
-  \  'Uruguay',\r
-
-  \  'Uzbekistan',\r
-
-  \  'Vanuatu',\r
-
-  \  'Vatican City',\r
-
-  \  'Venezuela',\r
-
-  \  'Vietnam',\r
-
-  \  'Virgin Islands (US)',\r
-
-  \  'Yemen',\r
-
-  \  'Zambia',\r
-
-  \  'Zimbabwe'\r
-
-  ];"
 CSZ: var CSZ = 300;
-cubehelix: "var cubehelix = [\r
-
-  \  '#000000',\r
-
-  \  '#130918',\r
-
-  \  '#1a1732',\r
-
-  \  '#192a47',\r
-
-  \  '#15414e',\r
-
-  \  '#17584a',\r
-
-  \  '#246b3d',\r
-
-  \  '#3f7632',\r
-
-  \  '#647a30',\r
-
-  \  '#8d7a3c',\r
-
-  \  '#b17959',\r
-
-  \  '#ca7b81',\r
-
-  \  '#d485ac',\r
-
-  \  '#d296d1',\r
-
-  \  '#c9ade9',\r
-
-  \  '#c2c5f3',\r
-
-  \  '#c3dbf2',\r
-
-  \  '#d0ecef',\r
-
-  \  '#e6f7f1',\r
-
-  \  '#ffffff'\r
-
-  ];"
 CURRENT_CHAT_USER: var CURRENT_CHAT_USER = "";
 CURRENT_FEN: var CURRENT_FEN = "";
 CURRENT_GAME: var CURRENT_GAME = "";
@@ -1761,7 +930,6 @@ dActions2: var dActions2;
 dActions3: var dActions3;
 dActions4: var dActions4;
 dActions5: var dActions5;
-dampening: var dampening = 0.995;
 dAux: var dAux;
 dAuxContent: var dAuxContent;
 DB: var DB;
@@ -1773,7 +941,6 @@ dConsole: var dConsole;
 dContent: var dContent;
 dCurrent: var dCurrent = null;
 DDInfo: var DDInfo = null;
-deck: var deck = DeckA()
 DeckA: "var DeckA = (function () {\r
 
   \  //#region variables  \r
@@ -4945,7 +4112,6 @@ DEF_LIST_TYPE: var DEF_LIST_TYPE = 'dom';
 DEFAULT_OBJECT_AREA: var DEFAULT_OBJECT_AREA = 'area_objects';
 DEFAULT_PLAYER_AREA: var DEFAULT_PLAYER_AREA = 'area_players';
 defaultFocusElement: var defaultFocusElement;
-defaults: var defaults;
 DefaultScoringMode: var DefaultScoringMode = 'n';
 defaultSpec: var defaultSpec = null
 defaultSpecC: var defaultSpecC = null;
@@ -4973,8 +4139,6 @@ Dictionary: var Dictionary;
 Dinno: var Dinno;
 dInstruction: var dInstruction;
 DirNum: var DirNum = [0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8];
-distance: "function distance(x1, y1, x2, y2) { return Math.sqrt(dSquare({ x: x1,
-  y: y1 }, { x: x2, y: y2 })); }"
 divMain: var divMain;
 divOpps: var divOpps;
 divPlayer: var divPlayer;
@@ -5061,7 +4225,6 @@ EBEF: var EBEF = null;
 EC: var EC = {};
 EdDict: var EdDict;
 EID: var EID = {};
-elements: var elements = {};
 Emicons: "var Emicons = {\r
 
   \  msmaus:
@@ -5225,54 +4388,6 @@ ENN: var ENN = {};
 Epsilon: var Epsilon = 1e-10;
 ET: var ET = {};
 evAddCounter: var evAddCounter = 0;
-extend: "var extend = function () {\r
-
-  \  var extended = {};\r
-
-  \  var deep = false;\r
-
-  \  var i = 0;\r
-
-  \  if (typeof arguments[0] === 'boolean') {\r
-
-  \    deep = arguments[0];\r
-
-  \    i++;\r
-
-  \  }\r
-
-  \  var merge = function (obj) {\r
-
-  \    for (var prop in obj) {\r
-
-  \      if (obj.hasOwnProperty(prop)) {\r
-
-  \        if (deep && Object.prototype.toString.call(obj[prop]) === '[object
-  Object]') {\r
-
-  \          extended[prop] = extend(true, extended[prop], obj[prop]);\r
-
-  \        } else {\r
-
-  \          extended[prop] = obj[prop];\r
-
-  \        }\r
-
-  \      }\r
-
-  \    }\r
-
-  \  };\r
-
-  \  for (; i < arguments.length; i++) {\r
-
-  \    merge(arguments[i]);\r
-
-  \  }\r
-
-  \  return extended;\r
-
-  };"
 F: var F;
 F_APPLYMOVE: var F_APPLYMOVE;
 F_END: var F_END;
@@ -5280,7 +4395,6 @@ F_EVAL: var F_EVAL;
 F_MOVES: var F_MOVES;
 F_UNDOMOVE: var F_UNDOMOVE;
 faChars: var faChars;
-factor: var factor;
 faKeys: var faKeys;
 FASTSTART: var FASTSTART = false && EXPERIMENTAL;
 Fen: var Fen;
@@ -5289,16 +4403,10 @@ FileChar: var FileChar = "abcdefgh";
 FILES: "var FILES = { FILE_A: 0, FILE_B: 1, FILE_C: 2, FILE_D: 3, FILE_E: 4,
   FILE_F: 5, FILE_G: 6, FILE_H: 7, FILE_NONE: 8 };"
 FilesBrd: var FilesBrd = new Array(BRD_SQ_NUM);
-final_confidence: var final_confidence;
-final_confidence_sum: var final_confidence_sum;
-final_confidence2: var final_confidence2;
-final_num: var final_num;
-final_transcript: var final_transcript = '';
 firstDomLoad: var firstDomLoad = null;
 FirstLoad: var FirstLoad = true;
 FLAG_AI_CANCELED: var FLAG_AI_CANCELED = false;
 FLAG_HINT_ONLY: var FLAG_HINT_ONLY = false;
-flags: var flags = {};
 fleetingMessageTimeout: var fleetingMessageTimeout;
 FORCE_REDRAW: var FORCE_REDRAW = false;
 FR: var FR = 50;
@@ -5405,7 +4513,6 @@ freeBus: "var freeBus = {\r
   \  ]\r
 
   };"
-frozen: var frozen = false;
 FRUIDCounter: var FRUIDCounter = -1;
 FUNCS: var FUNCS = {};
 FUNCTIONS: "var FUNCTIONS = {\r
@@ -5422,7 +4529,6 @@ FUNCTIONS: "var FUNCTIONS = {\r
 G: var G = null;
 gaChars: var gaChars;
 GAME: var GAME = 'ttt';
-game: var game = new GameFunc;
 GAME_PLAY_UI: var GAME_PLAY_UI = null;
 GameController: var GameController = {};
 GameCounter: var GameCounter;
@@ -5777,96 +4883,6 @@ Geo: "const Geo = {\r
 Globals: var Globals;
 globalSum: var globalSum = 0
 Goal: var Goal;
-grammar: var grammar;
-granularity: var granularity;
-gravity: var gravity = 0.1;
-green: "var green = [\r
-
-  \  '#f7fcf5',\r
-
-  \  '#eff9ec',\r
-
-  \  '#e7f6e2',\r
-
-  \  '#dcf1d7',\r
-
-  \  '#d0edca',\r
-
-  \  '#c2e7bc',\r
-
-  \  '#b3e0ac',\r
-
-  \  '#a2d99d',\r
-
-  \  '#90d18d',\r
-
-  \  '#7dc87f',\r
-
-  \  '#69be72',\r
-
-  \  '#55b466',\r
-
-  \  '#42a85c',\r
-
-  \  '#339c52',\r
-
-  \  '#268f47',\r
-
-  \  '#18823d',\r
-
-  \  '#0c7433',\r
-
-  \  '#03652a',\r
-
-  \  '#005522',\r
-
-  \  '#00441b'\r
-
-  ];"
-greenbar: var greenbar;
-greys: "var greys = [\r
-
-  \  '#ffffff',\r
-
-  \  '#f9f9f9',\r
-
-  \  '#f2f2f2',\r
-
-  \  '#e9e9e9',\r
-
-  \  '#e0e0e0',\r
-
-  \  '#d5d5d5',\r
-
-  \  '#cacaca',\r
-
-  \  '#bdbdbd',\r
-
-  \  '#aeaeae',\r
-
-  \  '#9f9f9f',\r
-
-  \  '#8f8f8f',\r
-
-  \  '#808080',\r
-
-  \  '#727272',\r
-
-  \  '#636363',\r
-
-  \  '#545454',\r
-
-  \  '#434343',\r
-
-  \  '#313131',\r
-
-  \  '#202020',\r
-
-  \  '#101010',\r
-
-  \  '#000000'\r
-
-  ];"
 hasGotFinalResult: var hasGotFinalResult;
 hasGotResult: var hasGotResult;
 HeaderColor: var HeaderColor;
@@ -5893,58 +4909,11 @@ hintMessage: var hintMessage;
 hintWord: var hintWord;
 HistoryOfStates: var HistoryOfStates = {};
 I: var I;
-ibox4oid: var ibox4oid = {};
 iColor: var iColor;
 iconChars: var iconChars = null;
 iconCharsC: var iconCharsC = null;
 IconSet: var IconSet;
-id2oids: var id2oids;
-id2uids: var id2uids;
 IdOwner: var IdOwner;
-in_game_screen: var in_game_screen;
-inferno: "var inferno = [\r
-
-  \  '#000004',\r
-
-  \  '#08051d',\r
-
-  \  '#180c3c',\r
-
-  \  '#2f0a5b',\r
-
-  \  '#450a69',\r
-
-  \  '#5c126e',\r
-
-  \  '#71196e',\r
-
-  \  '#87216b',\r
-
-  \  '#9b2964',\r
-
-  \  '#b1325a',\r
-
-  \  '#c43c4e',\r
-
-  \  '#d74b3f',\r
-
-  \  '#e55c30',\r
-
-  \  '#f1711f',\r
-
-  \  '#f8870e',\r
-
-  \  '#fca108',\r
-
-  \  '#fbba1f',\r
-
-  \  '#f6d543',\r
-
-  \  '#f1ed71',\r
-
-  \  '#fcffa4'\r
-
-  ];"
 INFINITE: var INFINITE = 30000;
 INFO: var INFO = {};
 Info: var Info;
@@ -5953,15 +4922,7 @@ InnoById: var InnoById;
 InnoByName: var InnoByName;
 inputBox: var inputBox;
 inputForm: var inputForm;
-inputs: var inputs = [];
 inputTxt: var inputTxt;
-interim_confidence: var interim_confidence;
-interim_confidence_sum: var interim_confidence_sum;
-interim_confidence2: var interim_confidence2;
-interim_num: var interim_num;
-interim_transcript: var interim_transcript = '';
-interval_id: var interval_id;
-is_host: var is_host;
 IS_TESTING: var IS_TESTING = true;
 IsAnswerCorrect: var IsAnswerCorrect;
 IsCanvasActive: var IsCanvasActive = false;
@@ -5976,273 +4937,6 @@ Items: var Items = {};
 ItemsByKey: var ItemsByKey;
 ITER: var ITER = 0;
 iTHEME: var iTHEME = 0;
-jewel: "var jewel = (function () {\r
-
-  \  var settings = {\r
-
-  \    rows: 8,\r
-
-  \    cols: 8,\r
-
-  \    baseScore: 100,\r
-
-  \    baseLevelScore: 1500,\r
-
-  \    baseLevelExp: 1.05,\r
-
-  \    baseLevelTimer: 60000,\r
-
-  \    numJewelTypes: 7,\r
-
-  \    controls: {\r
-
-  \      KEY_UP: \"moveUp\",\r
-
-  \      KEY_LEFT: \"moveLeft\",\r
-
-  \      KEY_DOWN: \"moveDown\",\r
-
-  \      KEY_RIGHT: \"moveRight\",\r
-
-  \      KEY_ENTER: \"selectJewel\",\r
-
-  \      KEY_SPACE: \"selectJewel\",\r
-
-  \      CLICK: \"selectJewel\",\r
-
-  \      TOUCH: \"selectJewel\",\r
-
-  \      BUTTON_A: \"selectJewel\",\r
-
-  \      LEFT_STICK_UP: \"moveUp\",\r
-
-  \      LEFT_STICK_DOWN: \"moveDown\",\r
-
-  \      LEFT_STICK_LEFT: \"moveLeft\",\r
-
-  \      LEFT_STICK_RIGHT: \"moveRight\"\r
-
-  \    }\r
-
-  \  };\r
-
-  \  var scriptQueue = [],\r
-
-  \    numResourcesLoaded = 0,\r
-
-  \    numResources = 0,\r
-
-  \    executeRunning = false;\r
-
-  \  function executeScriptQueue() {\r
-
-  \    var next = scriptQueue[0],\r
-
-  \      first, script;\r
-
-  \    if (next && next.loaded) {\r
-
-  \      executeRunning = true;\r
-
-  \      scriptQueue.shift();\r
-
-  \      first = document.getElementsByTagName(\"script\")[0];\r
-
-  \      script = document.createElement(\"script\");\r
-
-  \      script.onload = function () {\r
-
-  \        if (next.callback) {\r
-
-  \          next.callback();\r
-
-  \        }\r
-
-  \        executeScriptQueue();\r
-
-  \      };\r
-
-  \      script.src = next.src;\r
-
-  \      first.parentNode.insertBefore(script, first);\r
-
-  \    } else {\r
-
-  \      executeRunning = false;\r
-
-  \    }\r
-
-  \  }\r
-
-  \  function getLoadProgress() {\r
-
-  \    return numResourcesLoaded / numResources;\r
-
-  \  }\r
-
-  \  function load(src, callback) {\r
-
-  \    var image, queueEntry;\r
-
-  \    numResources++;\r
-
-  \    queueEntry = {\r
-
-  \      src: src,\r
-
-  \      callback: callback,\r
-
-  \      loaded: false\r
-
-  \    };\r
-
-  \    scriptQueue.push(queueEntry);\r
-
-  \    image = new Image();\r
-
-  \    image.onload = image.onerror = function () {\r
-
-  \      numResourcesLoaded++;\r
-
-  \      queueEntry.loaded = true;\r
-
-  \      if (!executeRunning) {\r
-
-  \        executeScriptQueue();\r
-
-  \      }\r
-
-  \    };\r
-
-  \    image.src = src;\r
-
-  \  }\r
-
-  \  function preload(src) {\r
-
-  \    var image = new Image();\r
-
-  \    image.src = src;\r
-
-  \  }\r
-
-  \  function showScreen(screenId) {\r
-
-  \    var dom = jewel.dom,\r
-
-  \      $ = dom.$,\r
-
-  \      activeScreen = $(\"#game .screen.active\")[0],\r
-
-  \      screen = $(\"#\" + screenId)[0];\r
-
-  \    if (!jewel.screens[screenId]) {\r
-
-  \      alert(\"This module is not implemented yet!\");\r
-
-  \      return;\r
-
-  \    }\r
-
-  \    if (activeScreen) {\r
-
-  \      dom.removeClass(activeScreen, \"active\");\r
-
-  \    }\r
-
-  \    dom.addClass(screen, \"active\");\r
-
-  \    jewel.screens[screenId].run();\r
-
-  \  }\r
-
-  \  function isStandalone() {\r
-
-  \    return (window.navigator.standalone !== false);\r
-
-  \  }\r
-
-  \  function hasWebWorkers() {\r
-
-  \    return (\"Worker\" in window);\r
-
-  \  }\r
-
-  \  function hasWebWorkers() {\r
-
-  \    return (\"Worker\" in window);\r
-
-  \  }\r
-
-  \  function hasWebGL() {\r
-
-  \    var canvas = document.createElement(\"canvas\"),\r
-
-  \      gl = canvas.getContext(\"webgl\") ||\r
-
-  \        canvas.getContext(\"experimental-webgl\");\r
-
-  \    return !!gl;\r
-
-  \  }\r
-
-  \  function setup() {\r
-
-  \    if (/Android/.test(navigator.userAgent)) {\r
-
-  \      jewel.dom.$(\"html\")[0].style.height = \"200%\";\r
-
-  \      setTimeout(function () {\r
-
-  \        window.scrollTo(0, 1);\r
-
-  \      }, 0);\r
-
-  \    }\r
-
-  \    jewel.dom.bind(document, \"touchmove\", function (event) {\r
-
-  \      event.preventDefault();\r
-
-  \    });\r
-
-  \    if (isStandalone()) {\r
-
-  \      showScreen(\"splash-screen\");\r
-
-  \    } else {\r
-
-  \      showScreen(\"install-screen\");\r
-
-  \    }\r
-
-  \  }\r
-
-  \  return {\r
-
-  \    getLoadProgress: getLoadProgress,\r
-
-  \    hasWebWorkers: hasWebWorkers,\r
-
-  \    hasWebGL: hasWebGL,\r
-
-  \    isStandalone: isStandalone,\r
-
-  \    preload: preload,\r
-
-  \    load: load,\r
-
-  \    setup: setup,\r
-
-  \    showScreen: showScreen,\r
-
-  \    settings: settings,\r
-
-  \    screens: {}\r
-
-  \  };\r
-
-  })();"
 joinCandidate: var joinCandidate = null;
 justExpand: var justExpand = false;
 KeepSessionUser: var KeepSessionUser = false;
@@ -6308,13 +5002,10 @@ KnightTable: "var KnightTable = [\r
   \  0, 0, 0, 0, 0, 0, 0, 0\r
 
   ];"
-lang: var lang;
-lastgreen: var lastgreen = 0;
 lastIndex: var lastIndex;
 lastPosition: var lastPosition = 0;
 LastPositionX: var LastPositionX = 0;
 LastPositionY: var LastPositionY = 0;
-lastred: var lastred = 0;
 lastUpdate: var lastUpdate = 0;
 LevelChange: var LevelChange = true;
 levelDonePoints: var levelDonePoints = 5;
@@ -6389,51 +5080,7 @@ LoopSlidePce: var LoopSlidePce = [PIECES.wB, PIECES.wR, PIECES.wQ, 0, PIECES.bB,
   PIECES.bR, PIECES.bQ, 0];
 M: var M = {};
 magCounter: var magCounter = 0;
-magma: "var magma = [\r
-
-  \  '#000004',\r
-
-  \  '#07061c',\r
-
-  \  '#150e38',\r
-
-  \  '#29115a',\r
-
-  \  '#3f0f72',\r
-
-  \  '#56147d',\r
-
-  \  '#6a1c81',\r
-
-  \  '#802582',\r
-
-  \  '#942c80',\r
-
-  \  '#ab337c',\r
-
-  \  '#c03a76',\r
-
-  \  '#d6456c',\r
-
-  \  '#e85362',\r
-
-  \  '#f4695c',\r
-
-  \  '#fa815f',\r
-
-  \  '#fd9b6b',\r
-
-  \  '#feb47b',\r
-
-  \  '#fecd90',\r
-
-  \  '#fde5a7',\r
-
-  \  '#fcfdbf'\r
-
-  ];"
 MAGNIFIER_IMAGE: var MAGNIFIER_IMAGE;
-mappings: var mappings;
 mappingsInitialized: var mappingsInitialized;
 mappingTypes: var mappingTypes;
 Markers: var Markers = [];
@@ -6451,7 +5098,6 @@ MAXPOSITIONMOVES: var MAXPOSITIONMOVES = 256;
 MaxPosMissing: var MaxPosMissing;
 MaxWordLength: var MaxWordLength = 100;
 maxZIndex: var maxZIndex = 110;
-meme: var meme;
 MenuItems: var MenuItems;
 MessageCounter: var MessageCounter = 0;
 MFLAGCA: var MFLAGCA = 0x1000000
@@ -6491,42 +5137,6 @@ MirrorRanks: var MirrorRanks = [RANKS.RANK_8, RANKS.RANK_7, RANKS.RANK_6,
 MirrorRows: var MirrorRows = [ROWS.ROW_8, ROWS.ROW_7, ROWS.ROW_6, ROWS.ROW_5,
   ROWS.ROW_4, ROWS.ROW_3, ROWS.ROW_2, ROWS.ROW_1];
 mkMan: var mkMan = null
-modern_palettes: "var modern_palettes = {\r
-
-  \  CD_green_blue: { GreenMountain: '#3d7c47', BlueMountain: '#09868b',
-  LightBlueBackdrop: '#76c1d4', BarelyGrayEdge: '#f7f7f7' },\r
-
-  \  CD_gelb_orange_grau: { Blueberry: '#6B7A8F', Apricot: '#F7882F', Citrus:
-  '#F7C331', AppleCore: ' #DCC7AA' },\r
-
-  \  CD_blue_brown: { FrenchLaundryBlue: '#3a4660', ComfortablyTan: '#c9af98',
-  PeachyKreme: '#ed8a63', BrownBonnet: '#845007' },\r
-
-  \  CD_yellow_grey: { Areyayellow: '#feda6a', SilverFox: '#d4d4dc',
-  DeepMatteGrey: '#393f4d' },\r
-
-  \  CD_fresh_green_grey_yellow: { MorningSky: '#CAE4DB', Honey: '#DCAE1D',
-  Cerulean: '#00303F', Mist: '#7A9D96' },\r
-
-  \  CD_green_beige: { green: '#BFEB55', green2: '#458766', beige: '#F9F68A',
-  beige2: '#FBF1B4' },\r
-
-  \  CD_dark_beach: { c1: 'rgb(3, 74, 166)', c2: 'rgb(0, 6, 13)', c3: 'rgb(83,
-  119, 166)', c4: 'rgb(64, 95, 115)', c5: 'rgb(62, 89, 86)' },\r
-
-  \  CD_color_beach: { c1: 'rgb(83, 111, 166)', c2: 'rgb(3, 74, 166)', c3:
-  'rgb(126, 174, 217)', c4: 'rgb(242, 181, 107)', c5: 'rgb(4, 173, 191)' }\r
-
-  };"
-mouse: "var mouse = {\r
-
-  \  x: 0,\r
-
-  \  y: 0,\r
-
-  \  down: false\r
-
-  };"
 MouseMoveCounter: var MouseMoveCounter = 0;
 mousePullStrength: var mousePullStrength = 0.005;
 MSCATS: "const MSCATS = { rect: 'g', g: 'g', circle: 'g', text: 'g', polygon:
@@ -6575,15 +5185,11 @@ NiceBaseColors: var NiceBaseColors = ['#791900']
 nMissing: var nMissing;
 NODEJS: var NODEJS;
 NOMOVE: var NOMOVE = 0
-num_calls: var num_calls = 0;
-num_painted: var num_painted = 0;
 NumColors: var NumColors;
 numCorrectAnswers: var numCorrectAnswers;
 NUMDECKS: var NUMDECKS = 2;
-numgen: var numgen = 0;
 NUMJOKERS: var NUMJOKERS = 0;
 NumLabels: var NumLabels;
-numlayers: var numlayers = 0;
 NumMissingLetters: var NumMissingLetters;
 NumPics: var NumPics;
 numPlayersMax: var numPlayersMax = 8;
@@ -7718,332 +6324,17 @@ ObjetoSolitario: "var ObjetoSolitario = function () {\r
   \  };\r
 
   };"
-obstacles: var obstacles = [];
-oid2ids: var oid2ids;
 OnMicrophoneGotResult: var OnMicrophoneGotResult;
 OnMicrophoneProblem: var OnMicrophoneProblem;
 OnMicrophoneReady: var OnMicrophoneReady;
 OnTimeOver: var OnTimeOver = null;
-opponent: var opponent;
 Options: var Options = {};
-oranges: "var oranges = [\r
-
-  \  '#fff5eb',\r
-
-  \  '#ffefdf',\r
-
-  \  '#fee8d1',\r
-
-  \  '#fee0c1',\r
-
-  \  '#fdd6af',\r
-
-  \  '#fdcb9b',\r
-
-  \  '#fdbe85',\r
-
-  \  '#fdb06f',\r
-
-  \  '#fda25a',\r
-
-  \  '#fc9446',\r
-
-  \  '#f98534',\r
-
-  \  '#f57623',\r
-
-  \  '#ee6815',\r
-
-  \  '#e55a0b',\r
-
-  \  '#d84d05',\r
-
-  \  '#c84303',\r
-
-  \  '#b43b02',\r
-
-  \  '#a13403',\r
-
-  \  '#902d04',\r
-
-  \  '#7f2704'\r
-
-  ];"
 OVD: var OVD = .25;
 OVH: var OVH = 20;
 OVW: var OVW = 14;
 P: var P;
 palDict: var palDict = {};
-palette: var palette = null;
 paneOpen: var paneOpen = false;
-panzoom: "var panzoom = (function () {\r
-
-  \  const MIN_SCALE = 0.35;\r
-
-  \  var txStart;\r
-
-  \  var tyStart;\r
-
-  \  var xStart;\r
-
-  \  var yStart;\r
-
-  \  var panning = false;\r
-
-  \  var couldBePanning = false;\r
-
-  \  var totalMaxDelta;\r
-
-  \  function initPanZoom(id) {\r
-
-  \    let map = document.getElementById(id);\r
-
-  \    map.setAttribute(\"transform\", `translate(0,0)
-  scale(${MIN_SCALE})`);\r
-
-  \    map.addEventListener(\"wheel\", ev => {\r
-
-  \      onwheel(ev, map);\r
-
-  \    });\r
-
-  \    map.addEventListener(\"pointerdown\", ev => {\r
-
-  \      onmousedown(ev);\r
-
-  \    });\r
-
-  \    addEventListener(\"mouseup\", ev => {\r
-
-  \      onmouseup(ev, map);\r
-
-  \    });\r
-
-  \    addEventListener(\"mousemove\", ev => {\r
-
-  \      onmousemove(ev, map);\r
-
-  \    });\r
-
-  \    addEventListener(\"dblclick\", ev => reset(ev, map));\r
-
-  \  }\r
-
-  \  function onwheel(ev, board) {\r
-
-  \    let delta = ev.wheelDelta;\r
-
-  \    let z = delta < 0 ? 0.5 : 2;\r
-
-  \    let dir = Math.sign(delta);\r
-
-  \    let currentMouseX = ev.offsetX;\r
-
-  \    let currentMouseY = ev.offsetY;\r
-
-  \    let transOld = getTransformInfo(board);\r
-
-  \    let getLeft = transOld.translateX;\r
-
-  \    let getTop = transOld.translateY;\r
-
-  \    let scale = transOld.scale;\r
-
-  \    if (scale <= MIN_SCALE + 0.1 && dir < 0) return;\r
-
-  \    let dx = (currentMouseX - getLeft) * (z - 1);\r
-
-  \    let dy = (currentMouseY - getTop) * (z - 1);\r
-
-  \    let scaleNew = scale * z;\r
-
-  \    let txNew = getLeft - dx;\r
-
-  \    let tyNew = getTop - dy;\r
-
-  \    const MIN_TX = -(3400 * scaleNew - 3400 * MIN_SCALE);\r
-
-  \    const MIN_TY = -(2200 * scaleNew - 2200 * MIN_SCALE);\r
-
-  \    txNew = Math.min(txNew, 0);\r
-
-  \    txNew = Math.max(txNew, MIN_TX);\r
-
-  \    tyNew = Math.min(tyNew, 0);\r
-
-  \    tyNew = Math.max(tyNew, MIN_TY);\r
-
-  \    let transNew = `translate(${txNew},${tyNew}) scale(${scaleNew})`;\r
-
-  \    board.setAttribute(\"transform\", transNew);\r
-
-  \    transNew = getTransformInfo(board);\r
-
-  \    ev.preventDefault();\r
-
-  \  }\r
-
-  \  function reset(ev, board) {\r
-
-  \    let map = ev.target;\r
-
-  \    let transNew = `translate(0,0) scale(${MIN_SCALE})`;\r
-
-  \    board.setAttribute(\"transform\", transNew);\r
-
-  \  }\r
-
-  \  function onmousedown(ev) {\r
-
-  \    let map = ev.target;\r
-
-  \    let board = ev.path[1];\r
-
-  \    let x = ev.screenX;\r
-
-  \    let y = ev.screenY;\r
-
-  \    let transOld = getTransformInfo(board);\r
-
-  \    let scale = transOld.scale;\r
-
-  \    if (scale <= MIN_SCALE + 0.1) return;\r
-
-  \    xStart = x;\r
-
-  \    yStart = y;\r
-
-  \    txStart = transOld.translateX;\r
-
-  \    tyStart = transOld.translateY;\r
-
-  \    totalMaxDelta = 0;\r
-
-  \    couldBePanning = true;\r
-
-  \  }\r
-
-  \  function onmousemove(ev, board) {\r
-
-  \    let id = ev.target.id;\r
-
-  \    if (id != \"imgMap\" && id != \"mapG\") {\r
-
-  \      couldBePanning = false;\r
-
-  \      panning = false;\r
-
-  \      return;\r
-
-  \    }\r
-
-  \    if (couldBePanning) {\r
-
-  \      let x = Math.abs(ev.screenX - xStart);\r
-
-  \      let y = Math.abs(ev.screenY - yStart);\r
-
-  \      totalMaxDelta += Math.max(x, y);\r
-
-  \      if (totalMaxDelta > 10) {\r
-
-  \        panning = true;\r
-
-  \        couldBePanning = false;\r
-
-  \        board.setPointerCapture(true);\r
-
-  \        ev.preventDefault();\r
-
-  \      }\r
-
-  \    } else if (panning) {\r
-
-  \      let x = ev.screenX;\r
-
-  \      let y = ev.screenY;\r
-
-  \      let transOld = getTransformInfo(board);\r
-
-  \      let tx = transOld.translateX;\r
-
-  \      let ty = transOld.translateY;\r
-
-  \      let scale = transOld.scale;\r
-
-  \      let txNew = txStart + x - xStart;\r
-
-  \      let tyNew = tyStart + y - yStart;\r
-
-  \      const MIN_TX = -(3400 * scale - 3400 * MIN_SCALE);\r
-
-  \      const MIN_TY = -(2200 * scale - 2200 * MIN_SCALE);\r
-
-  \      txNew = Math.min(txNew, 0);\r
-
-  \      txNew = Math.max(txNew, MIN_TX);\r
-
-  \      tyNew = Math.min(tyNew, 0);\r
-
-  \      tyNew = Math.max(tyNew, MIN_TY);\r
-
-  \      let transNew = `translate(${txNew},${tyNew}) scale(${scale})`;\r
-
-  \      board.setAttribute(\"transform\", transNew);\r
-
-  \    }\r
-
-  \  }\r
-
-  \  function onmouseup(ev, board) {\r
-
-  \    if (panning) {\r
-
-  \      let map = ev.target;\r
-
-  \      let x = ev.screenX;\r
-
-  \      let y = ev.screenY;\r
-
-  \      let transOld = getTransformInfo(board);\r
-
-  \      let tx = transOld.translateX;\r
-
-  \      let ty = transOld.translateY;\r
-
-  \      let scale = transOld.scale;\r
-
-  \      let txNew = txStart + x - xStart;\r
-
-  \      let tyNew = tyStart + y - yStart;\r
-
-  \      const MIN_TX = -(3400 * scale - 3400 * MIN_SCALE);\r
-
-  \      const MIN_TY = -(2200 * scale - 2200 * MIN_SCALE);\r
-
-  \      txNew = Math.min(txNew, 0);\r
-
-  \      txNew = Math.max(txNew, MIN_TX);\r
-
-  \      tyNew = Math.min(tyNew, 0);\r
-
-  \      tyNew = Math.max(tyNew, MIN_TY);\r
-
-  \      let transNew = `translate(${txNew},${tyNew}) scale(${scale})`;\r
-
-  \      board.setAttribute(\"transform\", transNew);\r
-
-  \      board.releasePointerCapture(true);\r
-
-  \      panning = false;\r
-
-  \    } else couldBePanning = false;\r
-
-  \  }\r
-
-  \  return function (id) { initPanZoom(id); }\r
-
-  })();"
 path2mainIds: var path2mainIds;
 PawnIsolated: var PawnIsolated = -10;
 PawnPassed: var PawnPassed = [0, 5, 10, 20, 35, 60, 100, 200];
@@ -8077,7 +6368,6 @@ percentageCorrect: var percentageCorrect;
 perft_leafNodes: var perft_leafNodes;
 PerlenDict: var PerlenDict;
 PGAMEPLID: var PGAMEPLID = null;
-phase: var phase = 0;
 PI: var PI = Math.pi, interval_id, angle, factor = .67, tree = [], leaves = [],
   jittering = false;
 PICS_PER_LEVEL: "var PICS_PER_LEVEL = IS_TESTING ? 1 : 3;"
@@ -8118,10 +6408,8 @@ PieceSlides: var PieceSlides = [BOOL.FALSE, BOOL.FALSE, BOOL.FALSE, BOOL.TRUE,
   BOOL.TRUE, BOOL.TRUE, BOOL.FALSE];
 PieceVal: var PieceVal = [0, 100, 325, 325, 550, 1000, 50000, 100, 325, 325,
   550, 1000, 50000];
-pitch: var pitch;
 pitchValue: var pitchValue;
 PL: var PL;
-player: var player;
 PLAYER_CREATE: var PLAYER_CREATE = {};
 PLAYER_UPDATE: var PLAYER_UPDATE = {};
 PLAYER_UPDATE_BEHAVIOR: var PLAYER_UPDATE_BEHAVIOR = [];
@@ -8180,7 +6468,6 @@ POOLS: var POOLS = {};
 PORT: var PORT = 3000;
 positionCount: var positionCount;
 PREFERRED_CARD_HEIGHT: var PREFERRED_CARD_HEIGHT = 0;
-prefix: var prefix = DeckA.prefix;
 PRES: var PRES = {};
 prevGamePlid: var prevGamePlid = null;
 prevServerData: var prevServerData;
@@ -8201,254 +6488,6 @@ primitiveSetNames: "var primitiveSetNames = ['all', 'activity', 'animal',
   \  'toolbar', 'math', 'punctuation', 'misc'];"
 PROJECTNAME: var PROJECTNAME = 'basinno';
 PROTO: var PROTO;
-pst_b: "var pst_b = {\r
-
-  \  'p': pst_w['p'].slice().reverse(),\r
-
-  \  'n': pst_w['n'].slice().reverse(),\r
-
-  \  'b': pst_w['b'].slice().reverse(),\r
-
-  \  'r': pst_w['r'].slice().reverse(),\r
-
-  \  'q': pst_w['q'].slice().reverse(),\r
-
-  \  'k': pst_w['k'].slice().reverse(),\r
-
-  \  'k_e': pst_w['k_e'].slice().reverse()\r
-
-  }"
-pst_w: "var pst_w = {\r
-
-  \  'p': [\r
-
-  \    [100, 100, 100, 100, 105, 100, 100, 100],\r
-
-  \    [78, 83, 86, 73, 102, 82, 85, 90],\r
-
-  \    [7, 29, 21, 44, 40, 31, 44, 7],\r
-
-  \    [-17, 16, -2, 15, 14, 0, 15, -13],\r
-
-  \    [-26, 3, 10, 9, 6, 1, 0, -23],\r
-
-  \    [-22, 9, 5, -11, -10, -2, 3, -19],\r
-
-  \    [-31, 8, -7, -37, -36, -14, 3, -31],\r
-
-  \    [0, 0, 0, 0, 0, 0, 0, 0]\r
-
-  \  ],\r
-
-  \  'n': [\r
-
-  \    [-66, -53, -75, -75, -10, -55, -58, -70],\r
-
-  \    [-3, -6, 100, -36, 4, 62, -4, -14],\r
-
-  \    [10, 67, 1, 74, 73, 27, 62, -2],\r
-
-  \    [24, 24, 45, 37, 33, 41, 25, 17],\r
-
-  \    [-1, 5, 31, 21, 22, 35, 2, 0],\r
-
-  \    [-18, 10, 13, 22, 18, 15, 11, -14],\r
-
-  \    [-23, -15, 2, 0, 2, 0, -23, -20],\r
-
-  \    [-74, -23, -26, -24, -19, -35, -22, -69]\r
-
-  \  ],\r
-
-  \  'b': [\r
-
-  \    [-59, -78, -82, -76, -23, -107, -37, -50],\r
-
-  \    [-11, 20, 35, -42, -39, 31, 2, -22],\r
-
-  \    [-9, 39, -32, 41, 52, -10, 28, -14],\r
-
-  \    [25, 17, 20, 34, 26, 25, 15, 10],\r
-
-  \    [13, 10, 17, 23, 17, 16, 0, 7],\r
-
-  \    [14, 25, 24, 15, 8, 25, 20, 15],\r
-
-  \    [19, 20, 11, 6, 7, 6, 20, 16],\r
-
-  \    [-7, 2, -15, -12, -14, -15, -10, -10]\r
-
-  \  ],\r
-
-  \  'r': [\r
-
-  \    [35, 29, 33, 4, 37, 33, 56, 50],\r
-
-  \    [55, 29, 56, 67, 55, 62, 34, 60],\r
-
-  \    [19, 35, 28, 33, 45, 27, 25, 15],\r
-
-  \    [0, 5, 16, 13, 18, -4, -9, -6],\r
-
-  \    [-28, -35, -16, -21, -13, -29, -46, -30],\r
-
-  \    [-42, -28, -42, -25, -25, -35, -26, -46],\r
-
-  \    [-53, -38, -31, -26, -29, -43, -44, -53],\r
-
-  \    [-30, -24, -18, 5, -2, -18, -31, -32]\r
-
-  \  ],\r
-
-  \  'q': [\r
-
-  \    [6, 1, -8, -104, 69, 24, 88, 26],\r
-
-  \    [14, 32, 60, -10, 20, 76, 57, 24],\r
-
-  \    [-2, 43, 32, 60, 72, 63, 43, 2],\r
-
-  \    [1, -16, 22, 17, 25, 20, -13, -6],\r
-
-  \    [-14, -15, -2, -5, -1, -10, -20, -22],\r
-
-  \    [-30, -6, -13, -11, -16, -11, -16, -27],\r
-
-  \    [-36, -18, 0, -19, -15, -15, -21, -38],\r
-
-  \    [-39, -30, -31, -13, -31, -36, -34, -42]\r
-
-  \  ],\r
-
-  \  'k': [\r
-
-  \    [4, 54, 47, -99, -99, 60, 83, -62],\r
-
-  \    [-32, 10, 55, 56, 56, 55, 10, 3],\r
-
-  \    [-62, 12, -57, 44, -67, 28, 37, -31],\r
-
-  \    [-55, 50, 11, -4, -19, 13, 0, -49],\r
-
-  \    [-55, -43, -52, -28, -51, -47, -8, -50],\r
-
-  \    [-47, -42, -43, -79, -64, -32, -29, -32],\r
-
-  \    [-4, 3, -14, -50, -57, -18, 13, 4],\r
-
-  \    [17, 30, -3, -14, 6, -1, 40, 18]\r
-
-  \  ],\r
-
-  \  'k_e': [\r
-
-  \    [-50, -40, -30, -20, -20, -30, -40, -50],\r
-
-  \    [-30, -20, -10, 0, 0, -10, -20, -30],\r
-
-  \    [-30, -10, 20, 30, 30, 20, -10, -30],\r
-
-  \    [-30, -10, 30, 40, 40, 30, -10, -30],\r
-
-  \    [-30, -10, 30, 40, 40, 30, -10, -30],\r
-
-  \    [-30, -10, 20, 30, 30, 20, -10, -30],\r
-
-  \    [-30, -30, 0, 0, 0, 0, -30, -30],\r
-
-  \    [-50, -30, -30, -30, -30, -30, -30, -50]\r
-
-  \  ]\r
-
-  };"
-pstOpponent: "var pstOpponent = { 'w': pst_b, 'b': pst_w };"
-pstSelf: "var pstSelf = { 'w': pst_w, 'b': pst_b };"
-purplegreen: "var purplegreen = [\r
-
-  \  '#40004b',\r
-
-  \  '#5c1768',\r
-
-  \  '#753283',\r
-
-  \  '#8a529a',\r
-
-  \  '#9e74ae',\r
-
-  \  '#b391c1',\r
-
-  \  '#c7acd2',\r
-
-  \  '#dac4e0',\r
-
-  \  '#e9daea',\r
-
-  \  '#f0ebf0',\r
-
-  \  '#ecf2ea',\r
-
-  \  '#def0d9',\r
-
-  \  '#c8e8c2',\r
-
-  \  '#acdca7',\r
-
-  \  '#89c988',\r
-
-  \  '#64b26a',\r
-
-  \  '#409750',\r
-
-  \  '#237b3b',\r
-
-  \  '#0f5f2a',\r
-
-  \  '#00441b'\r
-
-  ];"
-purples: "var purples = [\r
-
-  \  '#fcfbfd',\r
-
-  \  '#f6f5fa',\r
-
-  \  '#f0eff6',\r
-
-  \  '#e9e8f2',\r
-
-  \  '#e0dfee',\r
-
-  \  '#d6d6e9',\r
-
-  \  '#cacae3',\r
-
-  \  '#bebedc',\r
-
-  \  '#b1b0d4',\r
-
-  \  '#a4a2cd',\r
-
-  \  '#9894c6',\r
-
-  \  '#8b87bf',\r
-
-  \  '#8079b8',\r
-
-  \  '#7668af',\r
-
-  \  '#6c56a6',\r
-
-  \  '#63449d',\r
-
-  \  '#5a3294',\r
-
-  \  '#51218c',\r
-
-  \  '#481085',\r
-
-  \  '#3f007d'\r
-
-  ];"
 PVENTRIES: var PVENTRIES = 10000;
 Q: var Q;
 QCancelAutoreset: var QCancelAutoreset;
@@ -8463,19 +6502,14 @@ QueenSemiOpenCol: var QueenSemiOpenCol = 3;
 QueenSemiOpenFile: var QueenSemiOpenFile = 3;
 QuestionCounter: var QuestionCounter = 0;
 R: var R;
-radius: var radius = 32;
 RankChar: var RankChar = "12345678";
 RANKS: "var RANKS = { RANK_1: 0, RANK_2: 1, RANK_3: 2, RANK_4: 3, RANK_5: 4,
   RANK_6: 5, RANK_7: 6, RANK_8: 7, RANK_NONE: 8 };"
 RanksBrd: var RanksBrd = new Array(BRD_SQ_NUM);
-rate: var rate;
 rateValue: var rateValue;
-received_audio: var received_audio = new Audio("../base/assets/sounds/message_received.mp3");
 RecogHighPriorityOutput: var RecogHighPriorityOutput = true;
-recognition: var recognition;
 RecogOutput: var RecogOutput = false;
 RecogOutputError: var RecogOutputError = true;
-redbar: var redbar;
 requestAnimFrame: "var requestAnimFrame = (function () {\r
 
   \  return window.requestAnimationFrame ||\r
@@ -8546,12 +6580,10 @@ RookTable: "var RookTable = [\r
 ROOT: var ROOT = null;
 ROUND_DELAY: var ROUND_DELAY = 500;
 ROUND_OUTPUT: var ROUND_OUTPUT = true;
-route_counter: var route_counter = 0;
 RowBrd: var RowBrd = new Array(BRD_SQ_NUM);
 RowChar: var RowChar = "12345678";
 ROWS: "var ROWS = { ROW_1: 0, ROW_2: 1, ROW_3: 2, ROW_4: 3, ROW_5: 4, ROW_6: 5,
   ROW_7: 6, ROW_8: 7, ROW_NONE: 8 };"
-rules: var rules;
 S: var S = {};
 S_AIThinkingTime: var S_AIThinkingTime = 30;
 S_autoplay: var S_autoplay = false;
@@ -8581,7 +6613,6 @@ scenarioRunning: var scenarioRunning = false;
 SCENEHEIGHT: var SCENEHEIGHT = 600;
 SCENEWIDTH: var SCENEWIDTH = 900;
 Score: var Score;
-score: var score;
 scoringMode: var scoringMode;
 Script: "var Script = {\r
 
@@ -8650,8 +6681,6 @@ selectedEmoSetNames: var selectedEmoSetNames = ['all', 'animal', 'body',
 SelectedItem: var SelectedItem;
 SelectedMenuKey: var SelectedMenuKey;
 SelectedMove: var SelectedMove;
-sent_audio: var sent_audio = new Audio("../base/assets/sounds/message_sent.mp3");
-sentence: var sentence;
 SERVER: var SERVER = 'localhost';
 SERVER_DATA: var SERVER_DATA = null;
 serverData: var serverData = null;
@@ -8664,7 +6693,6 @@ Session: var Session = {};
 SessionId: var SessionId;
 SessionScore: var SessionScore = 0;
 Settings: var Settings;
-settings: var settings;
 SettingsChanged: var SettingsChanged;
 SettingsList: var SettingsList;
 SettingTypesCommon: "var SettingTypesCommon = {\r
@@ -8698,17 +6726,6 @@ SettingTypesCommon: "var SettingTypesCommon = {\r
   }"
 SHAPEFUNCS: "const SHAPEFUNCS = { 'circle': agCircle, 'hex': agHex, 'rect': agRect, };"
 ShapeKeys: var ShapeKeys = ['hex', 'hexF', 'tri', 'triDown', 'triLeft', 'triRight'];
-sheet: "var sheet = (function () {\r
-
-  \  var style = document.createElement('style');\r
-
-  \  style.appendChild(document.createTextNode(''));\r
-
-  \  document.head.appendChild(style);\r
-
-  \  return style.sheet;\r
-
-  })();"
 SHOW_DICTIONARIES: var SHOW_DICTIONARIES = false;
 SHOW_IDS_REFS: var SHOW_IDS_REFS = false;
 SHOW_OIDNODES: var SHOW_OIDNODES = true;
@@ -8736,7 +6753,6 @@ Simple: "var Simple = {\r
 SINGLECLIENT: var SINGLECLIENT;
 skipAnimations: var skipAnimations = IS_TESTING;
 skipBadgeAnimation: var skipBadgeAnimation = true;
-socket: var socket;
 Socket: var Socket = null;
 SOCKETSERVER: var SOCKETSERVER = 'http://localhost:5000'; //geht im spital
 SpeakerOutput: var SpeakerOutput = false;
@@ -8750,27 +6766,6 @@ SpeechRecognitionEvent: var SpeechRecognitionEvent = SpeechRecognitionEvent ||
 speechRecognitionList: var speechRecognitionList;
 Sq120ToSq64: var Sq120ToSq64 = new Array(BRD_SQ_NUM);
 Sq64ToSq120: var Sq64ToSq120 = new Array(64);
-square_coordinates: "var square_coordinates = [\r
-
-  \  [1, 1, 1, 2, 2, 2, 3, 3, 3],\r
-
-  \  [1, 1, 1, 2, 2, 2, 3, 3, 3],\r
-
-  \  [1, 1, 1, 2, 2, 2, 3, 3, 3],\r
-
-  \  [4, 4, 4, 5, 5, 5, 6, 6, 6],\r
-
-  \  [4, 4, 4, 5, 5, 5, 6, 6, 6],\r
-
-  \  [4, 4, 4, 5, 5, 5, 6, 6, 6],\r
-
-  \  [7, 7, 7, 8, 8, 8, 9, 9, 9],\r
-
-  \  [7, 7, 7, 8, 8, 8, 9, 9, 9],\r
-
-  \  [7, 7, 7, 8, 8, 8, 9, 9, 9]\r
-
-  ]"
 SQUARES: "var SQUARES = {\r
 
   \  A1: 21, B1: 22, C1: 23, D1: 24, E1: 25, F1: 26, G1: 27, H1: 28,\r
@@ -8779,15 +6774,6 @@ SQUARES: "var SQUARES = {\r
   99, OFFBOARD: 100\r
 
   };"
-srch_best: var srch_best;
-srch_depth: var srch_depth;
-srch_fh: var srch_fh;
-srch_fhf: var srch_fhf;
-srch_nodes: var srch_nodes;
-srch_start: var srch_start;
-srch_stop: var srch_stop;
-srch_thinking: var srch_thinking;
-srch_time: var srch_time;
 START_FEN: var START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 START_IN_MENU: var START_IN_MENU = false;
 startAtLevel: "var startAtLevel = IS_TESTING ? { gSayPicAuto: 10, gTouchPic: 3,
@@ -8825,19 +6811,6 @@ symbolDict: var symbolDict;
 symbolDictC: var symbolDictC = null;
 symbolKeys: var symbolKeys;
 symbolList: var symbolList;
-symbols: "var symbols = {\r
-
-  \  knight: 'user-secret',\r
-
-  \  victory_point: 'trophy',\r
-
-  \  road_building: 'road',\r
-
-  \  monopoly: 'umbrella',\r
-
-  \  year_of_plenty: 'tree',\r
-
-  };"
 symBySet: var symBySet;
 symByType: var symByType;
 SymKeys: var SymKeys;
@@ -8847,11 +6820,7 @@ symKeysByType: var symKeysByType;
 symListBySet: var symListBySet;
 symListByType: var symListByType;
 Syms: var Syms;
-synth: var synth;
-system: var system = Complex;
 T: var T;
-t_avg: var t_avg = 0;
-t_total: var t_total = 0;
 Table: var Table;
 TABLE_CREATE: var TABLE_CREATE = {};
 TABLE_UPDATE: var TABLE_UPDATE = {};
@@ -8882,8 +6851,6 @@ Tid: var Tid;
 TimeElapsed: var TimeElapsed;
 TimeElem: var TimeElem;
 TimeLeft: var TimeLeft;
-timeout1: var timeout1;
-timeout2: var timeout2;
 Timer: "function Timer() {\r
 
   \  this.reset = function () {\r
@@ -8920,7 +6887,6 @@ Timer: "function Timer() {\r
 
   }"
 TimestampStarted: var TimestampStarted;
-timit: var timit;
 TO: var TO = {};
 TOAnim: var TOAnim;
 TOFleetingMessage: var TOFleetingMessage;
@@ -8928,14 +6894,11 @@ TOList: var TOList;
 TOMain: var TOMain;
 TOMan: var TOMan;
 Toolbar: var Toolbar;
-topbar1: var topbar1 = document.getElementById('topbar')
 TOQ: var TOQ;
 TOQRunner: var TOQRunner;
 TOSound: var TOSound;
 TOTicker: var TOTicker;
 TOTrial: var TOTrial;
-transform: var transform = prefix('transform')
-translate: var translate = DeckA.translate
 trialNumber: var trialNumber;
 TT_JUST_UPDATED: var TT_JUST_UPDATED = -1;
 tupleGroups: var tupleGroups;
@@ -8971,51 +6934,21 @@ Username: var Username;
 Users: var Users;
 userSpec: var userSpec = null;
 userSpecC: var userSpecC = null;
-utterance: var utterance;
 V: var V = {};
-verbose: var verbose = false;
 VERSION: const VERSION = '_ui';
 VictimScore: var VictimScore = [0, 100, 200, 300, 400, 500, 600, 100, 200, 300,
   400, 500, 600];
 vidCache: var vidCache;
-view: var view = null;
 virtKeys: var virtKeys = false;
 visualStructures: var visualStructures = {};
-voices: var voices;
 voiceSelect: var voiceSelect;
 W_init: var W_init = 10;
 Waiting_for: var Waiting_for = null;
 WAITINGFORPLAYER: var WAITINGFORPLAYER = null;
-weights: "var weights = { 'p': 100, 'n': 280, 'b': 320, 'r': 479, 'q': 929, 'k':
-  60000, 'k_e': 60000 };"
 WhichCorner: var WhichCorner = 0;
 WordP: var WordP;
 WordProblems: var WordProblems;
-words: var words;
 WR: var WR = {};
-xxxxxxxxxx: "var xxxxxxxxxx = new ResizeObserver(entries => {\r
-
-  \  for (let entry of entries) {\r
-
-  \    let cs = window.getComputedStyle(entry.target);\r
-
-  \    console.log('watching element:', entry.target);\r
-
-  \    console.log(entry.contentRect.top, ' is ', cs.paddingTop);\r
-
-  \    console.log(entry.contentRect.left, ' is ', cs.paddingLeft);\r
-
-  \    console.log(entry.borderBoxSize[0].inlineSize, ' is ', cs.width);\r
-
-  \    console.log(entry.borderBoxSize[0].blockSize, ' is ', cs.height);\r
-
-  \    if (entry.target.handleResize)\r
-
-  \      entry.target.handleResize(entry);\r
-
-  \  }\r
-
-  });"
 Z: var Z;
 ZMax: var ZMax = 0;
 Zones: var Zones = {};
@@ -9887,17 +7820,7 @@ calculateColorDifference: "const calculateColorDifference = (color1, color2) =>
   };"
 CARD_SZ: const CARD_SZ = 80;
 clientData: const clientData = {};
-CODE: "const CODE = {\r
-
-  \  paths: [],\r
-
-  \  funcs: {},\r
-
-  \  consts: {},\r
-
-  \  index: [],\r
-
-  };"
+CODE: const CODE = {};
 CODE_VERSION: const CODE_VERSION = 1;
 ColorDict: "const ColorDict = {\r
 
@@ -41685,6 +39608,27 @@ __pictoG: "function __pictoG(key, x, y, w, h, fg, bg) {\r
   \  let text = String.fromCharCode('0x' + ch);\r
 
   }"
+__start: "async function __start() {\r
+
+  \  set_run_state_no_server(); \r
+
+  \  onpagedeactivated(() => { fiddleSave(); dbSave(); });\r
+
+  \  await load_syms(); \r
+
+  \  await load_db(); \r
+
+  \  let dicode = CODE.di = await
+  route_path_yaml_dict('../basejs/z_all.yaml');\r
+
+  \  let dijustcode = CODE.justcode = await
+  route_path_yaml_dict('../basejs/z_allcode.yaml');\r
+
+  \  dTable = mSection({h: window.innerHeight - 68},'dTable'); \r
+
+  \  computeClosure();\r
+
+  }"
 _addFilterHighlight: function _addFilterHighlight(mobj) { mobj.highC('green'); }
 _addOnelineVars: "function _addOnelineVars(superdi, o) {\r
 
@@ -41717,7 +39661,7 @@ _addOnelineVars: "function _addOnelineVars(superdi, o) {\r
 
   \      o1.sig = `var ${v};`;\r
 
-  \      if (isNumber(v)) { continue; } \r
+  \      if (isNumber(v)) { continue; }\r
 
   \      lookupSetOverride(superdi, [type, v], o1);\r
 
@@ -45264,6 +43208,25 @@ _start0: "async function _start0() {\r
   \  TOMan = new TimeoutManager();\r
 
   \  _start();\r
+
+  }"
+_start1: "async function _start1() {\r
+
+  \  set_run_state_no_server(); \r
+
+  \  onpagedeactivated(() => { fiddleSave(); dbSave(); });\r
+
+  \  await load_syms(); \r
+
+  \  await load_db(); \r
+
+  \  let dicode = CODE.di = await
+  route_path_yaml_dict('../basejs/z_all.yaml');\r
+
+  \  let dijustcode = CODE.justcode = await
+  route_path_yaml_dict('../basejs/z_allcode.yaml');\r
+
+  \  computeClosure(['_start1']);\r
 
   }"
 _startHotseat: "function _startHotseat() {\r
@@ -50231,7 +48194,7 @@ addOnelineVars: "function addOnelineVars(superdi, o) {\r
 
   \  //let specialword = 'Counter'; //'PORT';\r
 
-  \  let signal=false;\r
+  \  let signal = false;\r
 
   \  if (oneliner && type == 'var' && code.includes(',') &&
   !code.includes('[') && !code.includes('{ ')) {\r
@@ -50243,11 +48206,11 @@ addOnelineVars: "function addOnelineVars(superdi, o) {\r
   \    assertion(varkeys[0] == o.name, `WTF?!?! ${varkeys[0]} ###
   ${o.name}?!?!?!?!????????????? addOnelinerVars`);\r
 
-  \    o.code = stringBefore(code, ',')+';' \r
+  \    o.code = stringBefore(code, ',') + ';'\r
 
   \    othervars.shift();\r
 
-  \    if (signal) console.log('othervars',othervars,varkeys)\r
+  \    if (signal) console.log('othervars', othervars, varkeys)\r
 
   \    for (const vcode of othervars) {\r
 
@@ -50255,22 +48218,22 @@ addOnelineVars: "function addOnelineVars(superdi, o) {\r
 
   \      let code1 = vcode.trim();\r
 
-  \      if (!code1.endsWith(';')) code1+=';';\r
+  \      if (!code1.endsWith(';')) code1 += ';';\r
 
-  \      if (signal) console.log('code1',code1);\r
+  \      if (signal) console.log('code1', code1);\r
 
   \      let k1 = o1.name = firstWord(code1, true);\r
 
-  \      if (signal) console.log('k1',k1);\r
+  \      if (signal) console.log('k1', k1);\r
 
   \      o1.code = 'var ' + code1; // + code1.endsWith(';')?'':';';
   //'\\r\\n':';\\r\\n';\r
 
   \      o1.sig = `var ${k1};`;\r
 
-  \      if (isNumber(k1)) { continue; } \r
+  \      if (isNumber(k1)) { continue; }\r
 
-  \      if (signal) console.log('trage ein',k1,o1)\r
+  \      if (signal) console.log('trage ein', k1, o1)\r
 
   \      lookupSetOverride(superdi, [type, k1], o1);\r
 
@@ -53285,6 +51248,14 @@ anim1: "function anim1(elem, prop, from, to, ms) {\r
   \  if (isNumber(from)) from = '' + from + 'px';\r
 
   \  if (isNumber(to)) to = '' + to + 'px';\r
+
+  }"
+animate: "function animate(elem, aniclass, timeoutms) {\r
+
+  \  mClass(elem, aniclass);\r
+
+  \  TOMan.TO.anim = setTimeout(() => mRemoveClass(elem, aniclass),
+  timeoutms);\r
 
   }"
 animate_card_approx: "function animate_card_approx(card, goal, ms, callback) {\r
@@ -71262,6 +69233,92 @@ compute_hidden: "function compute_hidden(plname) {\r
   \  return hidden;\r
 
   }"
+computeClosure: "function computeClosure(symlist) {\r
+
+  \  let keys = {};\r
+
+  \  for (const k in CODE.di) { for (const k1 in CODE.di[k]) keys[k1] =
+  CODE.di[k][k1]; }\r
+
+  \  CODE.all = keys;\r
+
+  \  CODE.keylist = Object.keys(keys)\r
+
+  \  let inter = intersection(Object.keys(keys), Object.keys(window));\r
+
+  \  let done = {};\r
+
+  \  let tbd = valf(symlist,['_start']); \r
+
+  \  let MAX = 1007, i = 0;\r
+
+  \  let alltext = '';\r
+
+  \  while (!isEmpty(tbd)) {\r
+
+  \    if (++i > MAX) break;\r
+
+  \    let sym = tbd[0];\r
+
+  \    let o = CODE.all[sym];\r
+
+  \    if (nundef(o)) o = getObjectFromWindow(sym);\r
+
+  \    if (o.type == 'var' && !o.name.startsWith('d') && o.name ==
+  o.name.toLowerCase()) {tbd.shift(); continue; }\r
+
+  \    if (o.type != 'func') { tbd.shift(); lookupSet(done, [o.type, sym], o);
+  continue; }\r
+
+  \    let olive = window[sym];\r
+
+  \    if (nundef(olive)) { tbd.shift(); lookupSet(done, [o.type, sym], o);
+  continue; }\r
+
+  \    let text = olive.toString();\r
+
+  \    if (!isEmpty(text)) alltext += text + '\\r\\n';\r
+
+  \    let words = toWords(text, true); \r
+
+  \    words = words.filter(x=>text.includes(' '+x));\r
+
+  \    for (const w of words) {\r
+
+  \      if (nundef(done[w]) && w != sym && isdef(CODE.all[w])) addIf(tbd,
+  w);\r
+
+  \    }\r
+
+  \    tbd.shift();\r
+
+  \    lookupSet(done, [o.type, sym], o); \r
+
+  \  }\r
+
+  \  let tres = '';\r
+
+  \  for (const k of ['const', 'var', 'cla', 'func']) {\r
+
+  \    console.log('done', k, done[k])\r
+
+  \    let o = done[k]; if (nundef(o)) continue;\r
+
+  \    let klist = get_keys(o);\r
+
+  \    if (k == 'func') klist = sortCaseInsensitive(klist);\r
+
+  \    for (const k1 of klist) { \r
+
+  \      let code = CODE.justcode[k1];\r
+
+  \      if (!isEmptyOrWhiteSpace(code)) tres += code + '\\r\\n';\r
+
+  \    }\r
+
+  \  }\r
+
+  }"
 computeColor: "function computeColor(c) { return (c == 'random') ? randomColor() : c; }"
 computeColorX: "function computeColorX(c) {\r
 
@@ -78229,6 +76286,8 @@ displayWindowSize: "function displayWindowSize() {\r
   \  }\r
 
   }"
+distance: "function distance(x1, y1, x2, y2) { return Math.sqrt(dSquare({ x: x1,
+  y: y1 }, { x: x2, y: y2 })); }"
 distribute_innerHTML: "function distribute_innerHTML(arr, s, sep = '') {\r
 
   \  let letters = s.split(sep);\r
@@ -103309,11 +101368,7 @@ howto_open: "function howto_open(item) {\r
 
   \  dSearch = mBy('dSearch'); mClear(dSearch);\r
 
-  \  show_sidebar(CODE.index, show_code);\r
-
-  \  show_code();\r
-
-  \  toggle_apps();\r
+  \  show_sidebar(Object.keys(CODE.justcode), show_code);\r
 
   \  mStyle(dSearch, { bg: item.color });\r
 
@@ -136992,7 +135047,7 @@ parseCodefile: "function parseCodefile(content, fname, preserveRegionNames =
 
   \      if (' }]'.includes(ch)) code += l1 + '\\r\\n';\r
 
-  \      if (ch != ' ') { \r
+  \      if (ch != ' ') {\r
 
   \        parsing = false;\r
 
@@ -137033,7 +135088,7 @@ parseCodefile: "function parseCodefile(content, fname, preserveRegionNames =
 
   \        if (type) lookupSetOverride(superdi, [type, key], o);\r
 
-  \        addOnelineVars(superdi, o); \r
+  \        addOnelineVars(superdi, o);\r
 
   \        addIf(firstletters, l[0]);\r
 
@@ -137143,7 +135198,7 @@ parseCodefile1: "function parseCodefile1(content, fname, preserveRegionNames =
 
   \      if (' }]'.includes(ch)) code += l1 + '\\r\\n';\r
 
-  \      if (ch != ' ') { \r
+  \      if (ch != ' ') {\r
 
   \        parsing = false;\r
 
@@ -137156,7 +135211,7 @@ parseCodefile1: "function parseCodefile1(content, fname, preserveRegionNames =
   o.name.startsWith('brd_')) { lookupSet(superdi, ['chessvar', o.name], true);
   }\r
 
-  \        if (type == 'var') addOnelineVars(superdi, o); \r
+  \        if (type == 'var') addOnelineVars(superdi, o);\r
 
   \        lookupSetOverride(superdi, [type, key], o);\r
 
@@ -156918,19 +154973,27 @@ show_click_vocab: "function show_click_vocab() {\r
   \  }));\r
 
   }"
-show_code: "function show_code(res) {\r
+show_code: "function show_code(res, download = false) {\r
+
+  \  if (isdef(res.target)) { res.key = res.target.innerHTML; res.text =
+  CODE.justcode[res.key]; }\r
 
   \  dTable = mBy('dTable');\r
 
-  \  let ta = mTextarea(null, null, dTable, { w: '90vw', h: '90vh' });\r
+  \  let ta = dTable.getElementsByTagName('textarea')[0];\r
 
   \  let text = res.text;\r
 
+  \  if (nundef(ta)) ta = mTextarea(null, null, dTable, { w: '100%', h:'100%'
+  });\r
+
   \  ta.value = text;\r
 
-  \  downloadAsText(text, 'hallo', 'js');\r
+  \  if (download) downloadAsText(text, 'hallo', 'js');\r
 
-  \  console.log('res', res)\r
+  \  ta.scrollTop = ta.scrollHeight;\r
+
+  \  return res;\r
 
   }"
 show_code_editor: "function show_code_editor() {\r
@@ -170767,7 +168830,7 @@ test100: "function test100() {\r
 
   \  let done = {};\r
 
-  \  let tbd = ['_start']; \r
+  \  let tbd = ['_start'];\r
 
   \  let MAX = 1007, i = 0;\r
 
@@ -170795,7 +168858,7 @@ test100: "function test100() {\r
 
   \    if (!isEmpty(text)) alltext += text + '\\r\\n';\r
 
-  \    let words = toWords(text, true); \r
+  \    let words = toWords(text, true);\r
 
   \    for (const w of words) {\r
 
@@ -170806,7 +168869,7 @@ test100: "function test100() {\r
 
   \    tbd.shift();\r
 
-  \    lookupSet(done, [o.type, sym], o); \r
+  \    lookupSet(done, [o.type, sym], o);\r
 
   \  }\r
 
@@ -170822,13 +168885,13 @@ test100: "function test100() {\r
 
   \    if (k == 'func') klist = sortCaseInsensitive(klist);\r
 
-  \    for (const k1 of klist) { \r
+  \    for (const k1 of klist) {\r
 
   \      if (isLetter(k1) && k1 == k1.toLowerCase()) continue;\r
 
   \      let code = CODE.justcode[k1];\r
 
-  \      if (!isEmptyOrWhiteSpace(code)) tres += code; \r
+  \      if (!isEmptyOrWhiteSpace(code)) tres += code;\r
 
   \    }\r
 
@@ -182292,19 +180355,6 @@ untie_card: "function untie_card(card) {\r
   \  if (isdef(oldgroup)) removeInPlace(oldgroup.ids, card.id);\r
 
   \  return [oldgroup, oldindex];\r
-
-  }"
-update: "function update(time) {\r
-
-  \  var t = time - lastUpdate;\r
-
-  \  lastUpdate = time;\r
-
-  \  ball.update(t);\r
-
-  \  ai.update();\r
-
-  \  requestAnimationFrame(update);\r
 
   }"
 update_car: "function update_car(canvas, item) {\r

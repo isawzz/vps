@@ -13,7 +13,7 @@ function getObjectFromWindow(key) {
 	return o;
 }
 
-function test100() {
+function computeClosure(symlist) {
 
 	let keys = {};
 	for (const k in CODE.di) { for (const k1 in CODE.di[k]) keys[k1] = CODE.di[k][k1]; }
@@ -28,7 +28,7 @@ function test100() {
 	//7748 in intersection, also ca 400 jeweils extra, ergibt total of 8500 keys ca.
 
 	let done = {};
-	let tbd = ['_start']; //,'test100'];
+	let tbd = valf(symlist,['_start']); //,'test100'];
 
 	let MAX = 1007, i = 0;
 	let alltext = '';
@@ -39,6 +39,7 @@ function test100() {
 		let sym = tbd[0];
 		let o = CODE.all[sym];
 		if (nundef(o)) o = getObjectFromWindow(sym);
+		if (o.type == 'var' && !o.name.startsWith('d') && o.name == o.name.toLowerCase()) {tbd.shift(); continue; }
 		if (o.type != 'func') { tbd.shift(); lookupSet(done, [o.type, sym], o); continue; }
 		let olive = window[sym];
 		if (nundef(olive)) { tbd.shift(); lookupSet(done, [o.type, sym], o); continue; }
@@ -47,6 +48,8 @@ function test100() {
 		if (!isEmpty(text)) alltext += text + '\r\n';
 
 		let words = toWords(text, true); //console.log('words', words);
+		
+		words = words.filter(x=>text.includes(' '+x));
 
 		for (const w of words) {
 			if (nundef(done[w]) && w != sym && isdef(CODE.all[w])) addIf(tbd, w);
@@ -66,7 +69,7 @@ function test100() {
 		let klist = get_keys(o);
 		if (k == 'func') klist = sortCaseInsensitive(klist);
 		for (const k1 of klist) { //in done[k]) {
-			if (isLetter(k1) && k1 == k1.toLowerCase()) continue;
+			//if (isLetter(k1) && k1 == k1.toLowerCase()) continue;
 			let code = CODE.justcode[k1];
 			//console.log('type',k,'key',k1,'code',code)
 			if (!isEmptyOrWhiteSpace(code)) tres += code + '\r\n';

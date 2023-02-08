@@ -1383,6 +1383,17 @@ const resetPeep = ({ stage, peep }) => {
 const allPeeps = []
 const availablePeeps = []
 const crowd = []
+const MARGIN_S = '3px 6px';
+const MARGIN_M = '4px 10px';
+const MARGIN_XS = '2px 4px';
+const complementaryColor = color => {
+	const hexColor = color.replace('#', '0x');
+	return `#${('000000' + ('0xffffff' ^ hexColor).toString(16)).slice(-6)}`;
+};
+const immediateStart = true;
+const uiHaltedMask = 1 << 0;
+const beforeActivationMask = 1 << 1;
+const hasClickedMask = 1 << 2;
 const CODE = {};
 const CODE_VERSION = 1;
 const SHOW_CODE = false;
@@ -1402,17 +1413,6 @@ const Perlin = {
 	channels: {},
 }
 const MyNames = ['amanda', 'angela', 'erin', 'holly', 'jan', 'karen', 'kelly', 'pam', 'phyllis', 'andy', 'creed', 'darryl', 'david', 'dwight', 'felix', 'gul', 'jim', 'kevin', 'luis', 'michael', 'nil', 'oscar', 'ryan', 'stanley', 'toby', 'wolfgang'];
-const MARGIN_S = '3px 6px';
-const MARGIN_M = '4px 10px';
-const MARGIN_XS = '2px 4px';
-const complementaryColor = color => {
-	const hexColor = color.replace('#', '0x');
-	return `#${('000000' + ('0xffffff' ^ hexColor).toString(16)).slice(-6)}`;
-};
-const immediateStart = true;
-const uiHaltedMask = 1 << 0;
-const beforeActivationMask = 1 << 1;
-const hasClickedMask = 1 << 2;
 const myDom = {
 	points: {
 		text: document.getElementById('points-text'),
@@ -1525,140 +1525,6 @@ const createTextStyle = function (feature, resolution, dom) {
 		rotation: rotation,
 	});
 };
-var jewel = (function () {
-	var settings = {
-		rows: 8,
-		cols: 8,
-		baseScore: 100,
-		baseLevelScore: 1500,
-		baseLevelExp: 1.05,
-		baseLevelTimer: 60000,
-		numJewelTypes: 7,
-		controls: {
-			KEY_UP: "moveUp",
-			KEY_LEFT: "moveLeft",
-			KEY_DOWN: "moveDown",
-			KEY_RIGHT: "moveRight",
-			KEY_ENTER: "selectJewel",
-			KEY_SPACE: "selectJewel",
-			CLICK: "selectJewel",
-			TOUCH: "selectJewel",
-			BUTTON_A: "selectJewel",
-			LEFT_STICK_UP: "moveUp",
-			LEFT_STICK_DOWN: "moveDown",
-			LEFT_STICK_LEFT: "moveLeft",
-			LEFT_STICK_RIGHT: "moveRight"
-		}
-	};
-	var scriptQueue = [],
-		numResourcesLoaded = 0,
-		numResources = 0,
-		executeRunning = false;
-	function executeScriptQueue() {
-		var next = scriptQueue[0],
-			first, script;
-		if (next && next.loaded) {
-			executeRunning = true;
-			scriptQueue.shift();
-			first = document.getElementsByTagName("script")[0];
-			script = document.createElement("script");
-			script.onload = function () {
-				if (next.callback) {
-					next.callback();
-				}
-				executeScriptQueue();
-			};
-			script.src = next.src;
-			first.parentNode.insertBefore(script, first);
-		} else {
-			executeRunning = false;
-		}
-	}
-	function getLoadProgress() {
-		return numResourcesLoaded / numResources;
-	}
-	function load(src, callback) {
-		var image, queueEntry;
-		numResources++;
-		queueEntry = {
-			src: src,
-			callback: callback,
-			loaded: false
-		};
-		scriptQueue.push(queueEntry);
-		image = new Image();
-		image.onload = image.onerror = function () {
-			numResourcesLoaded++;
-			queueEntry.loaded = true;
-			if (!executeRunning) {
-				executeScriptQueue();
-			}
-		};
-		image.src = src;
-	}
-	function preload(src) {
-		var image = new Image();
-		image.src = src;
-	}
-	function showScreen(screenId) {
-		var dom = jewel.dom,
-			$ = dom.$,
-			activeScreen = $("#game .screen.active")[0],
-			screen = $("#" + screenId)[0];
-		if (!jewel.screens[screenId]) {
-			alert("This module is not implemented yet!");
-			return;
-		}
-		if (activeScreen) {
-			dom.removeClass(activeScreen, "active");
-		}
-		dom.addClass(screen, "active");
-		jewel.screens[screenId].run();
-	}
-	function isStandalone() {
-		return (window.navigator.standalone !== false);
-	}
-	function hasWebWorkers() {
-		return ("Worker" in window);
-	}
-	function hasWebWorkers() {
-		return ("Worker" in window);
-	}
-	function hasWebGL() {
-		var canvas = document.createElement("canvas"),
-			gl = canvas.getContext("webgl") ||
-				canvas.getContext("experimental-webgl");
-		return !!gl;
-	}
-	function setup() {
-		if (/Android/.test(navigator.userAgent)) {
-			jewel.dom.$("html")[0].style.height = "200%";
-			setTimeout(function () {
-				window.scrollTo(0, 1);
-			}, 0);
-		}
-		jewel.dom.bind(document, "touchmove", function (event) {
-			event.preventDefault();
-		});
-		if (isStandalone()) {
-			showScreen("splash-screen");
-		} else {
-			showScreen("install-screen");
-		}
-	}
-	return {
-		getLoadProgress: getLoadProgress,
-		hasWebWorkers: hasWebWorkers,
-		hasWebGL: hasWebGL,
-		isStandalone: isStandalone,
-		preload: preload,
-		load: load,
-		setup: setup,
-		showScreen: showScreen,
-		settings: settings,
-		screens: {}
-	};
-})();
 var currentKey = null;
 var keysDown = new Array(256);
 var virtKeys = false;
@@ -2207,140 +2073,6 @@ var ObjetoSolitario = function () {
 		return true;
 	};
 };
-var panzoom = (function () {
-	const MIN_SCALE = 0.35;
-	var txStart;
-	var tyStart;
-	var xStart;
-	var yStart;
-	var panning = false;
-	var couldBePanning = false;
-	var totalMaxDelta;
-	function initPanZoom(id) {
-		let map = document.getElementById(id);
-		map.setAttribute("transform", `translate(0,0) scale(${MIN_SCALE})`);
-		map.addEventListener("wheel", ev => {
-			onwheel(ev, map);
-		});
-		map.addEventListener("pointerdown", ev => {
-			onmousedown(ev);
-		});
-		addEventListener("mouseup", ev => {
-			onmouseup(ev, map);
-		});
-		addEventListener("mousemove", ev => {
-			onmousemove(ev, map);
-		});
-		addEventListener("dblclick", ev => reset(ev, map));
-	}
-	function onwheel(ev, board) {
-		let delta = ev.wheelDelta;
-		let z = delta < 0 ? 0.5 : 2;
-		let dir = Math.sign(delta);
-		let currentMouseX = ev.offsetX;
-		let currentMouseY = ev.offsetY;
-		let transOld = getTransformInfo(board);
-		let getLeft = transOld.translateX;
-		let getTop = transOld.translateY;
-		let scale = transOld.scale;
-		if (scale <= MIN_SCALE + 0.1 && dir < 0) return;
-		let dx = (currentMouseX - getLeft) * (z - 1);
-		let dy = (currentMouseY - getTop) * (z - 1);
-		let scaleNew = scale * z;
-		let txNew = getLeft - dx;
-		let tyNew = getTop - dy;
-		const MIN_TX = -(3400 * scaleNew - 3400 * MIN_SCALE);
-		const MIN_TY = -(2200 * scaleNew - 2200 * MIN_SCALE);
-		txNew = Math.min(txNew, 0);
-		txNew = Math.max(txNew, MIN_TX);
-		tyNew = Math.min(tyNew, 0);
-		tyNew = Math.max(tyNew, MIN_TY);
-		let transNew = `translate(${txNew},${tyNew}) scale(${scaleNew})`;
-		board.setAttribute("transform", transNew);
-		transNew = getTransformInfo(board);
-		ev.preventDefault();
-	}
-	function reset(ev, board) {
-		let map = ev.target;
-		let transNew = `translate(0,0) scale(${MIN_SCALE})`;
-		board.setAttribute("transform", transNew);
-	}
-	function onmousedown(ev) {
-		let map = ev.target;
-		let board = ev.path[1];
-		let x = ev.screenX;
-		let y = ev.screenY;
-		let transOld = getTransformInfo(board);
-		let scale = transOld.scale;
-		if (scale <= MIN_SCALE + 0.1) return;
-		xStart = x;
-		yStart = y;
-		txStart = transOld.translateX;
-		tyStart = transOld.translateY;
-		totalMaxDelta = 0;
-		couldBePanning = true;
-	}
-	function onmousemove(ev, board) {
-		let id = ev.target.id;
-		if (id != "imgMap" && id != "mapG") {
-			couldBePanning = false;
-			panning = false;
-			return;
-		}
-		if (couldBePanning) {
-			let x = Math.abs(ev.screenX - xStart);
-			let y = Math.abs(ev.screenY - yStart);
-			totalMaxDelta += Math.max(x, y);
-			if (totalMaxDelta > 10) {
-				panning = true;
-				couldBePanning = false;
-				board.setPointerCapture(true);
-				ev.preventDefault();
-			}
-		} else if (panning) {
-			let x = ev.screenX;
-			let y = ev.screenY;
-			let transOld = getTransformInfo(board);
-			let tx = transOld.translateX;
-			let ty = transOld.translateY;
-			let scale = transOld.scale;
-			let txNew = txStart + x - xStart;
-			let tyNew = tyStart + y - yStart;
-			const MIN_TX = -(3400 * scale - 3400 * MIN_SCALE);
-			const MIN_TY = -(2200 * scale - 2200 * MIN_SCALE);
-			txNew = Math.min(txNew, 0);
-			txNew = Math.max(txNew, MIN_TX);
-			tyNew = Math.min(tyNew, 0);
-			tyNew = Math.max(tyNew, MIN_TY);
-			let transNew = `translate(${txNew},${tyNew}) scale(${scale})`;
-			board.setAttribute("transform", transNew);
-		}
-	}
-	function onmouseup(ev, board) {
-		if (panning) {
-			let map = ev.target;
-			let x = ev.screenX;
-			let y = ev.screenY;
-			let transOld = getTransformInfo(board);
-			let tx = transOld.translateX;
-			let ty = transOld.translateY;
-			let scale = transOld.scale;
-			let txNew = txStart + x - xStart;
-			let tyNew = tyStart + y - yStart;
-			const MIN_TX = -(3400 * scale - 3400 * MIN_SCALE);
-			const MIN_TY = -(2200 * scale - 2200 * MIN_SCALE);
-			txNew = Math.min(txNew, 0);
-			txNew = Math.max(txNew, MIN_TX);
-			tyNew = Math.min(tyNew, 0);
-			tyNew = Math.max(tyNew, MIN_TY);
-			let transNew = `translate(${txNew},${tyNew}) scale(${scale})`;
-			board.setAttribute("transform", transNew);
-			board.releasePointerCapture(true);
-			panning = false;
-		} else couldBePanning = false;
-	}
-	return function (id) { initPanZoom(id); }
-})();
 var unitTestId = 0;
 var visualStructures = {};
 var UID = 0;
@@ -2350,258 +2082,6 @@ var TABLE_UPDATE_BEHAVIOR = [];
 var TABLE_UPDATE_VISUALIZATION = [];
 var TABLE_UPDATE = {};
 var PLAYER_UPDATE = {};
-var modern_palettes = {
-	CD_green_blue: { GreenMountain: '#3d7c47', BlueMountain: '#09868b', LightBlueBackdrop: '#76c1d4', BarelyGrayEdge: '#f7f7f7' },
-	CD_gelb_orange_grau: { Blueberry: '#6B7A8F', Apricot: '#F7882F', Citrus: '#F7C331', AppleCore: ' #DCC7AA' },
-	CD_blue_brown: { FrenchLaundryBlue: '#3a4660', ComfortablyTan: '#c9af98', PeachyKreme: '#ed8a63', BrownBonnet: '#845007' },
-	CD_yellow_grey: { Areyayellow: '#feda6a', SilverFox: '#d4d4dc', DeepMatteGrey: '#393f4d' },
-	CD_fresh_green_grey_yellow: { MorningSky: '#CAE4DB', Honey: '#DCAE1D', Cerulean: '#00303F', Mist: '#7A9D96' },
-	CD_green_beige: { green: '#BFEB55', green2: '#458766', beige: '#F9F68A', beige2: '#FBF1B4' },
-	CD_dark_beach: { c1: 'rgb(3, 74, 166)', c2: 'rgb(0, 6, 13)', c3: 'rgb(83, 119, 166)', c4: 'rgb(64, 95, 115)', c5: 'rgb(62, 89, 86)' },
-	CD_color_beach: { c1: 'rgb(83, 111, 166)', c2: 'rgb(3, 74, 166)', c3: 'rgb(126, 174, 217)', c4: 'rgb(242, 181, 107)', c5: 'rgb(4, 173, 191)' }
-};
-var blues = [
-	'#f7fbff',
-	'#ecf4fc',
-	'#e2eef8',
-	'#d8e7f5',
-	'#cde0f1',
-	'#c0d9ed',
-	'#b0d2e8',
-	'#9fc9e2',
-	'#8bbfdd',
-	'#77b4d8',
-	'#63a8d2',
-	'#529ccc',
-	'#4190c5',
-	'#3382be',
-	'#2575b6',
-	'#1a67ad',
-	'#1059a1',
-	'#0a4c92',
-	'#083e7f',
-	'#08306b'
-];
-var green = [
-	'#f7fcf5',
-	'#eff9ec',
-	'#e7f6e2',
-	'#dcf1d7',
-	'#d0edca',
-	'#c2e7bc',
-	'#b3e0ac',
-	'#a2d99d',
-	'#90d18d',
-	'#7dc87f',
-	'#69be72',
-	'#55b466',
-	'#42a85c',
-	'#339c52',
-	'#268f47',
-	'#18823d',
-	'#0c7433',
-	'#03652a',
-	'#005522',
-	'#00441b'
-];
-var greys = [
-	'#ffffff',
-	'#f9f9f9',
-	'#f2f2f2',
-	'#e9e9e9',
-	'#e0e0e0',
-	'#d5d5d5',
-	'#cacaca',
-	'#bdbdbd',
-	'#aeaeae',
-	'#9f9f9f',
-	'#8f8f8f',
-	'#808080',
-	'#727272',
-	'#636363',
-	'#545454',
-	'#434343',
-	'#313131',
-	'#202020',
-	'#101010',
-	'#000000'
-];
-var oranges = [
-	'#fff5eb',
-	'#ffefdf',
-	'#fee8d1',
-	'#fee0c1',
-	'#fdd6af',
-	'#fdcb9b',
-	'#fdbe85',
-	'#fdb06f',
-	'#fda25a',
-	'#fc9446',
-	'#f98534',
-	'#f57623',
-	'#ee6815',
-	'#e55a0b',
-	'#d84d05',
-	'#c84303',
-	'#b43b02',
-	'#a13403',
-	'#902d04',
-	'#7f2704'
-];
-var purples = [
-	'#fcfbfd',
-	'#f6f5fa',
-	'#f0eff6',
-	'#e9e8f2',
-	'#e0dfee',
-	'#d6d6e9',
-	'#cacae3',
-	'#bebedc',
-	'#b1b0d4',
-	'#a4a2cd',
-	'#9894c6',
-	'#8b87bf',
-	'#8079b8',
-	'#7668af',
-	'#6c56a6',
-	'#63449d',
-	'#5a3294',
-	'#51218c',
-	'#481085',
-	'#3f007d'
-];
-var bluegreen = [
-	'#f7fcfd',
-	'#eff9fb',
-	'#e7f6f8',
-	'#def2f3',
-	'#d2eeeb',
-	'#c4e9e2',
-	'#b1e1d6',
-	'#9cd9c9',
-	'#86d0bb',
-	'#72c7ab',
-	'#5fbe9a',
-	'#4fb587',
-	'#40aa73',
-	'#339d5f',
-	'#268f4d',
-	'#18823e',
-	'#0c7433',
-	'#03652a',
-	'#005522',
-	'#00441b'
-];
-var bluepurple = [
-	'#f7fcfd',
-	'#edf5f9',
-	'#e3eef5',
-	'#d7e5f0',
-	'#c9dbeb',
-	'#bcd1e5',
-	'#aec7e0',
-	'#a2bbd9',
-	'#98add2',
-	'#919eca',
-	'#8d8dc1',
-	'#8c7bb9',
-	'#8b69b0',
-	'#8a57a7',
-	'#88449e',
-	'#853192',
-	'#801e84',
-	'#741073',
-	'#62075f',
-	'#4d004b'
-];
-var cubehelix = [
-	'#000000',
-	'#130918',
-	'#1a1732',
-	'#192a47',
-	'#15414e',
-	'#17584a',
-	'#246b3d',
-	'#3f7632',
-	'#647a30',
-	'#8d7a3c',
-	'#b17959',
-	'#ca7b81',
-	'#d485ac',
-	'#d296d1',
-	'#c9ade9',
-	'#c2c5f3',
-	'#c3dbf2',
-	'#d0ecef',
-	'#e6f7f1',
-	'#ffffff'
-];
-var inferno = [
-	'#000004',
-	'#08051d',
-	'#180c3c',
-	'#2f0a5b',
-	'#450a69',
-	'#5c126e',
-	'#71196e',
-	'#87216b',
-	'#9b2964',
-	'#b1325a',
-	'#c43c4e',
-	'#d74b3f',
-	'#e55c30',
-	'#f1711f',
-	'#f8870e',
-	'#fca108',
-	'#fbba1f',
-	'#f6d543',
-	'#f1ed71',
-	'#fcffa4'
-];
-var magma = [
-	'#000004',
-	'#07061c',
-	'#150e38',
-	'#29115a',
-	'#3f0f72',
-	'#56147d',
-	'#6a1c81',
-	'#802582',
-	'#942c80',
-	'#ab337c',
-	'#c03a76',
-	'#d6456c',
-	'#e85362',
-	'#f4695c',
-	'#fa815f',
-	'#fd9b6b',
-	'#feb47b',
-	'#fecd90',
-	'#fde5a7',
-	'#fcfdbf'
-];
-var purplegreen = [
-	'#40004b',
-	'#5c1768',
-	'#753283',
-	'#8a529a',
-	'#9e74ae',
-	'#b391c1',
-	'#c7acd2',
-	'#dac4e0',
-	'#e9daea',
-	'#f0ebf0',
-	'#ecf2ea',
-	'#def0d9',
-	'#c8e8c2',
-	'#acdca7',
-	'#89c988',
-	'#64b26a',
-	'#409750',
-	'#237b3b',
-	'#0f5f2a',
-	'#00441b'
-];
 const AREAS = {};
 const MSCATS = { rect: 'g', g: 'g', circle: 'g', text: 'g', polygon: 'g', line: 'g', body: 'd', svg: 'd', div: 'd', p: 'd', table: 'd', button: 'd', a: 'd', span: 'd', image: 'd', paragraph: 'd', anchor: 'd' };
 var UIS;
@@ -2615,17 +2095,11 @@ var GAME = 'ttt';
 var S = {};
 var M = {};
 var IdOwner;
-var id2oids;
-var id2uids;
-var oid2ids;
 var G = null;
-var counters;
-var timit;
 var DELETED_IDS = [];
 var DELETED_THIS_ROUND = [];
 var ROOT = null;
 var choiceCompleted = false;
-var frozen = false;
 var boatFilters = [];
 var boatHighlighted = null;
 var S_startGame = GAME;
@@ -2642,19 +2116,9 @@ var S_autoplay = false;
 var S_showEvents = false;
 var S_AIThinkingTime = 30;
 var S_autoplayFunction = (_g) => false;
-var socket;
 var loggedIn = false;
 var scenarioQ = [];
 var scenarioRunning = false;
-var collections = {};
-var elements = {};
-var symbols = {
-	knight: 'user-secret',
-	victory_point: 'trophy',
-	road_building: 'road',
-	monopoly: 'umbrella',
-	year_of_plenty: 'tree',
-};
 var symbolColors = {
 	knight: 'red',
 	victory_point: 'gold',
@@ -2662,7 +2126,6 @@ var symbolColors = {
 	monopoly: 'violet',
 	year_of_plenty: 'green',
 };
-var ibox4oid = {};
 var COND = {};
 var FUNCS = {};
 var colorPalette;
@@ -2689,7 +2152,6 @@ var defaultSpec = null
 var userSpec = null;
 var userCode = null;
 var serverData = null;
-var mappings;
 var mappingsInitialized;
 var mappingTypes;
 var LOG = {};
@@ -2697,7 +2159,6 @@ var LOGDIVS = [];
 var tupleGroups;
 var prevGamePlid = null;
 var prevWaitingFor = null;
-var t_total = 0;
 var PREFERRED_CARD_HEIGHT = 0;
 var magCounter = 0;
 var evAddCounter = 0;
@@ -2711,48 +2172,9 @@ var bodyZoom = 1.0;
 var browserZoom = Math.round(window.devicePixelRatio * 100);
 var iTHEME = 0;
 var WAITINGFORPLAYER = null;
-var flags = {};
 var UPD = {};
 var PRES = {};
 var DONE = {};
-var cards1 = {
-	'c1':
-	{
-		desc: "Move the Robber. Steal 1 resource card from the owner of an adjacent settlement or city.",
-		name: "Knight",
-		obj_type: "devcard",
-		visible: { _set: ["White", "Red", "Blue", "Orange"] },
-	},
-	'c2':
-	{
-		desc: "1 Victory Point!",
-		name: "Victory Point",
-		obj_type: "devcard",
-		visible: { _set: ["White", "Red", "Blue", "Orange"] },
-	},
-	'c3':
-	{
-		desc: "Take any 2 resources from the bank. Add them to your hand. They can be 2 of the same or 2 different resources.",
-		name: "Year of Plenty",
-		obj_type: "devcard",
-		visible: { _set: ["White", "Red", "Blue", "Orange"] },
-	},
-	'c4':
-	{
-		desc: "Place 2 new roads as if you had just built them.",
-		name: "Road Building",
-		obj_type: "devcard",
-		visible: { _set: ["White", "Red", "Blue", "Orange"] },
-	},
-	'c5':
-	{
-		desc: "When you play this card, announce 1 type of resource. All other players must give you all their resource cards of that type.",
-		name: "Monopoly",
-		obj_type: "devcard",
-		visible: { _set: ["White", "Red", "Blue", "Orange"] },
-	},
-};
-var card1 = cards1['c1'];
 var justExpand = false;
 var colorDict = null;
 var dragStartOffset;
@@ -2822,12 +2244,9 @@ var S_userBehaviors = true;
 var S_deckDetection = true;
 var S_useColorHintForProperties = true;
 var S_useColorHintForObjects = true;
-var view = null;
 var isPlaying = false;
 var isReallyMultiplayer = false;
 var prevServerData;
-var boats;
-var route_counter = 0;
 const VERSION = '_ui';
 const CACHE_DEFAULTSPEC = false;
 const CACHE_USERSPEC = false;
@@ -2835,7 +2254,6 @@ const CACHE_CODE = false;
 var SPEC = null;
 var GAMEPLID = null;
 var PGAMEPLID = null;
-var t_avg = 0;
 var autoplayFunction = () => false;
 var AIThinkingTime = 30;
 var CLICK_TO_SELECT = true;
@@ -2844,7 +2262,6 @@ var USE_STRUCTURES = true;
 var USE_BEHAVIORS = true;
 var divPlayer;
 var divOpps;
-var colors;
 var iColor;
 var divMain;
 var FUNCTIONS = {
@@ -2878,7 +2295,6 @@ var CYCLES = 0;
 var sData;
 var WR = {};
 var T;
-var phase = 0;
 var TV = {};
 var _audioSources = {
 	incorrect1: '../base/assets/sounds/incorrect1.wav',
@@ -2891,13 +2307,11 @@ var _audioSources = {
 	mozart: "../base/assets/music/mozart_s39_4.mp3",
 };
 var _sndPlayer;
-var _loaded = false;
 var _qSound;
 var _idleSound = true;
 var _sndCounter = 0;
 var TOSound;
 var _AUDIOCONTEXT;
-var badges = [];
 var Markers = [];
 var BlockServerSend = false;
 var DragElem = null;
@@ -3068,8 +2482,6 @@ var DEFAULTUSERNAME = 'gul';
 var USE_LOCAL_STORAGE = true;
 const CLEAR_LOCAL_STORAGE = false;
 var USE_ADDONS = false;
-var sent_audio = new Audio("../base/assets/sounds/message_sent.mp3");
-var received_audio = new Audio("../base/assets/sounds/message_received.mp3");
 var CURRENT_CHAT_USER = "";
 var CURRENT_GAME = "";
 var CURRENT_FEN = "";
@@ -3251,15 +2663,6 @@ var KingO = [
 	-70, -70, -70, -70, -70, -70, -70, -70
 ];
 var ENDGAME_MAT = 1 * PieceVal[PIECES.wR] + 2 * PieceVal[PIECES.wN] + 2 * PieceVal[PIECES.wP] + PieceVal[PIECES.wK];
-var srch_nodes;
-var srch_fh;
-var srch_fhf;
-var srch_depth;
-var srch_time;
-var srch_start;
-var srch_stop;
-var srch_best;
-var srch_thinking;
 var domUpdate_depth;
 var domUpdate_move;
 var domUpdate_score;
@@ -3326,17 +2729,6 @@ var AGAME = {
 };
 var WhichCorner = 0;
 var W_init = 10;
-var settings;
-var defaults;
-var greenbar;
-var redbar;
-var in_game_screen;
-var lastgreen = 0;
-var lastred = 0;
-var granularity;
-var num_calls = 0;
-var num_painted = 0;
-var is_host;
 var DeckA = (function () {
 	//#region variables  
 	var ____fontSize;
@@ -4134,11 +3526,6 @@ var DeckA = (function () {
 	DeckA.translate = translate;
 	return DeckA;
 })();
-var prefix = DeckA.prefix;
-var transform = prefix('transform')
-var translate = DeckA.translate
-var container1 = document.getElementById('container')
-var topbar1 = document.getElementById('topbar')
 var bSort = document.createElement('button')
 var bShuffle = document.createElement('button')
 var bBySuit = document.createElement('button')
@@ -4146,7 +3533,6 @@ var bFan = document.createElement('button')
 var bPoker = document.createElement('button')
 var bFlip = document.createElement('button')
 var bDeal = document.createElement('button')
-var deck = DeckA()
 var currentDeck;
 var dummyString = "translateX(-50%) scale(1.2)";
 var DeckB = (function () {
@@ -5037,28 +4423,12 @@ var pictureSize;
 var nMissing;
 var MaxPosMissing;
 var NumMissingLetters;
-var inputs = [];
 var uiActivatedTC;
 var NumColors;
-var interim_transcript = '';
-var final_transcript = '';
-var final_confidence2;
-var final_confidence_sum;
-var final_num;
-var final_confidence;
-var interim_confidence2;
-var interim_confidence_sum;
-var interim_num;
-var interim_confidence;
 var isRunning = false;
-var recognition;
-var grammar;
 var hasGotFinalResult;
 var hasGotResult;
-var timeout2;
-var timeout1;
 var nextIndex = -1;
-var cinno;
 var BestKeysE;
 var BestKeySets;
 var BestKeysD;
@@ -5080,7 +4450,6 @@ var AD;
 var App;
 var Zones = {};
 var Options = {};
-var container;
 var DOC_UIS;
 var DOC_vault;
 var DOC_dvIndex;
@@ -5089,12 +4458,10 @@ var DOC_CURRENT_FUNC;
 var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
 var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
 var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
-var lang;
 var matchingWords;
 var speechRecognitionList;
 var hintMessage;
 var resultMessage;
-var words;
 var TESTVAR = 0;
 var testDict = {};
 var QuestionCounter = 0;
@@ -5137,110 +4504,12 @@ var NiceBaseColors = ['#791900']
 var MAGNIFIER_IMAGE;
 var globalSum = 0
 var positionCount;
-var weights = { 'p': 100, 'n': 280, 'b': 320, 'r': 479, 'q': 929, 'k': 60000, 'k_e': 60000 };
-var pst_w = {
-	'p': [
-		[100, 100, 100, 100, 105, 100, 100, 100],
-		[78, 83, 86, 73, 102, 82, 85, 90],
-		[7, 29, 21, 44, 40, 31, 44, 7],
-		[-17, 16, -2, 15, 14, 0, 15, -13],
-		[-26, 3, 10, 9, 6, 1, 0, -23],
-		[-22, 9, 5, -11, -10, -2, 3, -19],
-		[-31, 8, -7, -37, -36, -14, 3, -31],
-		[0, 0, 0, 0, 0, 0, 0, 0]
-	],
-	'n': [
-		[-66, -53, -75, -75, -10, -55, -58, -70],
-		[-3, -6, 100, -36, 4, 62, -4, -14],
-		[10, 67, 1, 74, 73, 27, 62, -2],
-		[24, 24, 45, 37, 33, 41, 25, 17],
-		[-1, 5, 31, 21, 22, 35, 2, 0],
-		[-18, 10, 13, 22, 18, 15, 11, -14],
-		[-23, -15, 2, 0, 2, 0, -23, -20],
-		[-74, -23, -26, -24, -19, -35, -22, -69]
-	],
-	'b': [
-		[-59, -78, -82, -76, -23, -107, -37, -50],
-		[-11, 20, 35, -42, -39, 31, 2, -22],
-		[-9, 39, -32, 41, 52, -10, 28, -14],
-		[25, 17, 20, 34, 26, 25, 15, 10],
-		[13, 10, 17, 23, 17, 16, 0, 7],
-		[14, 25, 24, 15, 8, 25, 20, 15],
-		[19, 20, 11, 6, 7, 6, 20, 16],
-		[-7, 2, -15, -12, -14, -15, -10, -10]
-	],
-	'r': [
-		[35, 29, 33, 4, 37, 33, 56, 50],
-		[55, 29, 56, 67, 55, 62, 34, 60],
-		[19, 35, 28, 33, 45, 27, 25, 15],
-		[0, 5, 16, 13, 18, -4, -9, -6],
-		[-28, -35, -16, -21, -13, -29, -46, -30],
-		[-42, -28, -42, -25, -25, -35, -26, -46],
-		[-53, -38, -31, -26, -29, -43, -44, -53],
-		[-30, -24, -18, 5, -2, -18, -31, -32]
-	],
-	'q': [
-		[6, 1, -8, -104, 69, 24, 88, 26],
-		[14, 32, 60, -10, 20, 76, 57, 24],
-		[-2, 43, 32, 60, 72, 63, 43, 2],
-		[1, -16, 22, 17, 25, 20, -13, -6],
-		[-14, -15, -2, -5, -1, -10, -20, -22],
-		[-30, -6, -13, -11, -16, -11, -16, -27],
-		[-36, -18, 0, -19, -15, -15, -21, -38],
-		[-39, -30, -31, -13, -31, -36, -34, -42]
-	],
-	'k': [
-		[4, 54, 47, -99, -99, 60, 83, -62],
-		[-32, 10, 55, 56, 56, 55, 10, 3],
-		[-62, 12, -57, 44, -67, 28, 37, -31],
-		[-55, 50, 11, -4, -19, 13, 0, -49],
-		[-55, -43, -52, -28, -51, -47, -8, -50],
-		[-47, -42, -43, -79, -64, -32, -29, -32],
-		[-4, 3, -14, -50, -57, -18, 13, 4],
-		[17, 30, -3, -14, 6, -1, 40, 18]
-	],
-	'k_e': [
-		[-50, -40, -30, -20, -20, -30, -40, -50],
-		[-30, -20, -10, 0, 0, -10, -20, -30],
-		[-30, -10, 20, 30, 30, 20, -10, -30],
-		[-30, -10, 30, 40, 40, 30, -10, -30],
-		[-30, -10, 30, 40, 40, 30, -10, -30],
-		[-30, -10, 20, 30, 30, 20, -10, -30],
-		[-30, -30, 0, 0, 0, 0, -30, -30],
-		[-50, -30, -30, -30, -30, -30, -30, -50]
-	]
-};
-var pst_b = {
-	'p': pst_w['p'].slice().reverse(),
-	'n': pst_w['n'].slice().reverse(),
-	'b': pst_w['b'].slice().reverse(),
-	'r': pst_w['r'].slice().reverse(),
-	'q': pst_w['q'].slice().reverse(),
-	'k': pst_w['k'].slice().reverse(),
-	'k_e': pst_w['k_e'].slice().reverse()
-}
-var pstOpponent = { 'w': pst_b, 'b': pst_w };
-var pstSelf = { 'w': pst_w, 'b': pst_b };
-var verbose = false;
 var BlockServerSend1 = false;
-var square_coordinates = [
-	[1, 1, 1, 2, 2, 2, 3, 3, 3],
-	[1, 1, 1, 2, 2, 2, 3, 3, 3],
-	[1, 1, 1, 2, 2, 2, 3, 3, 3],
-	[4, 4, 4, 5, 5, 5, 6, 6, 6],
-	[4, 4, 4, 5, 5, 5, 6, 6, 6],
-	[4, 4, 4, 5, 5, 5, 6, 6, 6],
-	[7, 7, 7, 8, 8, 8, 9, 9, 9],
-	[7, 7, 7, 8, 8, 8, 9, 9, 9],
-	[7, 7, 7, 8, 8, 8, 9, 9, 9]
-]
 var F;
-var dParent;
 var UBEF = null;
 var GBEF = null;
 var EBEF = null;
 var PI = Math.pi, interval_id, angle, factor = .67, tree = [], leaves = [], jittering = false;
-var numlayers = 0;
 var requestAnimFrame = (function () {
 	return window.requestAnimationFrame ||
 		window.webkitRequestAnimationFrame ||
@@ -5251,18 +4520,8 @@ var requestAnimFrame = (function () {
 			window.setTimeout(callback, 1000 / 60);
 		};
 })();
-const canvas = document.querySelector('#canvas')
-var radius = 32;
 var lineWidth = 4;
-var gravity = 0.1;
-var dampening = 0.995;
 var mousePullStrength = 0.005;
-var animate = false;
-var mouse = {
-	x: 0,
-	y: 0,
-	down: false
-};
 var Gaussian = function (mean, variance) {
 	if (variance <= 0) {
 		throw new Error('Variance must be > 0 (but was ' + variance + ')');
@@ -5456,63 +4715,6 @@ var bicycleRental = {
 		}
 	]
 };
-var campus = {
-	"type": "Feature",
-	"properties": {
-		"popupContent": "This is the Auraria West Campus",
-		"style": {
-			weight: 2,
-			color: "#999",
-			opacity: 1,
-			fillColor: "#B0DE5C",
-			fillOpacity: 0.8
-		}
-	},
-	"geometry": {
-		"type": "MultiPolygon",
-		"coordinates": [
-			[
-				[
-					[-105.00432014465332, 39.74732195489861],
-					[-105.00715255737305, 39.74620006835170],
-					[-105.00921249389647, 39.74468219277038],
-					[-105.01067161560059, 39.74362625960105],
-					[-105.01195907592773, 39.74290029616054],
-					[-105.00989913940431, 39.74078835902781],
-					[-105.00758171081543, 39.74059036160317],
-					[-105.00346183776855, 39.74059036160317],
-					[-105.00097274780272, 39.74059036160317],
-					[-105.00062942504881, 39.74072235994946],
-					[-105.00020027160645, 39.74191033368865],
-					[-105.00071525573731, 39.74276830198601],
-					[-105.00097274780272, 39.74369225589818],
-					[-105.00097274780272, 39.74461619742136],
-					[-105.00123023986816, 39.74534214278395],
-					[-105.00183105468751, 39.74613407445653],
-					[-105.00432014465332, 39.74732195489861]
-				], [
-					[-105.00361204147337, 39.74354376414072],
-					[-105.00301122665405, 39.74278480127163],
-					[-105.00221729278564, 39.74316428375108],
-					[-105.00283956527711, 39.74390674342741],
-					[-105.00361204147337, 39.74354376414072]
-				]
-			], [
-				[
-					[-105.00942707061768, 39.73989736613708],
-					[-105.00942707061768, 39.73910536278566],
-					[-105.00685214996338, 39.73923736397631],
-					[-105.00384807586671, 39.73910536278566],
-					[-105.00174522399902, 39.73903936209552],
-					[-105.00041484832764, 39.73910536278566],
-					[-105.00041484832764, 39.73979836621592],
-					[-105.00535011291504, 39.73986436617916],
-					[-105.00942707061768, 39.73989736613708]
-				]
-			]
-		]
-	}
-};
 var coorsField = {
 	"type": "Feature",
 	"properties": {
@@ -5636,9 +4838,6 @@ const Geo = {
 		'South America': ['Argentina', 'Aruba', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Curacao', 'Ecuador', 'French Guiana', 'Guam', 'Guyana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela']
 	}
 };
-var meme;
-var obstacles = [];
-var score;
 var myGameArea = {
 	canvas: document.createElement('canvas'),
 	start: function () {
@@ -5713,298 +4912,13 @@ var resizeObserver = new ResizeObserver(entries => {
 			entry.target.handleResize(entry);
 	}
 });
-var xxxxxxxxxx = new ResizeObserver(entries => {
-	for (let entry of entries) {
-		let cs = window.getComputedStyle(entry.target);
-		console.log('watching element:', entry.target);
-		console.log(entry.contentRect.top, ' is ', cs.paddingTop);
-		console.log(entry.contentRect.left, ' is ', cs.paddingLeft);
-		console.log(entry.borderBoxSize[0].inlineSize, ' is ', cs.width);
-		console.log(entry.borderBoxSize[0].blockSize, ' is ', cs.height);
-		if (entry.target.handleResize)
-			entry.target.handleResize(entry);
-	}
-});
 var PORT = 3000;
-var Globals;
-var LIVE_SERVER;
-var NODEJS;
-var SINGLECLIENT;
-var SERVERURL;
-var dButtons;
-var dCode;
-var dContent;
-var dFiddle;
-var dSidebar;
-var AU = {};
-var CONTEXT = null;
-var game = new GameFunc;
 var UIDHelpers = 0;
 var NAMED_UIDS = {};
 var palDict = {};
-var sheet = (function () {
-	var style = document.createElement('style');
-	style.appendChild(document.createTextNode(''));
-	document.head.appendChild(style);
-	return style.sheet;
-})();
-var countries = [
-	'Afghanistan',
-	'Albania',
-	'Algeria',
-	'Andorra',
-	'Angola',
-	'Anguilla',
-	'Antigua & Barbuda',
-	'Argentina',
-	'Armenia',
-	'Aruba',
-	'Australia',
-	'Austria',
-	'Azerbaijan',
-	'Bahamas',
-	'Bahrain',
-	'Bangladesh',
-	'Barbados',
-	'Belarus',
-	'Belgium',
-	'Belize',
-	'Benin',
-	'Bermuda',
-	'Bhutan',
-	'Bolivia',
-	'Bosnia & Herzegovina',
-	'Botswana',
-	'Brazil',
-	'British Virgin Islands',
-	'Brunei',
-	'Bulgaria',
-	'Burkina Faso',
-	'Burundi',
-	'Cambodia',
-	'Cameroon',
-	'Canada',
-	'Cape Verde',
-	'Cayman Islands',
-	'Central Arfrican Republic',
-	'Chad',
-	'Chile',
-	'China',
-	'Colombia',
-	'Congo',
-	'Cook Islands',
-	'Costa Rica',
-	'Cote D Ivoire',
-	'Croatia',
-	'Cuba',
-	'Curacao',
-	'Cyprus',
-	'Czech Republic',
-	'Denmark',
-	'Djibouti',
-	'Dominica',
-	'Dominican Republic',
-	'Ecuador',
-	'Egypt',
-	'El Salvador',
-	'Equatorial Guinea',
-	'Eritrea',
-	'Estonia',
-	'Ethiopia',
-	'Falkland Islands',
-	'Faroe Islands',
-	'Fiji',
-	'Finland',
-	'France',
-	'French Polynesia',
-	'French West Indies',
-	'Gabon',
-	'Gambia',
-	'Georgia',
-	'Germany',
-	'Ghana',
-	'Gibraltar',
-	'Greece',
-	'Greenland',
-	'Grenada',
-	'Guam',
-	'Guatemala',
-	'Guernsey',
-	'Guinea',
-	'Guinea Bissau',
-	'Guyana',
-	'Haiti',
-	'Honduras',
-	'Hong Kong',
-	'Hungary',
-	'Iceland',
-	'India',
-	'Indonesia',
-	'Iran',
-	'Iraq',
-	'Ireland',
-	'Isle of Man',
-	'Israel',
-	'Italy',
-	'Jamaica',
-	'Japan',
-	'Jersey',
-	'Jordan',
-	'Kazakhstan',
-	'Kenya',
-	'Kiribati',
-	'Kosovo',
-	'Kuwait',
-	'Kyrgyzstan',
-	'Laos',
-	'Latvia',
-	'Lebanon',
-	'Lesotho',
-	'Liberia',
-	'Libya',
-	'Liechtenstein',
-	'Lithuania',
-	'Luxembourg',
-	'Macau',
-	'Macedonia',
-	'Madagascar',
-	'Malawi',
-	'Malaysia',
-	'Maldives',
-	'Mali',
-	'Malta',
-	'Marshall Islands',
-	'Mauritania',
-	'Mauritius',
-	'Mexico',
-	'Micronesia',
-	'Moldova',
-	'Monaco',
-	'Mongolia',
-	'Montenegro',
-	'Montserrat',
-	'Morocco',
-	'Mozambique',
-	'Myanmar',
-	'Namibia',
-	'Nauro',
-	'Nepal',
-	'Netherlands',
-	'Netherlands Antilles',
-	'New Caledonia',
-	'New Zealand',
-	'Nicaragua',
-	'Niger',
-	'Nigeria',
-	'North Korea',
-	'Norway',
-	'Oman',
-	'Pakistan',
-	'Palau',
-	'Palestine',
-	'Panama',
-	'Papua New Guinea',
-	'Paraguay',
-	'Peru',
-	'Philippines',
-	'Poland',
-	'Portugal',
-	'Puerto Rico',
-	'Qatar',
-	'Reunion',
-	'Romania',
-	'Russia',
-	'Rwanda',
-	'Saint Pierre & Miquelon',
-	'Samoa',
-	'San Marino',
-	'Sao Tome and Principe',
-	'Saudi Arabia',
-	'Senegal',
-	'Serbia',
-	'Seychelles',
-	'Sierra Leone',
-	'Singapore',
-	'Slovakia',
-	'Slovenia',
-	'Solomon Islands',
-	'Somalia',
-	'South Africa',
-	'South Korea',
-	'South Sudan',
-	'Spain',
-	'Sri Lanka',
-	'St Kitts & Nevis',
-	'St Lucia',
-	'St Vincent',
-	'Sudan',
-	'Suriname',
-	'Swaziland',
-	'Sweden',
-	'Switzerland',
-	'Syria',
-	'Taiwan',
-	'Tajikistan',
-	'Tanzania',
-	'Thailand',
-	"Timor L'Este",
-	'Togo',
-	'Tonga',
-	'Trinidad & Tobago',
-	'Tunisia',
-	'Turkey',
-	'Turkmenistan',
-	'Turks & Caicos',
-	'Tuvalu',
-	'Uganda',
-	'Ukraine',
-	'United Arab Emirates',
-	'United Kingdom',
-	'United States of America',
-	'Uruguay',
-	'Uzbekistan',
-	'Vanuatu',
-	'Vatican City',
-	'Venezuela',
-	'Vietnam',
-	'Virgin Islands (US)',
-	'Yemen',
-	'Zambia',
-	'Zimbabwe'
-];
-var extend = function () {
-	var extended = {};
-	var deep = false;
-	var i = 0;
-	if (typeof arguments[0] === 'boolean') {
-		deep = arguments[0];
-		i++;
-	}
-	var merge = function (obj) {
-		for (var prop in obj) {
-			if (obj.hasOwnProperty(prop)) {
-				if (deep && Object.prototype.toString.call(obj[prop]) === '[object Object]') {
-					extended[prop] = extend(true, extended[prop], obj[prop]);
-				} else {
-					extended[prop] = obj[prop];
-				}
-			}
-		}
-	};
-	for (; i < arguments.length; i++) {
-		merge(arguments[i]);
-	}
-	return extended;
-};
-var palette = null;
 var activatedTests = [];
 var Epsilon = 1e-10;
-var dConsole;
 var lastUpdate = 0;
-var ball;
-var opponent;
-var player;
-var distance = 24;
 var Ball = function () {
 	var velocity = [0, 0];
 	var position = [0, 0];
@@ -6188,7 +5102,6 @@ var CurrentSessionData;
 var SessionScore = 0;
 var LevelChange = true;
 var trialNumber;
-var boundary;
 var isINTERRUPT;
 var isSpeakerRunning;
 var uiPausedStack = [];
@@ -6222,23 +5135,12 @@ var dSettings = mBy('dSettings');
 var inputForm;
 var inputTxt;
 var voiceSelect;
-var pitch;
 var pitchValue;
-var rate;
 var rateValue;
-var voices;
-var utterance;
-var synth;
 var hintWord;
 var bestWord;
 var answerCorrect;
 var currentInfo;
-var rules;
-var factor;
-var angle;
-var sentence;
-var interval_id;
-var axiom;
 var Simple = {
 	axiom: 'A',
 	rules: [
@@ -6265,8 +5167,19 @@ var Complex = {
 	factor: .5,
 	max: 6,
 };
-var system = Complex;
-var numgen = 0;
+var NODEJS;
+var SERVERURL;
+var LIVE_SERVER;
+var SINGLECLIENT;
+var dFiddle;
+var Globals;
+var dButtons;
+var dCode;
+var dContent;
+var dSidebar;
+var AU = {};
+var CONTEXT = null;
+var dConsole;
 var COLUMNS = { COL_A: 0, COL_B: 1, COL_C: 2, COL_D: 3, COL_E: 4, COL_F: 5, COL_G: 6, COL_H: 7, COL_NONE: 8 };
 var ROWS = { ROW_1: 0, ROW_2: 1, ROW_3: 2, ROW_4: 3, ROW_5: 4, ROW_6: 5, ROW_7: 6, ROW_8: 7, ROW_NONE: 8 };
 var ColBrd = new Array(BRD_SQ_NUM);
@@ -20373,6 +19286,16 @@ function __pictoG(key, x, y, w, h, fg, bg) {
 	let family = (ch[0] == 'f' || ch[0] == 'F') ? 'pictoFa' : 'pictoGame';
 	let text = String.fromCharCode('0x' + ch);
 }
+async function __start() {
+	set_run_state_no_server();
+	onpagedeactivated(() => { fiddleSave(); dbSave(); });
+	await load_syms();
+	await load_db();
+	let dicode = CODE.di = await route_path_yaml_dict('../basejs/z_all.yaml');
+	let dijustcode = CODE.justcode = await route_path_yaml_dict('../basejs/z_allcode.yaml');
+	dTable = mSection({ h: window.innerHeight - 68 }, 'dTable');
+	computeClosure();
+}
 function _addFilterHighlight(mobj) { mobj.highC('green'); }
 function _addOnelineVars(superdi, o) {
 	let [code, type] = [o.code, o.type];
@@ -22144,6 +21067,15 @@ async function _start0() {
 	KeySets = getKeySets();
 	TOMan = new TimeoutManager();
 	_start();
+}
+async function _start1() {
+	set_run_state_no_server();
+	onpagedeactivated(() => { fiddleSave(); dbSave(); });
+	await load_syms();
+	await load_db();
+	let dicode = CODE.di = await route_path_yaml_dict('../basejs/z_all.yaml');
+	let dijustcode = CODE.justcode = await route_path_yaml_dict('../basejs/z_allcode.yaml');
+	computeClosure(['_start1']);
 }
 function _startHotseat() {
 	timit.start_of_cycle(getFunctionCallerName());
@@ -35022,6 +33954,47 @@ function compute_hidden(plname) {
 	else if (Z.mode == 'hotseat') hidden = (pl.playmode == 'bot' || plname != uplayer);
 	else hidden = plname != Z.uname;
 	return hidden;
+}
+function computeClosure(symlist) {
+	let keys = {};
+	for (const k in CODE.di) { for (const k1 in CODE.di[k]) keys[k1] = CODE.di[k][k1]; }
+	CODE.all = keys;
+	CODE.keylist = Object.keys(keys)
+	let inter = intersection(Object.keys(keys), Object.keys(window));
+	let done = {};
+	let tbd = valf(symlist, ['_start']);
+	let MAX = 1007, i = 0;
+	let alltext = '';
+	while (!isEmpty(tbd)) {
+		if (++i > MAX) break;
+		let sym = tbd[0];
+		let o = CODE.all[sym];
+		if (nundef(o)) o = getObjectFromWindow(sym);
+		if (o.type == 'var' && !o.name.startsWith('d') && o.name == o.name.toLowerCase()) { tbd.shift(); continue; }
+		if (o.type != 'func') { tbd.shift(); lookupSet(done, [o.type, sym], o); continue; }
+		let olive = window[sym];
+		if (nundef(olive)) { tbd.shift(); lookupSet(done, [o.type, sym], o); continue; }
+		let text = olive.toString();
+		if (!isEmpty(text)) alltext += text + '\r\n';
+		let words = toWords(text, true);
+		words = words.filter(x => text.includes(' ' + x));
+		for (const w of words) {
+			if (nundef(done[w]) && w != sym && isdef(CODE.all[w])) addIf(tbd, w);
+		}
+		tbd.shift();
+		lookupSet(done, [o.type, sym], o);
+	}
+	let tres = '';
+	for (const k of ['const', 'var', 'cla', 'func']) {
+		console.log('done', k, done[k])
+		let o = done[k]; if (nundef(o)) continue;
+		let klist = get_keys(o);
+		if (k == 'func') klist = sortCaseInsensitive(klist);
+		for (const k1 of klist) {
+			let code = CODE.justcode[k1];
+			if (!isEmptyOrWhiteSpace(code)) tres += code + '\r\n';
+		}
+	}
 }
 function computeColor(c) { return (c == 'random') ? randomColor() : c; }
 function computeColorX(c) {
@@ -50950,9 +49923,7 @@ function howto_open(item) {
 	iClear('dTable')
 	if (nundef(item)) item = DB.apps.howto;
 	dSearch = mBy('dSearch'); mClear(dSearch);
-	show_sidebar(CODE.index, show_code);
-	show_code();
-	toggle_apps();
+	show_sidebar(Object.keys(CODE.justcode), show_code);
 	mStyle(dSearch, { bg: item.color });
 	mInputLineWithButtons(dSearch, { Code: filter_codebase, Signatures: filter_sig })
 }
@@ -77706,13 +76677,10 @@ function show_code(res, download = false) {
 	dTable = mBy('dTable');
 	let ta = dTable.getElementsByTagName('textarea')[0];
 	let text = res.text;
-	if (nundef(ta)) ta = mTextarea(null, null, dTable, { w: '100%' });
-	ta.value += '\r\n' + text;
-	let lines = countAll(ta.value, '\n');
-	console.log('lines', lines, window.innerHeight)
-	if (lines+2 > ta.rows && ta.rows < window.innerHeight / 25) ta.rows = lines + 2;
+	if (nundef(ta)) ta = mTextarea(null, null, dTable, { w: '100%', h: '100%' });
+	ta.value = text;
 	if (download) downloadAsText(text, 'hallo', 'js');
-	//console.log('res', res)
+	ta.scrollTop = ta.scrollHeight;
 	return res;
 }
 function show_code_editor() {
@@ -89792,13 +88760,6 @@ function untie_card(card) {
 	if (isdef(oldgroup)) removeInPlace(oldgroup.ids, card.id);
 	return [oldgroup, oldindex];
 }
-function update(time) {
-	var t = time - lastUpdate;
-	lastUpdate = time;
-	ball.update(t);
-	ai.update();
-	requestAnimationFrame(update);
-}
 function update_car(canvas, item) {
 	let di = { ArrowUp: canvas.math ? 90 : 270, ArrowDown: canvas.math ? 270 : 90, ArrowLeft: 180, ArrowRight: 0 };
 	for (const key in di) {
@@ -91231,5 +90192,3 @@ function zText(text, dParent, textStyles, hText, vCenter = false) {
 	}
 	return { text: text, div: dText, extra: extra, lines: lines, h: tSize.h, w: tSize.w, fz: textStyles.fz };
 }
-
-
