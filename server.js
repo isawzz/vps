@@ -729,7 +729,7 @@ function test17() {
 	}
 
 	//delete some var,func,const
-	for (const k of ['c', 'circle', 'uniqueIdEngine', 'maxWidthPreserver']) { delete superdi.var[k]; }
+	for (const k of ['c', 'circle', 'uniqueIdEngine', 'maxWidthPreserver','pstOpponent','pstSelf']) { delete superdi.var[k]; }
 	for (const k of ['anyColorToStandardString', 'colorNameToHex', 'update']) { delete superdi.func[k]; }
 	for (const k of ['RLAYOUT']) { delete superdi.const[k]; }
 
@@ -841,7 +841,7 @@ function test17() {
 	toYamlFile(history, `C:\\D\\a03\\nodemaster\\z_allhistory${LG ? 'LG' : ''}.yaml`);
 }
 //dirlist = ['C:\\D\\a04\\game'];
-test17(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
+//test17(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
 
 //#endregion
 

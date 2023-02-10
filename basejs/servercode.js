@@ -799,26 +799,25 @@ function mEditX(label, val, dParent, styles, classes, handler, id, opt = {}) {
 
 //#region autocomplete (basemin)
 function autocomplete(inp, arr) {
-	/* inp...input element, arr...array of possible autocompleted values:*/
 	var currentFocus;
 	inp = toElem(inp);
-	inp.addEventListener('input', e => { /*execute a func when someone writes in the text field:*/
-		var a, b, i, val = this.value;    /*close any already open lists of autocompleted values*/
+	inp.addEventListener('input', e => { 
+		var a, b, i, val = this.value;    
 		autocomplete_closeAllLists();
 		if (!val) { return false; }
 		currentFocus = -1;
-		a = document.createElement('DIV'); /*create a DIV element that will contain the items (values):*/
+		a = document.createElement('DIV'); 
 		a.setAttribute('id', this.id + 'autocomplete-list');
 		a.setAttribute('class', 'autocomplete-items');
-		this.parentNode.appendChild(a); /*append the DIV element as a child of the autocomplete container:*/
+		this.parentNode.appendChild(a); 
 		for (i = 0; i < arr.length; i++) {
 			if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-				b = document.createElement('DIV'); /*create a DIV element for each matching element:*/
-				b.innerHTML = '<strong>' + arr[i].substr(0, val.length) + '</strong>'; /*make the matching letters bold:*/
+				b = document.createElement('DIV'); 
+				b.innerHTML = '<strong>' + arr[i].substr(0, val.length) + '</strong>'; 
 				b.innerHTML += arr[i].substr(val.length);
-				b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>"; /*insert a input field that will hold the current array item's value:*/
+				b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>"; 
 				b.addEventListener('click', e => {
-					inp.value = this.getElementsByTagName('input')[0].value; /*insert the value for the autocomplete text field:*/
+					inp.value = this.getElementsByTagName('input')[0].value; 
 					autocomplete_closeAllLists();
 				});
 				a.appendChild(b);
@@ -4733,7 +4732,7 @@ function arrNext(el, list) {
 }
 function assertion(cond) {
 	if (!cond) {
-		let args = [...arguments];
+		let args = [...arguments].slice(1);
 		for (const a of args) {
 			console.log('\n', a);
 		}
@@ -8617,6 +8616,16 @@ function addOnelineVars(superdi, o) {
 			if (isNumber(k1)) { continue; } //console.log('var:',v,o.path); 
 
 			if (signal) console.log('trage ein', k1, o1)
+
+			let old = lookup(superdi, [type, k1]);
+			if (!old) o1.history = [o1.path];
+			else {
+				//console.log('old',old) 
+				assertion(isdef(old.history),`${type} ${k1} ${typeof old}`); // ${get_keys(old)}`); //Object.keys(old)); //.toString());
+				o1.history = old.history; 
+				o1.history.push(o1.path); 
+			}
+
 			lookupSetOverride(superdi, [type, k1], o1);
 		}
 	}
@@ -8640,6 +8649,7 @@ function removeCommentsFromLine(line) {
 		l = replaceAllFast(l, '@@#', '//#');
 		l = replaceAllFast(l, ':@@', '://');
 	}
+	if (l.trim().endsWith('*/')) l=stringBefore(l,'/*');
 	return l;
 }
 function getFunctionSignature(firstline, key) {
@@ -8687,7 +8697,12 @@ function parseCodefile1(content, fname, preserveRegionNames = true, info = {}, s
 				//hier muss ich statt path eine pathlist machen!
 				let old = lookup(superdi, [type, key]);
 				if (!old) o.history = [o.path];
-				else { o.history = old.history; o.history.push(o.path); }
+				else {
+					//console.log('old',old) 
+					assertion(isdef(old.history),`${type} ${key} ${typeof old}`); // ${get_keys(old)}`); //Object.keys(old)); //.toString());
+					o.history = old.history; 
+					o.history.push(o.path); 
+				}
 
 				lookupSetOverride(superdi, [type, key], o);
 			}

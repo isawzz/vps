@@ -58,6 +58,7 @@ function removeCommentsFromLine(line) {
 		l = replaceAllFast(l, '@@#', '//#');
 		l = replaceAllFast(l, ':@@', '://');
 	}
+	if (l.trim().endsWith('*/')) l=stringBefore(l,'/*');
 	return l;
 }
 function getFunctionSignature(firstline, key) {

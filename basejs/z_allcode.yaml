@@ -6272,8 +6272,7 @@ ObjetoSolitario: "var ObjetoSolitario = function () {\r
 
   \            if (this.CartaValida(Carta, Columna[c])) {\r
 
-  \              return true; /* Aun se pueden poner cartas en los mazos de
-  las columnas */\r
+  \              return true;\r
 
   \            }\r
 
@@ -6302,8 +6301,7 @@ ObjetoSolitario: "var ObjetoSolitario = function () {\r
   \            if (Valor + 1 === parseInt(Carta.attr(\"valor\")) && Palo ===
   Carta.attr(\"palo\")) {\r
 
-  \              return true; /* Aun se pueden poner cartas en los mazos de
-  las soluciones */\r
+  \              return true;\r
 
   \            }\r
 
@@ -6315,7 +6313,7 @@ ObjetoSolitario: "var ObjetoSolitario = function () {\r
 
   \      }\r
 
-  \      return false; /* No quedan movimientos posibles */\r
+  \      return false;\r
 
   \    }\r
 
@@ -39610,13 +39608,13 @@ __pictoG: "function __pictoG(key, x, y, w, h, fg, bg) {\r
   }"
 __start: "async function __start() {\r
 
-  \  set_run_state_no_server(); \r
+  \  set_run_state_no_server();\r
 
   \  onpagedeactivated(() => { fiddleSave(); dbSave(); });\r
 
-  \  await load_syms(); \r
+  \  await load_syms();\r
 
-  \  await load_db(); \r
+  \  await load_db();\r
 
   \  let dicode = CODE.di = await
   route_path_yaml_dict('../basejs/z_all.yaml');\r
@@ -39624,7 +39622,7 @@ __start: "async function __start() {\r
   \  let dijustcode = CODE.justcode = await
   route_path_yaml_dict('../basejs/z_allcode.yaml');\r
 
-  \  dTable = mSection({h: window.innerHeight - 68},'dTable'); \r
+  \  dTable = mSection({ h: window.innerHeight - 68 }, 'dTable');\r
 
   \  computeClosure();\r
 
@@ -40153,6 +40151,93 @@ _closeInfoboxesForBoatOids: "function _closeInfoboxesForBoatOids(boat) {\r
   \  let oids = boat.o.oids;\r
 
   \  for (const oid of oids) hideInfobox(oid);\r
+
+  }"
+_computeClosure: "function _computeClosure(symlist) {\r
+
+  \  let keys = {};\r
+
+  \  for (const k in CODE.di) { for (const k1 in CODE.di[k]) keys[k1] =
+  CODE.di[k][k1]; }\r
+
+  \  CODE.all = keys;\r
+
+  \  CODE.keylist = Object.keys(keys)\r
+
+  \  let inter = intersection(Object.keys(keys), Object.keys(window));\r
+
+  \  let done = {};\r
+
+  \  let tbd = valf(symlist, ['_start']);\r
+
+  \  let MAX = 1007, i = 0;\r
+
+  \  let alltext = '';\r
+
+  \  while (!isEmpty(tbd)) {\r
+
+  \    if (++i > MAX) break;\r
+
+  \    let sym = tbd[0];\r
+
+  \    let o = CODE.all[sym];\r
+
+  \    if (nundef(o)) o = getObjectFromWindow(sym);\r
+
+  \    if (o.type != 'func' && o.type != 'cla') { tbd.shift(); lookupSet(done,
+  [o.type, sym], o); continue; }\r
+
+  \    let olive = window[sym];\r
+
+  \    if (nundef(olive)) { tbd.shift(); lookupSet(done, [o.type, sym], o);
+  continue; }\r
+
+  \    let text = olive.toString();\r
+
+  \    if (!isEmpty(text)) alltext += text + '\\r\\n';\r
+
+  \    let words = toWords(text, true);\r
+
+  \    for (const w of words) {\r
+
+  \      if (nundef(done[w]) && w != sym && isdef(CODE.all[w])) addIf(tbd,
+  w);\r
+
+  \    }\r
+
+  \    tbd.shift();\r
+
+  \    lookupSet(done, [o.type, sym], o);\r
+
+  \  }\r
+
+  \  let tres = '';\r
+
+  \  for (const k of ['const', 'var', 'cla', 'func']) {\r
+
+  \    console.log('done', k, done[k])\r
+
+  \    let o = done[k]; if (nundef(o)) continue;\r
+
+  \    let klist = get_keys(o);\r
+
+  \    if (k == 'func') klist = sortCaseInsensitive(klist);\r
+
+  \    else if (k == 'cla') klist = sortClassKeys(done);\r
+
+  \    else if (k == 'const') klist = sortConstKeys(done).map(x => x.key);\r
+
+  \    for (const k1 of klist) {\r
+
+  \      let code = CODE.justcode[k1];\r
+
+  \      if (!isEmptyOrWhiteSpace(code)) tres += code + '\\r\\n';\r
+
+  \    }\r
+
+  \  }\r
+
+  \  return done;\r
 
   }"
 _createDeck: "function _createDeck({ hasJokers = false } = {}) {\r
@@ -43212,13 +43297,13 @@ _start0: "async function _start0() {\r
   }"
 _start1: "async function _start1() {\r
 
-  \  set_run_state_no_server(); \r
+  \  set_run_state_no_server();\r
 
   \  onpagedeactivated(() => { fiddleSave(); dbSave(); });\r
 
-  \  await load_syms(); \r
+  \  await load_syms();\r
 
-  \  await load_db(); \r
+  \  await load_db();\r
 
   \  let dicode = CODE.di = await
   route_path_yaml_dict('../basejs/z_all.yaml');\r
@@ -58480,11 +58565,9 @@ autocomplete: "function autocomplete(inp, arr) {\r
 
   \  inp = toElem(inp);\r
 
-  \  inp.addEventListener('input', e => { /*execute a func when someone writes
-  in the text field:*/\r
+  \  inp.addEventListener('input', e => {\r
 
-  \    var a, b, i, val = this.value;    /*close any already open lists of
-  autocompleted values*/\r
+  \    var a, b, i, val = this.value;\r
 
   \    autocomplete_closeAllLists();\r
 
@@ -58492,36 +58575,32 @@ autocomplete: "function autocomplete(inp, arr) {\r
 
   \    currentFocus = -1;\r
 
-  \    a = document.createElement('DIV'); /*create a DIV element that will
-  contain the items (values):*/\r
+  \    a = document.createElement('DIV');\r
 
   \    a.setAttribute('id', this.id + 'autocomplete-list');\r
 
   \    a.setAttribute('class', 'autocomplete-items');\r
 
-  \    this.parentNode.appendChild(a); /*append the DIV element as a child of
-  the autocomplete container:*/\r
+  \    this.parentNode.appendChild(a);\r
 
   \    for (i = 0; i < arr.length; i++) {\r
 
   \      if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase())
   {\r
 
-  \        b = document.createElement('DIV'); /*create a DIV element for each
-  matching element:*/\r
+  \        b = document.createElement('DIV');\r
 
   \        b.innerHTML = '<strong>' + arr[i].substr(0, val.length) +
-  '</strong>'; /*make the matching letters bold:*/\r
+  '</strong>';\r
 
   \        b.innerHTML += arr[i].substr(val.length);\r
 
-  \        b.innerHTML += \"<input type='hidden' value='\" + arr[i] + \"'>\";
-  /*insert a input field that will hold the current array item's value:*/\r
+  \        b.innerHTML += \"<input type='hidden' value='\" + arr[i] +
+  \"'>\";\r
 
   \        b.addEventListener('click', e => {\r
 
-  \          inp.value = this.getElementsByTagName('input')[0].value; /*insert
-  the value for the autocomplete text field:*/\r
+  \          inp.value = this.getElementsByTagName('input')[0].value;\r
 
   \          autocomplete_closeAllLists();\r
 
@@ -58616,9 +58695,8 @@ autocomplete_removeActive: "function autocomplete_removeActive(x) {\r
 autoGameScreen: "function autoGameScreen() {\r\n}"
 autopoll: function autopoll(ms) { TO.poll = setTimeout(_poll, valf(ms,
   valf(Z.options.poll, 2000))); }
-autoselect_action: function autoselect_action(r, action, uname, item) {	/*item
-  is added to simulated ui clicks only!*/	select_action(r, action, uname, item);
-  }
+autoselect_action: function autoselect_action(r, action, uname, item) {
+  select_action(r, action, uname, item); }
 autosend: "function autosend(plname, slot) {\r
 
   \  Z.uplayer = plname;\r
@@ -69248,7 +69326,7 @@ computeClosure: "function computeClosure(symlist) {\r
 
   \  let done = {};\r
 
-  \  let tbd = valf(symlist,['_start']); \r
+  \  let tbd = valf(symlist, ['_start']);\r
 
   \  let MAX = 1007, i = 0;\r
 
@@ -69265,7 +69343,7 @@ computeClosure: "function computeClosure(symlist) {\r
   \    if (nundef(o)) o = getObjectFromWindow(sym);\r
 
   \    if (o.type == 'var' && !o.name.startsWith('d') && o.name ==
-  o.name.toLowerCase()) {tbd.shift(); continue; }\r
+  o.name.toLowerCase()) { tbd.shift(); continue; }\r
 
   \    if (o.type != 'func') { tbd.shift(); lookupSet(done, [o.type, sym], o);
   continue; }\r
@@ -69279,9 +69357,9 @@ computeClosure: "function computeClosure(symlist) {\r
 
   \    if (!isEmpty(text)) alltext += text + '\\r\\n';\r
 
-  \    let words = toWords(text, true); \r
+  \    let words = toWords(text, true);\r
 
-  \    words = words.filter(x=>text.includes(' '+x));\r
+  \    words = words.filter(x => text.includes(' ' + x));\r
 
   \    for (const w of words) {\r
 
@@ -69292,7 +69370,7 @@ computeClosure: "function computeClosure(symlist) {\r
 
   \    tbd.shift();\r
 
-  \    lookupSet(done, [o.type, sym], o); \r
+  \    lookupSet(done, [o.type, sym], o);\r
 
   \  }\r
 
@@ -69308,7 +69386,7 @@ computeClosure: "function computeClosure(symlist) {\r
 
   \    if (k == 'func') klist = sortCaseInsensitive(klist);\r
 
-  \    for (const k1 of klist) { \r
+  \    for (const k1 of klist) {\r
 
   \      let code = CODE.justcode[k1];\r
 
@@ -80005,8 +80083,8 @@ executeFrame: "function executeFrame() {\r
   \    drawLineToMouse();\r
 
   }"
-executeFunctionByName: "function executeFunctionByName(functionName, context /*,
-  args */) {\r
+executeFunctionByName: "function executeFunctionByName(functionName, context)
+  {\r
 
   \  var args = Array.prototype.slice.call(arguments, 2);\r
 
@@ -80508,6 +80586,17 @@ extractColorsFromCss: "function extractColorsFromCss() {\r
   \  }\r
 
   \  return di;\r
+
+  }"
+extractKeywords: "function extractKeywords(text) {\r
+
+  \  let words = toWords(text, true);\r
+
+  \  let res = [];\r
+
+  \  for (const w of words) { if (isdef(CODE.all[w])) addIf(res, w); }\r
+
+  \  return res;\r
 
   }"
 extractPixel: "function extractPixel(str) {\r
@@ -82340,8 +82429,6 @@ fiddleEnterResize: "function fiddleEnterResize(ev) {\r
   \    console.log('hallo!');\r
 
   \    let ta = ev.target;\r
-
-  \    return;\r
 
   \    let x = ta.value;\r
 
@@ -131438,6 +131525,52 @@ onClickClearTable: "async function onClickClearTable() {\r
   \  resetUIDs();\r
 
   }"
+onclickCodeInSidebar: "function onclickCodeInSidebar(ev) {\r
+
+  \  let key = isString(ev) ? ev : ev.target.innerHTML;\r
+
+  \  let text = CODE.justcode[key];\r
+
+  \  let ta = AU.ta; let dParent = null;\r
+
+  \  if (nundef(ta)) {\r
+
+  \    dParent = valf(dFiddle, dTable, document.body);\r
+
+  \    let talist = dTable.getElementsByTagName('textarea');\r
+
+  \    if (isEmpty(talist)) ta = mTextarea(null, null, dParent, { w: '100%'
+  });\r
+
+  \    else ta = talist[0];\r
+
+  \  } else dParent = ta.parentNode;\r
+
+  \  ta.value = text;\r
+
+  \  let hideal = ta.scrollHeight;\r
+
+  \  console.log('ta.scrollheight', hideal)\r
+
+  \  let hsidebar = window.innerHeight - 68;\r
+
+  \  mStyle(dParent, { hmax: hsidebar });\r
+
+  \  let lines = text.split('\\n');\r
+
+  \  let min = lines.length + 1;\r
+
+  \  mStyle(ta, { h: hideal, hmin: 50, hmax: hsidebar - 44 });\r
+
+  \  ta.scrollTop = 0;\r
+
+  \  let download = false;\r
+
+  \  if (download) downloadAsText(text, 'hallo', 'js');\r
+
+  \  return text;\r
+
+  }"
 onClickCollapse: function onClickCollapse() { collapseAll(); }
 onClickComputer: function onClickComputer() { }
 onClickConnect: function onClickConnect(port) { initSocket(port); }
@@ -146280,6 +146413,8 @@ removeCommentsFromLine: "function removeCommentsFromLine(line) {\r
 
   \  }\r
 
+  \  if (l.trim().endsWith('*/')) l = stringBefore(l, '/*');\r
+
   \  return l;\r
 
   }"
@@ -149283,7 +149418,7 @@ runcode: "function runcode(code, callback = null) {\r
   \    console.log('===>result:', x);\r
 
   \    if (isdef(dMessage)) dMessage.innerHTML = isDict(x) ? JSON.stringify(x)
-  : x.toString();\r
+  : isdef(x) ? x.toString() : x;\r
 
   \  }\r
 
@@ -153180,7 +153315,7 @@ setGradientImageBackground: "function setGradientImageBackground(d, path, color1
 
   \  d.style.background = color1;\r
 
-  \  d.style.backgroundImage = `url(${path})`;/* fallback */\r
+  \  d.style.backgroundImage = `url(${path})`;\r
 
   \  d.style.backgroundImage = `url(${path}), linear-gradient(${color1},
   ${color2})`;\r
@@ -154984,7 +155119,7 @@ show_code: "function show_code(res, download = false) {\r
 
   \  let text = res.text;\r
 
-  \  if (nundef(ta)) ta = mTextarea(null, null, dTable, { w: '100%', h:'100%'
+  \  if (nundef(ta)) ta = mTextarea(null, null, dTable, { w: '100%', h: '100%'
   });\r
 
   \  ta.value = text;\r
@@ -159801,6 +159936,102 @@ sortCaseInsensitive: "function sortCaseInsensitive(list) {\r
   a.toLowerCase().localeCompare(b.toLowerCase()); });\r
 
   \  return list;\r
+
+  }"
+sortClassKeys: "function sortClassKeys(di) {\r
+
+  \  let classes = dict2list(di.cla, 'key');\r
+
+  \  let classesWithoutExtends = classes.filter(x => !x.code.includes('
+  extends '));\r
+
+  \  let keys = sortCaseInsensitive(classesWithoutExtends.map(x => x.key));\r
+
+  \  let dinew = {};\r
+
+  \  for (const el of keys) { dinew[el] = di.cla[el]; }\r
+
+  \  let classesWithExtends = classes.filter(x => x.code.includes(' extends
+  '));\r
+
+  \  let MAX = 150, i = 0;\r
+
+  \  console.log('starting class loop')\r
+
+  \  while (!isEmpty(classesWithExtends)) {\r
+
+  \    if (++i > MAX) { console.log(\"WRONG!!!\"); return []; }\r
+
+  \    let o = classesWithExtends.find(x => {\r
+
+  \      let ext = firstWordAfter(x.code, 'extends', true).trim();\r
+
+  \      if (nundef(di.cla[ext])) return true;\r
+
+  \      return isdef(dinew[ext]);\r
+
+  \    });\r
+
+  \    if (isdef(o)) { dinew[o.key] = o; removeInPlace(classesWithExtends, o);
+  }\r
+
+  \  }\r
+
+  \  return Object.keys(dinew);\r
+
+  }"
+sortConstKeys: "function sortConstKeys(di) {\r
+
+  \  let tbd = dict2list(di.const, 'key');\r
+
+  \  let donelist = [];\r
+
+  \  tbd = sortBy(tbd, x => x.code.length);\r
+
+  \  let dinew = {};\r
+
+  \  let MAX = 3000, i1 = 0, i2 = 0, i3 = 0;\r
+
+  \  console.log('starting const loop');\r
+
+  \  console.log('const keys', tbd.length);\r
+
+  \  while (!isEmpty(tbd)) {\r
+
+  \    if (++i1 > MAX) { console.log(\"WRONG!!!\"); return donelist; }\r
+
+  \    let o = null;\r
+
+  \    i2 = 0;\r
+
+  \    for (const c of tbd) {\r
+
+  \      if (++i2 > MAX) { console.log(\"WRONG!!!\"); return donelist; }\r
+
+  \      i3 = 0;\r
+
+  \      let ok = true;\r
+
+  \      for (const c1 of tbd) {\r
+
+  \        if (++i3 > MAX) { console.log(\"WRONG!!!\"); return donelist; }\r
+
+  \        if (c1 == c) continue;\r
+
+  \        if (c.code.includes(c1.key)) ok = false;\r
+
+  \      }\r
+
+  \      if (ok) { o = c; break; }\r
+
+  \    }\r
+
+  \    if (isdef(o)) { donelist.push(o); dinew[o.key] = o; removeInPlace(tbd,
+  o); }\r
+
+  \  }\r
+
+  \  return donelist;\r
 
   }"
 sortKeys: "function sortKeys(o) {\r

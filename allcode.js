@@ -1383,17 +1383,6 @@ const resetPeep = ({ stage, peep }) => {
 const allPeeps = []
 const availablePeeps = []
 const crowd = []
-const MARGIN_S = '3px 6px';
-const MARGIN_M = '4px 10px';
-const MARGIN_XS = '2px 4px';
-const complementaryColor = color => {
-	const hexColor = color.replace('#', '0x');
-	return `#${('000000' + ('0xffffff' ^ hexColor).toString(16)).slice(-6)}`;
-};
-const immediateStart = true;
-const uiHaltedMask = 1 << 0;
-const beforeActivationMask = 1 << 1;
-const hasClickedMask = 1 << 2;
 const CODE = {};
 const CODE_VERSION = 1;
 const SHOW_CODE = false;
@@ -1413,6 +1402,17 @@ const Perlin = {
 	channels: {},
 }
 const MyNames = ['amanda', 'angela', 'erin', 'holly', 'jan', 'karen', 'kelly', 'pam', 'phyllis', 'andy', 'creed', 'darryl', 'david', 'dwight', 'felix', 'gul', 'jim', 'kevin', 'luis', 'michael', 'nil', 'oscar', 'ryan', 'stanley', 'toby', 'wolfgang'];
+const MARGIN_S = '3px 6px';
+const MARGIN_M = '4px 10px';
+const MARGIN_XS = '2px 4px';
+const complementaryColor = color => {
+	const hexColor = color.replace('#', '0x');
+	return `#${('000000' + ('0xffffff' ^ hexColor).toString(16)).slice(-6)}`;
+};
+const immediateStart = true;
+const uiHaltedMask = 1 << 0;
+const beforeActivationMask = 1 << 1;
+const hasClickedMask = 1 << 2;
 const myDom = {
 	points: {
 		text: document.getElementById('points-text'),
@@ -2049,7 +2049,7 @@ var ObjetoSolitario = function () {
 				do {
 					for (c = 7; c > 0; c--) {
 						if (this.CartaValida(Carta, Columna[c])) {
-							return true; /* Aun se pueden poner cartas en los mazos de las columnas */
+							return true;
 						}
 					}
 					Carta = Carta.parent();
@@ -2062,13 +2062,13 @@ var ObjetoSolitario = function () {
 						Valor = (Solucion[s].prop("tagName") === "CARTA") ? parseInt(Solucion[s].attr("valor")) : -1;
 						Palo = (Solucion[s].prop("tagName") === "CARTA") ? Solucion[s].attr("palo") : Carta.attr("palo");
 						if (Valor + 1 === parseInt(Carta.attr("valor")) && Palo === Carta.attr("palo")) {
-							return true; /* Aun se pueden poner cartas en los mazos de las soluciones */
+							return true;
 						}
 					}
 					Carta = Carta.parent();
 				} while (Carta.prop("tagName") === "CARTA");
 			}
-			return false; /* No quedan movimientos posibles */
+			return false;
 		}
 		return true;
 	};
@@ -4506,6 +4506,7 @@ var globalSum = 0
 var positionCount;
 var BlockServerSend1 = false;
 var F;
+var dParent;
 var UBEF = null;
 var GBEF = null;
 var EBEF = null;
@@ -4913,6 +4914,18 @@ var resizeObserver = new ResizeObserver(entries => {
 	}
 });
 var PORT = 3000;
+var Globals;
+var LIVE_SERVER;
+var NODEJS;
+var SINGLECLIENT;
+var SERVERURL;
+var dButtons;
+var dCode;
+var dContent;
+var dFiddle;
+var dSidebar;
+var AU = {};
+var CONTEXT = null;
 var UIDHelpers = 0;
 var NAMED_UIDS = {};
 var palDict = {};
@@ -5167,18 +5180,6 @@ var Complex = {
 	factor: .5,
 	max: 6,
 };
-var NODEJS;
-var SERVERURL;
-var LIVE_SERVER;
-var SINGLECLIENT;
-var dFiddle;
-var Globals;
-var dButtons;
-var dCode;
-var dContent;
-var dSidebar;
-var AU = {};
-var CONTEXT = null;
 var dConsole;
 var COLUMNS = { COL_A: 0, COL_B: 1, COL_C: 2, COL_D: 3, COL_E: 4, COL_F: 5, COL_G: 6, COL_H: 7, COL_NONE: 8 };
 var ROWS = { ROW_1: 0, ROW_2: 1, ROW_3: 2, ROW_4: 3, ROW_5: 4, ROW_6: 5, ROW_7: 6, ROW_8: 7, ROW_NONE: 8 };
@@ -19557,6 +19558,48 @@ function _closeInfoboxesForBoatOids(boat) {
 	let oids = boat.o.oids;
 	for (const oid of oids) hideInfobox(oid);
 }
+function _computeClosure(symlist) {
+	let keys = {};
+	for (const k in CODE.di) { for (const k1 in CODE.di[k]) keys[k1] = CODE.di[k][k1]; }
+	CODE.all = keys;
+	CODE.keylist = Object.keys(keys)
+	let inter = intersection(Object.keys(keys), Object.keys(window));
+	let done = {};
+	let tbd = valf(symlist, ['_start']);
+	let MAX = 1007, i = 0;
+	let alltext = '';
+	while (!isEmpty(tbd)) {
+		if (++i > MAX) break;
+		let sym = tbd[0];
+		let o = CODE.all[sym];
+		if (nundef(o)) o = getObjectFromWindow(sym);
+		if (o.type != 'func' && o.type != 'cla') { tbd.shift(); lookupSet(done, [o.type, sym], o); continue; }
+		let olive = window[sym];
+		if (nundef(olive)) { tbd.shift(); lookupSet(done, [o.type, sym], o); continue; }
+		let text = olive.toString();
+		if (!isEmpty(text)) alltext += text + '\r\n';
+		let words = toWords(text, true);
+		for (const w of words) {
+			if (nundef(done[w]) && w != sym && isdef(CODE.all[w])) addIf(tbd, w);
+		}
+		tbd.shift();
+		lookupSet(done, [o.type, sym], o);
+	}
+	let tres = '';
+	for (const k of ['const', 'var', 'cla', 'func']) {
+		console.log('done', k, done[k])
+		let o = done[k]; if (nundef(o)) continue;
+		let klist = get_keys(o);
+		if (k == 'func') klist = sortCaseInsensitive(klist);
+		else if (k == 'cla') klist = sortClassKeys(done);
+		else if (k == 'const') klist = sortConstKeys(done).map(x => x.key);
+		for (const k1 of klist) {
+			let code = CODE.justcode[k1];
+			if (!isEmptyOrWhiteSpace(code)) tres += code + '\r\n';
+		}
+	}
+	return done;
+}
 function _createDeck({ hasJokers = false } = {}) {
 	let deck = null;
 	if (hasJokers) { deck = DeckA(true); }
@@ -28642,23 +28685,23 @@ function aushaengen(oid, R) {
 function autocomplete(inp, arr) {
 	var currentFocus;
 	inp = toElem(inp);
-	inp.addEventListener('input', e => { /*execute a func when someone writes in the text field:*/
-		var a, b, i, val = this.value;    /*close any already open lists of autocompleted values*/
+	inp.addEventListener('input', e => {
+		var a, b, i, val = this.value;
 		autocomplete_closeAllLists();
 		if (!val) { return false; }
 		currentFocus = -1;
-		a = document.createElement('DIV'); /*create a DIV element that will contain the items (values):*/
+		a = document.createElement('DIV');
 		a.setAttribute('id', this.id + 'autocomplete-list');
 		a.setAttribute('class', 'autocomplete-items');
-		this.parentNode.appendChild(a); /*append the DIV element as a child of the autocomplete container:*/
+		this.parentNode.appendChild(a);
 		for (i = 0; i < arr.length; i++) {
 			if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-				b = document.createElement('DIV'); /*create a DIV element for each matching element:*/
-				b.innerHTML = '<strong>' + arr[i].substr(0, val.length) + '</strong>'; /*make the matching letters bold:*/
+				b = document.createElement('DIV');
+				b.innerHTML = '<strong>' + arr[i].substr(0, val.length) + '</strong>';
 				b.innerHTML += arr[i].substr(val.length);
-				b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>"; /*insert a input field that will hold the current array item's value:*/
+				b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
 				b.addEventListener('click', e => {
-					inp.value = this.getElementsByTagName('input')[0].value; /*insert the value for the autocomplete text field:*/
+					inp.value = this.getElementsByTagName('input')[0].value;
 					autocomplete_closeAllLists();
 				});
 				a.appendChild(b);
@@ -28709,7 +28752,7 @@ function autocomplete_removeActive(x) {
 function autoGameScreen() {
 }
 function autopoll(ms) { TO.poll = setTimeout(_poll, valf(ms, valf(Z.options.poll, 2000))); }
-function autoselect_action(r, action, uname, item) {	/*item is added to simulated ui clicks only!*/	select_action(r, action, uname, item); }
+function autoselect_action(r, action, uname, item) { select_action(r, action, uname, item); }
 function autosend(plname, slot) {
 	Z.uplayer = plname;
 	take_turn_collect_open();
@@ -39351,7 +39394,7 @@ function executeFrame() {
 	if (mouse.down)
 		drawLineToMouse();
 }
-function executeFunctionByName(functionName, context /*, args */) {
+function executeFunctionByName(functionName, context) {
 	var args = Array.prototype.slice.call(arguments, 2);
 	var namespaces = functionName.split('.');
 	var func = namespaces.pop();
@@ -39611,6 +39654,12 @@ function extractColorsFromCss() {
 		}
 	}
 	return di;
+}
+function extractKeywords(text) {
+	let words = toWords(text, true);
+	let res = [];
+	for (const w of words) { if (isdef(CODE.all[w])) addIf(res, w); }
+	return res;
 }
 function extractPixel(str) {
 	if (isNumber(str)) return str;
@@ -40491,7 +40540,6 @@ function fiddleEnterResize(ev) {
 	if (ev.key == 'Enter') {
 		console.log('hallo!');
 		let ta = ev.target;
-		//return;
 		let x = ta.value;
 		let lines = x.split('\n');
 		let min = lines.length + 1;
@@ -64857,6 +64905,29 @@ async function onClickClearTable() {
 	mBy('table').style.minWidth = 0; mBy('table').style.minHeight = 0;
 	resetUIDs();
 }
+function onclickCodeInSidebar(ev) {
+	let key = isString(ev) ? ev : ev.target.innerHTML;
+	let text = CODE.justcode[key];
+	let ta = AU.ta; let dParent = null;
+	if (nundef(ta)) {
+		dParent = valf(dFiddle, dTable, document.body);
+		let talist = dTable.getElementsByTagName('textarea');
+		if (isEmpty(talist)) ta = mTextarea(null, null, dParent, { w: '100%' });
+		else ta = talist[0];
+	} else dParent = ta.parentNode;
+	ta.value = text;
+	let hideal = ta.scrollHeight;
+	console.log('ta.scrollheight', hideal)
+	let hsidebar = window.innerHeight - 68;
+	mStyle(dParent, { hmax: hsidebar });
+	let lines = text.split('\n');
+	let min = lines.length + 1;
+	mStyle(ta, { h: hideal, hmin: 50, hmax: hsidebar - 44 });
+	ta.scrollTop = 0;
+	let download = false;
+	if (download) downloadAsText(text, 'hallo', 'js');
+	return text;
+}
 function onClickCollapse() { collapseAll(); }
 function onClickComputer() { }
 function onClickConnect(port) { initSocket(port); }
@@ -72316,6 +72387,7 @@ function removeCommentsFromLine(line) {
 		l = replaceAllFast(l, '@@#', '//#');
 		l = replaceAllFast(l, ':@@', '://');
 	}
+	if (l.trim().endsWith('*/')) l = stringBefore(l, '/*');
 	return l;
 }
 function removeDOM(elem) { purge(elem); }
@@ -73849,7 +73921,7 @@ function runcode(code, callback = null) {
 	if (callback) callback(x);
 	else {
 		console.log('===>result:', x);
-		if (isdef(dMessage)) dMessage.innerHTML = isDict(x) ? JSON.stringify(x) : isdef(x)? x.toString() : x;
+		if (isdef(dMessage)) dMessage.innerHTML = isDict(x) ? JSON.stringify(x) : isdef(x) ? x.toString() : x;
 	}
 }
 function runderkreis(color, id) {
@@ -75815,7 +75887,7 @@ function setGoal(index) {
 }
 function setGradientImageBackground(d, path, color1 = 'red', color2 = 'green') {
 	d.style.background = color1;
-	d.style.backgroundImage = `url(${path})`;/* fallback */
+	d.style.backgroundImage = `url(${path})`;
 	d.style.backgroundImage = `url(${path}), linear-gradient(${color1}, ${color2})`;
 	d.style.backgroundSize = '100%';
 }
@@ -79059,6 +79131,53 @@ function sortCardItemsToSequence(items, rankstr = '23456789TJQKA', jolly_allowed
 function sortCaseInsensitive(list) {
 	list.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
 	return list;
+}
+function sortClassKeys(di) {
+	let classes = dict2list(di.cla, 'key');
+	let classesWithoutExtends = classes.filter(x => !x.code.includes(' extends '));
+	let keys = sortCaseInsensitive(classesWithoutExtends.map(x => x.key));
+	let dinew = {};
+	for (const el of keys) { dinew[el] = di.cla[el]; }
+	let classesWithExtends = classes.filter(x => x.code.includes(' extends '));
+	let MAX = 150, i = 0;
+	console.log('starting class loop')
+	while (!isEmpty(classesWithExtends)) {
+		if (++i > MAX) { console.log("WRONG!!!"); return []; }
+		let o = classesWithExtends.find(x => {
+			let ext = firstWordAfter(x.code, 'extends', true).trim();
+			if (nundef(di.cla[ext])) return true;
+			return isdef(dinew[ext]);
+		});
+		if (isdef(o)) { dinew[o.key] = o; removeInPlace(classesWithExtends, o); }
+	}
+	return Object.keys(dinew);
+}
+function sortConstKeys(di) {
+	let tbd = dict2list(di.const, 'key');
+	let donelist = [];
+	tbd = sortBy(tbd, x => x.code.length);
+	let dinew = {};
+	let MAX = 3000, i1 = 0, i2 = 0, i3 = 0;
+	console.log('starting const loop');
+	console.log('const keys', tbd.length);
+	while (!isEmpty(tbd)) {
+		if (++i1 > MAX) { console.log("WRONG!!!"); return donelist; }
+		let o = null;
+		i2 = 0;
+		for (const c of tbd) {
+			if (++i2 > MAX) { console.log("WRONG!!!"); return donelist; }
+			i3 = 0;
+			let ok = true;
+			for (const c1 of tbd) {
+				if (++i3 > MAX) { console.log("WRONG!!!"); return donelist; }
+				if (c1 == c) continue;
+				if (c.code.includes(c1.key)) ok = false;
+			}
+			if (ok) { o = c; break; }
+		}
+		if (isdef(o)) { donelist.push(o); dinew[o.key] = o; removeInPlace(tbd, o); }
+	}
+	return donelist;
 }
 function sortKeys(o) {
 	if (Array.isArray(o)) {
