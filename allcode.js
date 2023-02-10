@@ -40491,7 +40491,7 @@ function fiddleEnterResize(ev) {
 	if (ev.key == 'Enter') {
 		console.log('hallo!');
 		let ta = ev.target;
-		return;
+		//return;
 		let x = ta.value;
 		let lines = x.split('\n');
 		let min = lines.length + 1;
@@ -73849,7 +73849,7 @@ function runcode(code, callback = null) {
 	if (callback) callback(x);
 	else {
 		console.log('===>result:', x);
-		if (isdef(dMessage)) dMessage.innerHTML = isDict(x) ? JSON.stringify(x) : x.toString();
+		if (isdef(dMessage)) dMessage.innerHTML = isDict(x) ? JSON.stringify(x) : isdef(x)? x.toString() : x;
 	}
 }
 function runderkreis(color, id) {

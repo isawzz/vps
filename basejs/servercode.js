@@ -8584,7 +8584,7 @@ function addOnelineVars(superdi, o) {
 	//if (oneliner && key == specialword) console.log('oneliner', info.path, iline, type);
 
 	//var declaration in a line that contains '[' or '{ ' will NOT be taken into consideration!!!
-	let signal=false;
+	let signal = false;
 	if (oneliner && type == 'var' && code.includes(',') && !code.includes('[') && !code.includes('{ ')) {
 		let othervars = stringAfter(code, 'var').trim().split(',');
 		let varkeys = othervars.map(x => firstWord(x, true));
@@ -8593,30 +8593,30 @@ function addOnelineVars(superdi, o) {
 
 		//the first one is o
 		assertion(varkeys[0] == o.name, `WTF?!?! ${varkeys[0]} ### ${o.name}?!?!?!?!????????????? addOnelinerVars`);
-		o.code = stringBefore(code, ',')+';' //code.endsWith(';')?'\r\n':';\r\n';
+		o.code = stringBefore(code, ',') + ';' //code.endsWith(';')?'\r\n':';\r\n';
 
 		othervars.shift();
-		if (signal) console.log('othervars',othervars,varkeys)
+		if (signal) console.log('othervars', othervars, varkeys)
 		//console.log('othervars',othervars,o.path)
 		for (const vcode of othervars) {
 
 			let o1 = jsCopy(o);
 
 			let code1 = vcode.trim();
-			if (!code1.endsWith(';')) code1+=';';
-			if (signal) console.log('code1',code1);
+			if (!code1.endsWith(';')) code1 += ';';
+			if (signal) console.log('code1', code1);
 
 			//o1.lead = o.key;
 			let k1 = o1.name = firstWord(code1, true);
-			if (signal) console.log('k1',k1);
+			if (signal) console.log('k1', k1);
 
 			o1.code = 'var ' + code1; // + code1.endsWith(';')?'':';'; //'\r\n':';\r\n';
 			//if (k1 == 'A') console.log('A',o1.code)
-			
+
 			o1.sig = `var ${k1};`;
 			if (isNumber(k1)) { continue; } //console.log('var:',v,o.path); 
 
-			if (signal) console.log('trage ein',k1,o1)
+			if (signal) console.log('trage ein', k1, o1)
 			lookupSetOverride(superdi, [type, k1], o1);
 		}
 	}
@@ -8680,9 +8680,14 @@ function parseCodefile1(content, fname, preserveRegionNames = true, info = {}, s
 				addKeys(info, o);
 
 				// if (o.type == 'var' && o.fname == 'chess.js') { o.index = iline; lookupAddIfToList(superdi, ['chessvar'], o.name); }
-				if (o.type == 'var' && o.fname == 'chess.js' && o.name.startsWith('brd_')) { lookupSet(superdi, ['chessvar', o.name], true); }
+				if (o.type == 'var' && o.filename == 'chess.js' && o.name.startsWith('brd_')) { lookupSet(superdi, ['chessvar', o.name], true); }
 
 				if (type == 'var') addOnelineVars(superdi, o); //onelinerVars may modify o.code!
+
+				//hier muss ich statt path eine pathlist machen!
+				let old = lookup(superdi, [type, key]);
+				if (!old) o.history = [o.path];
+				else { o.history = old.history; o.history.push(o.path); }
 
 				lookupSetOverride(superdi, [type, key], o);
 			}

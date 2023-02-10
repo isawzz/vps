@@ -1,4 +1,4 @@
-onload = _start1;
+onload = __start; // _start1 | __start
 
 async function __start() {
 	set_run_state_no_server(); // set_run_state_no_server | set_run_state_local | set_run_state_vps
@@ -8,12 +8,12 @@ async function __start() {
 	let dicode = CODE.di = await route_path_yaml_dict('../basejs/z_all.yaml');
 	let dijustcode = CODE.justcode = await route_path_yaml_dict('../basejs/z_allcode.yaml');
 
-	dTable = mSection({h: window.innerHeight - 68},'dTable'); // mBy('dTable');
+	dTable = mSection({h: window.innerHeight - 68},'dTable'); 
 
-	computeClosure();
 	//howto_open();
-	//fiddleInit();
-	//show_sidebar(sortCaseInsensitive(get_keys(dicode.func)),show_code);
+	fiddleInit();
+	show_sidebar(sortCaseInsensitive(get_keys(dicode.func)),onclickCodeInSidebar);
+	onclickCodeInSidebar('autocomplete')
 }
 
 async function _start1() {

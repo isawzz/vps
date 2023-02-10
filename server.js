@@ -199,8 +199,11 @@ let dirimportant = [
 	'C:\\D\\a03\\nodemaster\\cai',
 	'C:\\D\\a03\\nodemaster\\noc',
 	'C:\\D\\a03\\nodemaster\\socketstarter',
+	'C:\\D\\a04\\_stuff\\_versions\\v4\\basejs',
+	'C:\\D\\a04\\_stuff\\_versions\\v4\\game',
 	'C:\\D\\a04\\basejs',
 	'C:\\D\\a04\\game',
+	'C:\\D\\a04',
 	// 'C:\\D\\a04\\y\\v2',
 
 ];
@@ -797,6 +800,7 @@ function test17() {
 	for (const varkey in superdi.chessvar) { let o = superdi.var[varkey]; text += o.code.trim() + '\r\n'; } //o.code=''; }
 
 	let justcode = {};
+	let history = {};
 	text += '\r\n';
 	//console.log('text',text)
 	for (const type of ['var', 'const', 'cla', 'func']) {
@@ -817,6 +821,8 @@ function test17() {
 
 			justcode[k] = res[k].code.trim();
 			delete res[k].code;
+			history[k] = res[k].history;
+			delete res[k].history;
 		}
 		di2[type] = res;
 		console.log('', type, Object.keys(di2[type]).length);
@@ -832,9 +838,10 @@ function test17() {
 	toFile(text, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.js`);
 	toYamlFile(di2, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
 	toYamlFile(justcode, `C:\\D\\a03\\nodemaster\\z_allcode${LG ? 'LG' : ''}.yaml`);
+	toYamlFile(history, `C:\\D\\a03\\nodemaster\\z_allhistory${LG ? 'LG' : ''}.yaml`);
 }
 //dirlist = ['C:\\D\\a04\\game'];
-//test17(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
+test17(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
 
 //#endregion
 
