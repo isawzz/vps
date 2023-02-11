@@ -61205,11 +61205,11 @@ function mInputGroup(dParent, styles) {
 	if (isdef(styles)) styles = deepmergeOverride(baseStyles, styles); else styles = baseStyles;
 	return mDiv(dParent, styles);
 }
-function mInputLineWithButtons(dParent, opts) {
+function mInputLineWithButtons(dParent, opts, val='') {
 	let html = `
     <form id="fSearch" action="javascript:void(0);" class='form' autocomplete='off'>
       <label>Keywords:</label>
-      <input id="iKeywords" type="text" name="keywords" style="flex-grow:1" />
+      <input id="iKeywords" type="text" name="keywords" style="flex-grow:1" value="${val}" />
     </form>
     `;
 	let elem = mCreateFrom(html);
@@ -61220,6 +61220,7 @@ function mInputLineWithButtons(dParent, opts) {
 		mButton(cap, opts[cap], elem, {}, 'hop1');
 	}
 	elem.onsubmit = (ev) => { ev.preventDefault(); };
+
 	return elem;
 }
 function mInputX(dParent, styles, { textPadding, label, value, submitOnEnter, autoComplete, autoFocus, autoSelect, handler, createContainer } = {}) {
@@ -77389,7 +77390,7 @@ function show_shield(msg) {
 	mBy('dShield').innerHTML = msg;
 }
 function show_sidebar(list, handler) {
-	dSidebar = mBy('dSidebar'); mStyle(dSidebar, { w: 300, h: window.innerHeight - 68, overy: 'auto' });
+	dSidebar = mBy('dSidebar'); mClear(dSidebar); mStyle(dSidebar, { w: 300, h: window.innerHeight - 68, overy: 'auto' });
 	for (const k of list) {
 		let d = mDiv(dSidebar, { cursor: 'pointer', wmin: 100 }, null, k, 'hop1')
 		if (isdef(handler)) d.onclick = handler;
