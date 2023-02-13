@@ -4214,6 +4214,8 @@ dTable: var dTable;
 dTableName: var dTableName;
 dTables: var dTables;
 dTableShield: var dTableShield;
+dTest: var dTest;
+dTestButtons: var dTestButtons;
 dTitle: var dTitle;
 dTop: var dTop;
 dummyString: var dummyString = "translateX(-50%) scale(1.2)";

@@ -1,3 +1,5 @@
+var dTest;
+var dTestButtons;
 const DOMCATS = { rect: 'g', g: 'g', circle: 'g', text: 'g', polygon: 'g', line: 'g', body: 'd', svg: 'h', div: 'd', p: 'd', table: 'd', button: 'd', a: 'd', span: 'd', image: 'd', paragraph: 'd', anchor: 'd' };
 const IS_MIRROR = false;
 const FLASK = true;
@@ -24710,7 +24712,7 @@ function allLettersContained(sFull, sPart) {
 }
 function allNumbers(s) {
 	let m = s.match(/\-.\d+|\-\d+|\.\d+|\d+\.\d+|\d+\b|\d+(?=\w)/g);
-	if (m) return m.map(v => Number(v)); else return null;
+	if (m) return m.map(v => +v); else return null;
 }
 function allNumbers_dep(s) {
 	return s.match(/\d+\.\d+|\d+\b|\d+(?=\w)/g).map(v => {
@@ -60130,7 +60132,7 @@ function mDiv(dParent, styles, id, inner, classes, sizing) {
 	if (isdef(sizing)) { setRect(d, sizing); }
 	return d;
 }
-function mDiv100(dParent, styles, id, sizing = true) { let d = mDiv(dParent, styles, id); mSize(d, 100, 100, '%', sizing); return d; }
+function mDiv100(dParent, styles, id, sizing = false) { let d = mDiv(dParent, styles, id); mSize(d, 100, 100, '%', sizing); return d; }
 function mDivCenteredAt(pt, dParent, styles = {}, id, inner, classes) {
 	[w, h] = detect_size_from_styles(styles);
 	addKeys({ position: 'relative' }, dParent);
@@ -61205,7 +61207,7 @@ function mInputGroup(dParent, styles) {
 	if (isdef(styles)) styles = deepmergeOverride(baseStyles, styles); else styles = baseStyles;
 	return mDiv(dParent, styles);
 }
-function mInputLineWithButtons(dParent, opts, val='') {
+function mInputLineWithButtons(dParent, opts, val = '') {
 	let html = `
     <form id="fSearch" action="javascript:void(0);" class='form' autocomplete='off'>
       <label>Keywords:</label>
@@ -62519,6 +62521,27 @@ function msToTime(ms) {
 }
 function mStyle(elem, styles, unit = 'px') {
 	elem = toElem(elem);
+	// if (isdef(styles.whrest)) { delete styles.whrest; styles.w = styles.h = 'rest'; } else if (isdef(styles.wh100)) { styles.w = styles.h = '100%'; delete styles.wh100;  }
+	// if (isdef(styles.w100)) styles.w = '100%'; else if (isdef(styles.wrest)) styles.w = 'rest';
+	// if (isdef(styles.h100)) styles.h = '100%'; else if (isdef(styles.hrest)) styles.h = 'rest';
+	// //console.log('styles',elem.id,styles)
+	// let dParent = elem.parentNode;
+	// let pad = parseInt(valf(dParent.style.padding, '0'));
+	// let r = getRect(elem, dParent);
+	// if (styles.w == 'rest') {
+	// 	let left = r.l;
+	// 	let w = getRect(dParent).w;
+	// 	let wrest = w - left - pad;
+	// 	styles.w = wrest;
+
+	// }
+	// if (styles.h == 'rest') {
+	// 	let top = r.t;
+	// 	let h = getRect(dParent).h;
+	// 	let hrest = h - top - pad;
+	// 	styles.h = hrest;
+
+	// }
 	let bg, fg;
 	if (isdef(styles.bg) || isdef(styles.fg)) {
 		[bg, fg] = colorsFromBFA(styles.bg, styles.fg, styles.alpha);
@@ -62607,7 +62630,7 @@ function mStyle(elem, styles, unit = 'px') {
 		else if (key == 'background-color') elem.style.background = bg;
 		else if (key == 'color') elem.style.color = fg;
 		else if (key == 'opacity') elem.style.opacity = val;
-		else if (key == 'wrap') elem.style.flexWrap = 'wrap';
+		else if (key == 'wrap') { if (val == 'hard') elem.setAttribute('wrap', 'hard'); else elem.style.flexWrap = 'wrap'; }
 		else if (startsWith(k, 'dir')) {
 			isCol = val[0] == 'c';
 			elem.style.setProperty('flex-direction', 'column');
@@ -72929,8 +72952,6 @@ function resplay_container(targetgroup, ovpercent) {
 	let items = arrChildren(d).map(x => Items[x.id]);
 	ui_add_cards_to_hand_container(d, items);
 }
-function rest() {
-}
 function restart_selection_process() {
 	let [plorder, stage, A, fen, uplayer, pl] = [Z.plorder, Z.stage, Z.A, Z.fen, Z.uplayer, Z.fen.players[Z.uplayer]];
 	if (Z.game != 'ferro') {
@@ -77390,7 +77411,7 @@ function show_shield(msg) {
 	mBy('dShield').innerHTML = msg;
 }
 function show_sidebar(list, handler) {
-	dSidebar = mBy('dSidebar'); mClear(dSidebar); mStyle(dSidebar, { w: 300, h: window.innerHeight - 68, overy: 'auto' });
+	dSidebar = mBy('dSidebar'); mClear(dSidebar); mStyle(dSidebar, { w: 200, h: window.innerHeight - 68, overy: 'auto' });
 	for (const k of list) {
 		let d = mDiv(dSidebar, { cursor: 'pointer', wmin: 100 }, null, k, 'hop1')
 		if (isdef(handler)) d.onclick = handler;

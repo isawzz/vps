@@ -122,6 +122,17 @@ function computeClosure(keysOrText = []) {
 	//console.log('result',tres);
 	//downloadAsText(tres, 'mycode', 'js');
 }
+function fiddleSearch(kws) {
+	let words = isList(kws) ? kws : toWords(mBy('iKeywords').value);
+	console.log('fiddleSearch: keywords are', words);
+	let di = CODE.justcode;
+	let dilist = dict2list(di, 'key');
+	//console.log('dilist',dilist); return;
+	let records = dilist.filter(x => words.some(w => x.value.includes(w)));
+	console.log('records', records)
+	show_sidebar(records.map(x => x.key), onclickCodeInSidebar);
+	return records;
+}
 async function loadCodebase(){
 	let text = CODE.text = await route_path_text('../allcode.js');
 
@@ -161,7 +172,7 @@ function onclickCodeInSidebar(ev) {
 	let ta = AU.ta; let dParent = null;
 	if (nundef(ta)) {
 		dParent = valf(dFiddle, dTable, document.body);
-		let talist = dTable.getElementsByTagName('textarea');
+		let talist = dParent.getElementsByTagName('textarea');
 		if (isEmpty(talist)) ta = mTextarea(null, null, dParent, { w: '100%' });
 		else ta = talist[0];
 	} else dParent = ta.parentNode;
@@ -170,13 +181,13 @@ function onclickCodeInSidebar(ev) {
 	console.log('ta.scrollheight', hideal)
 
 	//wie gross soll dParent sein? h sowie sidebar
-	let hsidebar = window.innerHeight-68; // getComputedStyle(dSidebar, 'height');
+	let hsidebar = window.innerHeight-128; // getComputedStyle(dSidebar, 'height');
 	mStyle(dParent, { hmax: hsidebar });
 
 	let lines = text.split('\n');
 	let min = lines.length + 1;
 
-	mStyle(ta,{h:hideal,hmin:50,hmax:hsidebar-44});
+	mStyle(ta,{h:hideal,hmin:50,hmax:hsidebar-24});
 	ta.scrollTop = 0; 
 
 	let download = false;

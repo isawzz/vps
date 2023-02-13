@@ -13,7 +13,29 @@
 		<link rel="stylesheet" href="../game/basecss.css" />
 		<!-- <link rel="stylesheet" href="../game/styles.css" /> -->
 	</head>
-	<body>
+	<body class="airport">
+		<div id="dNav" style="color: silver">
+			<!-- <a href="javascript:void(0)" onclick="toggle_games();return false;" class="a on">Games</a>
+			<a href="javascript:void(0)" onclick="toggle_apps();return false;" class="a on">Apps</a>
+			<a href="javascript:void(0)" onclick="toggle_fiddle();return false;" class="a on">Fiddle</a> -->
+			<a href="javascript:void(0)" onclick="test2();return false;" class="a on">Download</a>
+			<a href="javascript:void(0)" onclick="test1();return false;" class="a on">TEST</a>
+		</div>
+		<div class="mymain">
+			<div class="mycenter">
+				<div id="dGames" class="section"></div>
+				<!-- <div id="dGames" class="section" transition-style="in:wipe:bottom-right"></div> -->
+				<div id="dMenu" class="section"></div>
+				<div id="dApps" class="section"></div>
+				<div id="dSearch" class="section"></div>
+				<div id="dSearchResult" class="section"></div>
+				<div id="dTable" class="section"></div>
+				<div id="dFiddle" class="section"></div>
+				<div id="dBottom" class="section"></div>
+			</div>
+			<div id="dSidebar" class="mysidebar mycolumn section"></div>
+		</div>
+
 		<script src="../base/alibs/anime.min.js"></script>
 		<script src="../base/alibs/jsyaml.js"></script>
 		<script src="../base/alibs/socket.io.js"></script>

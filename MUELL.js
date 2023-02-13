@@ -1,4 +1,57 @@
 
+function mGridFrom(d,m,cols,rows){
+	let gta = '';
+	let words = [];
+	for (const line of m) {
+		gta = gta + `'${line}' `;
+		let warr = toWords(line);
+		//console.log('warr',warr)
+		for(const w of warr) if (!words.includes(w)) words.push(w);
+		//w.map(x => addIf(words, w));
+
+	}
+	//console.log('gta',gta);
+	console.log('words',words);
+	let dParent = mDom100(d, { bg: BLUE, display: 'grid', 'grid-template-areas': gta });
+	console.log('dParent',dParent); return;
+	// dParent.style.gridTemplateColumns = cols;
+	// dParent.style.gridTemplateRows = rows;
+	for(const w of words){
+		window[w] = mDom100(dParent, { 'grid-area': w, bg: rColor() }, w, w)
+	}
+	// mDiv(dParent, { 'grid-area': 'dTestButtons', bg: rColor() }, null, 'd')
+	// mDiv(dParent, { 'grid-area': 'dSearch', bg: rColor() }, null, 'd')
+	// mDiv(dParent, { 'grid-area': 'dSidebar', bg: rColor() }, null, 'd')
+	// mDiv(dParent, { 'grid-area': 'dFiddle', bg: rColor() }, null, 'd')
+	// mDiv(dParent, { 'grid-area': 'dTable', bg: rColor() }, null, 'd')
+
+}
+
+function mStyle1(d, styles) {
+	if (isdef(styles.whrest)) { delete styles.whrest; styles.w = styles.h = 'rest'; } else if (isdef(styles.wh100)) { styles.w = styles.h = '100%'; delete styles.wh100;  }
+	if (isdef(styles.w100)) styles.w = '100%'; else if (isdef(styles.wrest)) styles.w = 'rest';
+	if (isdef(styles.h100)) styles.h = '100%'; else if (isdef(styles.hrest)) styles.h = 'rest';
+	console.log('styles',d.id,styles)
+	let dParent = d.parentNode;
+	let pad = parseInt(valf(dParent.style.padding, '0'));
+	let r = getRect(d, dParent);
+	if (styles.w == 'rest') {
+		let left = r.l;
+		let w = getRect(dParent).w;
+		let wrest = w - left - pad;
+		styles.w = wrest;
+
+	}
+	if (styles.h == 'rest') {
+		let top = r.t;
+		let h = getRect(dParent).h;
+		let hrest = h - top - pad;
+		styles.h = hrest;
+
+	}
+	mStyle(d, styles);
+}
+
 
 function checkKey(superdi, key, type) {
 	let types = ['const', 'var', 'cla', 'func'];

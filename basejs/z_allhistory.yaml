@@ -2558,6 +2558,10 @@ dTableShield:
   - C:\D\a00\git_archive\dycon_ui_test\base\js\globals.js
   - C:\D\a04\_stuff\_versions\v4\game\allcode.js
   - C:\D\a04\allcode.js
+dTest:
+  - C:\D\a04\allcode.js
+dTestButtons:
+  - C:\D\a04\allcode.js
 dTitle:
   - C:\xampp\htdocs\aroot\_other\bg4\js\globals.js
   - C:\xampp\htdocs\aroot\_other\bg\js\globals.js

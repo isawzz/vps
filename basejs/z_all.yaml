@@ -3233,6 +3233,28 @@ var:
     datetime: 2023-02-10-08-03
     timestamp: 1676045008826.3533
     size: 3324052
+  dTest:
+    name: dTest
+    sig: var dTest;
+    region: var
+    filename: allcode.js
+    type: var
+    fname: allcode.js
+    path: C:\D\a04\allcode.js
+    datetime: 2023-02-10-08-03
+    timestamp: 1676045008826.3533
+    size: 3324052
+  dTestButtons:
+    name: dTestButtons
+    sig: var dTestButtons;
+    region: var
+    filename: allcode.js
+    type: var
+    fname: allcode.js
+    path: C:\D\a04\allcode.js
+    datetime: 2023-02-10-08-03
+    timestamp: 1676045008826.3533
+    size: 3324052
   dTitle:
     name: dTitle
     sig: var dTitle;
