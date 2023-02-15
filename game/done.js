@@ -133,14 +133,21 @@ function fiddleSearch(kws) {
 	show_sidebar(records.map(x => x.key), onclickCodeInSidebar);
 	return records;
 }
-async function loadCodebase(){
+function extractKeywords(text) {
+	let words = toWords(text, true); //console.log('words', words);
+	//words = words.filter(x=>text.includes(' '+x));
+	let res = [];
+	for (const w of words) { if (isdef(CODE.all[w])) addIf(res, w); }
+	return res;
+}
+async function loadCodebase() {
 	let text = CODE.text = await route_path_text('../allcode.js');
 
 	let keysSorted = [];
 	let lines = text.split('\r\n');
-	for(const l of lines){
-		if (['var','const','cla','func'].some(x=>l.startsWith(x))){
-			let key=firstWordAfter(l,' ',true);
+	for (const l of lines) {
+		if (['var', 'const', 'cla', 'func'].some(x => l.startsWith(x))) {
+			let key = firstWordAfter(l, ' ', true);
 			keysSorted.push(key);
 		}
 	}
@@ -158,15 +165,58 @@ async function loadCodebase(){
 	//console.log('intersection',inter);
 	//7748 in intersection, also ca 400 jeweils extra, ergibt total of 8500 keys ca.
 }
-function extractKeywords(text) {
-	let words = toWords(text, true); //console.log('words', words);
-	//words = words.filter(x=>text.includes(' '+x));
-	let res = [];
-	for (const w of words) { if (isdef(CODE.all[w])) addIf(res, w); }
-	return res;
+function mDom(dParent, styles = {}, opts = {}) {
+	let tag = valf(opts.tag, 'div');
+	let d = document.createElement(tag);
+	mAppend(dParent, d);
+	if (tag == 'textarea') styles.wrap = 'hard';
+	const aliases = {
+		classes: 'className',
+		inner: 'innerHTML',
+		html: 'innerHTML',
+
+	};
+	for (const opt in opts) { d[valf(aliases[opt], opt)] = opts[opt] };
+	mStyle(d, styles);
+	return d;
+}
+function mDomRest(dParent, styles, opts) {
+	if (nundef(styles.w) && nundef(styles.w100)) addKeys({ wrest: true }, styles);
+	if (nundef(styles.h) && nundef(styles.h100)) addKeys({ hrest: true }, styles);
+	return mDom(dParent, styles, opts);
+}
+function mDom100(dParent, styles, opts) {
+	if (nundef(styles.w) && nundef(styles.wrest)) addKeys({ w100: true }, styles);
+	if (nundef(styles.h) && nundef(styles.hrest)) addKeys({ h100: true }, styles);
+	return mDom(dParent, styles, opts);
+}
+function mGridFrom(d, m, cols, rows, cellstyles = {}) {
+	let gta = '';
+	let words = [];
+	for (const line of m) {
+		gta = gta + `'${line}' `;
+		let warr = toWords(line);
+		//console.log('warr',warr)
+		for (const w of warr) if (!words.includes(w)) words.push(w);
+		//w.map(x => addIf(words, w));
+
+	}
+	//console.log('gta',gta);
+	console.log('words', words);
+	let dParent = mDom100(d, { display: 'grid', 'grid-template-areas': gta });
+	dParent.style.gridTemplateColumns = cols;
+	dParent.style.gridTemplateRows = rows;
+	for (const w of words) {
+		let st = copyKeys({ 'grid-area': w, bg: rColor(50) }, cellstyles);
+		let cell = window[w] = mDom(dParent, st, { id: w });//	,html:w.substring(1)})
+
+
+	}
+	//console.log('dParent',dParent); return;
+	return dParent;
 }
 function onclickCodeInSidebar(ev) {
-	let key = isString(ev)?ev:ev.target.innerHTML;
+	let key = isString(ev) ? ev : ev.target.innerHTML;
 	let text = CODE.justcode[key];
 
 	let ta = AU.ta; let dParent = null;
@@ -181,14 +231,14 @@ function onclickCodeInSidebar(ev) {
 	console.log('ta.scrollheight', hideal)
 
 	//wie gross soll dParent sein? h sowie sidebar
-	let hsidebar = window.innerHeight-128; // getComputedStyle(dSidebar, 'height');
+	let hsidebar = window.innerHeight - 128; // getComputedStyle(dSidebar, 'height');
 	mStyle(dParent, { hmax: hsidebar });
 
 	let lines = text.split('\n');
 	let min = lines.length + 1;
 
-	mStyle(ta,{h:hideal,hmin:50,hmax:hsidebar-24});
-	ta.scrollTop = 0; 
+	mStyle(ta, { h: hideal, hmin: 50, hmax: hsidebar - 24 });
+	ta.scrollTop = 0;
 
 	let download = false;
 	if (download) downloadAsText(text, 'hallo', 'js');
@@ -199,7 +249,7 @@ function runcode(code, callback = null) {
 	if (callback) callback(x);
 	else {
 		console.log('===>result:', x);
-		if (isdef(dMessage)) dMessage.innerHTML = isDict(x) ? JSON.stringify(x) : isdef(x)? x.toString() : x;
+		if (isdef(dMessage)) dMessage.innerHTML = isDict(x) ? JSON.stringify(x) : isdef(x) ? x.toString() : x;
 	}
 }
 function sortClassKeys(di) {

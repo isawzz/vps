@@ -62521,27 +62521,33 @@ function msToTime(ms) {
 }
 function mStyle(elem, styles, unit = 'px') {
 	elem = toElem(elem);
-	// if (isdef(styles.whrest)) { delete styles.whrest; styles.w = styles.h = 'rest'; } else if (isdef(styles.wh100)) { styles.w = styles.h = '100%'; delete styles.wh100;  }
-	// if (isdef(styles.w100)) styles.w = '100%'; else if (isdef(styles.wrest)) styles.w = 'rest';
-	// if (isdef(styles.h100)) styles.h = '100%'; else if (isdef(styles.hrest)) styles.h = 'rest';
-	// //console.log('styles',elem.id,styles)
-	// let dParent = elem.parentNode;
-	// let pad = parseInt(valf(dParent.style.padding, '0'));
-	// let r = getRect(elem, dParent);
-	// if (styles.w == 'rest') {
-	// 	let left = r.l;
-	// 	let w = getRect(dParent).w;
-	// 	let wrest = w - left - pad;
-	// 	styles.w = wrest;
+	if (isdef(styles.whrest)) { delete styles.whrest; styles.w = styles.h = 'rest'; } else if (isdef(styles.wh100)) { styles.w = styles.h = '100%'; delete styles.wh100; }
+	if (isdef(styles.w100)) styles.w = '100%'; else if (isdef(styles.wrest)) styles.w = 'rest';
+	if (isdef(styles.h100)) styles.h = '100%'; else if (isdef(styles.hrest)) styles.h = 'rest';
+	let dParent = elem.parentNode;
+	let pad = parseInt(valf(dParent.style.padding, '0'));
+	let rp = getRect(dParent);
+	let r = getRect(elem, dParent);
 
-	// }
-	// if (styles.h == 'rest') {
-	// 	let top = r.t;
-	// 	let h = getRect(dParent).h;
-	// 	let hrest = h - top - pad;
-	// 	styles.h = hrest;
+	//let ht=getRect(arrChildren(dParent)[0]).h; console.log('hti',ht)
 
-	// }
+	if (styles.w == 'rest') {
+		let left = r.l;
+		let w = rp.w;
+		let wrest = w - left - pad;
+		styles.w = wrest;
+
+	}
+	if (styles.h == 'rest') {
+		let r1 = getRect(dParent.lastChild, dParent);
+		console.log('r', r1);
+		// let hrest = rp.h - (r1.y + r1.h) - pad;
+		let hrest = rp.h - (r1.y) - pad;
+		//let top = r.t; let h = getRect(dParent).h;
+		//let hrest = h - top - pad;//console.log('h fiddle',h,top,pad,hrest,dParent)
+		styles.h = hrest;
+
+	}
 	let bg, fg;
 	if (isdef(styles.bg) || isdef(styles.fg)) {
 		[bg, fg] = colorsFromBFA(styles.bg, styles.fg, styles.alpha);

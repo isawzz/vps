@@ -1,3 +1,55 @@
+function test16a() {
+	let d = document.body; mClass(d, 'fullpage');
+	let areas = [
+		'dTestButtons dTestButtons',
+		'dSearch dSidebar',
+		'dFiddle dSidebar',
+		'dTable dSidebar',
+	];
+	let cols = '1fr 200px';
+	let rows = 'auto auto auto 1fr';
+	dPage = mGridFrom(d, areas, cols, rows, { padding: 4, box: true });
+	mStyle(dPage, { fg: 'white', bg: 'silver' }); 
+
+	//search box
+	let elem = mSearch('keywords:',mySearch,dSearch)
+
+	mStyle(dFiddle, { h: 400 }); 
+	mDom(dFiddle, {}, { html: 'Edit Code:' });
+	AU.ta = mDom(dFiddle, { w100: true, box: true, h: 'rest', bg: '#ffffff80' }, { tag: 'textarea', id: 'ta', className: 'plain hop1' });
+
+	mFlex(dTestButtons);
+	mButton('TEST', onclickTest, dTestButtons); //mDom(dTestButtons, { bg: '#00000080', hpadding: 10, vpadding: 4, rounding: 8, cursor: 'pointer' }, { onclick: onclickTest, className: 'hop1', html: 'TEST' });
+
+}
+function test16() {
+	let d = document.body; mClass(d, 'fullpage');
+	let areas = [
+		'dTestButtons dTestButtons',
+		'dSearch dSidebar',
+		'dFiddle dSidebar',
+		'dTable dSidebar',
+	];
+	let cols = '1fr 200px';
+	let rows = 'auto auto auto 1fr';
+	dPage = mGridFrom(d, areas, cols, rows);
+	mStyle(dPage, { fg: 'white', bg: 'silver' })
+
+	//mClear(dFiddle);
+	//let dti = mDom(dFiddle, { hline: '20pt' }, { html: 'Fiddle' }); let r = getRect(dti); console.log('r', r)
+	//mDom(dFiddle, { }, { html: 'Fiddle' });
+
+	mStyle(dFiddle, { h: 400, padding: 14, box: true });
+	mDom(dFiddle, {}, { html: 'Fiddle' });
+	// let r = getRect(dFiddle.children[0], dFiddle);
+	// console.log('r', r);
+	// let h = 400 - (r.y + r.h) - 14;
+	AU.ta = mDom(dFiddle, { w100: true, box: true, h: 'rest', bg: '#ffffff80' }, { tag: 'textarea', id: 'ta', className: 'plain hop1' });
+	//mStyle(AU.ta, { h: h })
+
+	maButton('test', onclickTest, dTestButtons, { className: 'a' });
+
+}
 function test15() {
 	let d = document.body; mClass(d, 'fullpage');
 	let areas = [
@@ -10,27 +62,26 @@ function test15() {
 	let rows = 'auto auto auto 1fr';
 	dGrid = mGridFrom(d, areas, cols, rows);
 
-	for(const ch of arrChildren(dGrid)){
-		console.log('rect',ch.id,getRect(ch))
+	for (const ch of arrChildren(dGrid)) {
+		console.log('rect', ch.id, getRect(ch))
 	}
 
-	mStyle(dGrid,{fg:'white',bg:'silver'})
+	mStyle(dGrid, { fg: 'white', bg: 'silver' })
 	//console.log('dFiddle',dFiddle);	return;
 	//setTimeout(test15_weiter,100);
 	test15_weiter();
 }
-function test15_weiter(){
-	mStyle(dFiddle,{padding:4,h:400});
+function test15_weiter() {
+	mStyle(dFiddle, { padding: 4, h: 400 });
 	mClear(dFiddle)
 	dTestButtons.innerHTML = 'Test Buttons'
-	mDom(dFiddle,{},{html:'Fiddle'})
+	mDom(dFiddle, {}, { html: 'Fiddle' })
 	// dFiddle.innerHTML = 'Fiddle';
 	//mStyle(dFiddle,{h:500});
 	//mClear(dFiddle);
-	AU.ta = mDom(dFiddle, { w100: true, hrest:true, bg: '#ffffff80' }, { tag: 'textarea', id: 'ta', className: 'plain hop1' });
+	AU.ta = mDom(dFiddle, { w100: true, hrest: true, bg: '#ffffff80' }, { tag: 'textarea', id: 'ta', className: 'plain hop1' });
 	console.log('AU.ta', AU.ta)
 }
-
 function test14() {
 	let d = document.body;
 	mClass(d, 'fullpage');
@@ -45,7 +96,7 @@ function test13() {
 	dTable = mDiv(d, { box: true, padding: 4, w: '100vw', h: '100vh', bg: GREEN }, 'dTable');
 	dFiddle = mDiv(dTable, { w: 200, h: 200, bg: RED, padding: 4 }, 'dFiddle');
 	dTitle = mDiv(dFiddle, {}, null, 'Fiddle');
-	AU.ta = mTaPlain(dFiddle, { w: '100%', h: 'rest', bg: '#ffffff80' }, { id: 'ta', className: 'plain' });
+	AU.ta = mDom(dFiddle, { w: '100%', h: 'rest', bg: '#ffffff80' }, { id: 'ta', className: 'plain', tag: 'textarea' });
 	console.log('AU.ta class', AU.ta)
 
 }
@@ -61,7 +112,6 @@ function test12() {
 	let d = document.body; d.innerHTML = '';
 	mGridFrom(d, areas, cols, rows);
 }
-
 function test11() {
 	let m = [
 		'dTestButtons dTestButtons',
