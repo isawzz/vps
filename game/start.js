@@ -2,7 +2,12 @@ onload = _start;
 
 async function _start() {
 	test16a();
-	await loadCodebase();
+	await loadCodebase('../cb2');
+
+	let inp=document.getElementsByTagName('input')[0];
+	inp.value = 'rows item  ';
+	mySearch(inp.value.trim());
+
 	return;
 	set_run_state_no_server(); // set_run_state_no_server | set_run_state_local | set_run_state_vps
 	onpagedeactivated(() => { fiddleSave(); dbSave(); });

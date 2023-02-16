@@ -779,7 +779,7 @@ function test17() {
 		if (['lifeView', 'exp', 'Deck', 'gridsize'].some(x => x == varkey)) { delete superdi.var[varkey]; continue; }
 
 		// let ch1 = varkey[0];
-		if (nundef(superdi.chessvar[varkey]) && varkey == varkey.toLowerCase() && varkey != 'c52') { delete superdi.var[varkey]; continue; }
+		if ((nundef(superdi.chessvar) || nundef(superdi.chessvar[varkey])) && varkey == varkey.toLowerCase() && varkey != 'c52') { delete superdi.var[varkey]; continue; }
 		// if (varkey != 'c52' && ch1 != 'd' && !varkey.startsWith('brd')) { delete superdi.var[varkey]; continue; }
 		// if (varkey.length <= 3) { delete superdi.var[varkey]; continue; }
 		// let ch2 = varkey[1];
@@ -840,7 +840,7 @@ function test17() {
 	toYamlFile(justcode, `C:\\D\\a03\\nodemaster\\z_allcode${LG ? 'LG' : ''}.yaml`);
 	toYamlFile(history, `C:\\D\\a03\\nodemaster\\z_allhistory${LG ? 'LG' : ''}.yaml`);
 }
-//dirlist = ['C:\\D\\a04\\game'];
+//dirlist = ['C:\\D\\a04','C:\\D\\a04\\game'];
 //test17(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
 
 //#endregion

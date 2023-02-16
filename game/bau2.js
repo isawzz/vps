@@ -1,29 +1,38 @@
 
-function mStyle1(d, styles) {
-	if (isdef(styles.whrest)) { delete styles.whrest; styles.w = styles.h = 'rest'; } else if (isdef(styles.wh100)) { styles.w = styles.h = '100%'; delete styles.wh100;  }
-	if (isdef(styles.w100)) styles.w = '100%'; else if (isdef(styles.wrest)) styles.w = 'rest';
-	if (isdef(styles.h100)) styles.h = '100%'; else if (isdef(styles.hrest)) styles.h = 'rest';
-	console.log('styles',d.id,styles)
-	let dParent = d.parentNode;
-	let pad = parseInt(valf(dParent.style.padding, '0'));
-	let r = getRect(d, dParent);
-	if (styles.w == 'rest') {
-		let left = r.l;
-		let w = getRect(dParent).w;
-		let wrest = w - left - pad;
-		styles.w = wrest;
+function mySearch(kws) {
+	//kws should be a string
+	assertion(isString(kws),'mySearch: kws should be a string')
+	console.log(`'${kws}'`); 
+	keyContainsAnyWord(kws); //codeContainsString(kws);//keyContainsString(kws);
+	
+	return;
+	//let words = isList(kws) ? kws : toWords(mBy('iKeywords').value);
+	//console.log('fiddleSearch: keywords are', words);
+	let arr = CODE.codelist; //[{key value},...]
 
-	}
-	if (styles.h == 'rest') {
-		let top = r.t;
-		let h = getRect(dParent).h;
-		let hrest = h - top - pad;
-		styles.h = hrest;
+	//have words and have keys and code for keys
+	//1. test if code contains some keyword
+	let patt = isList(kws) ? kws.join('|') : replaceAll(kws, ' ', '|');
+	let regex = new RegExp(`\\b${patt}\\b`);
+	console.log('patt',patt)
+	let res = arr.filter(x => regex.test(x.value)); // words.some(w=>)
+	let keys = res.map(x => x.key);
+	console.log('keys', keys);
+	show_sidebar(keys, myOnclickCodeInSidebar);
+	return;
 
-	}
-	mStyle(d, styles);
+
+	let di = CODE.justcode;
+	let dilist = dict2list(di, 'key');
+	//console.log('dilist',dilist); return;
+	// let records = dilist.filter(x => words.some(w => x.value.includes(w)));
+
+	//let regex=new RegExp(`\\${w}\\b`,'i');
+	let records = dilist.filter(x => words.some(w => x.key.match(new RegExp(`\\${w}\\b`, 'i'))));
+	console.log('records', records)
+	show_sidebar(records.map(x => x.key), myOnclickCodeInSidebar);
+	return records;
 }
-
 
 
 

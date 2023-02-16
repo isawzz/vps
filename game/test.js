@@ -11,8 +11,7 @@ function test16a() {
 	dPage = mGridFrom(d, areas, cols, rows, { padding: 4, box: true });
 	mStyle(dPage, { fg: 'white', bg: 'silver' }); 
 
-	//search box
-	let elem = mSearch('keywords:',mySearch,dSearch)
+	let elem = mSearch('keywords:',mySearch,dSearch); //,{},{value:'+item'}); //search box
 
 	mStyle(dFiddle, { h: 400 }); 
 	mDom(dFiddle, {}, { html: 'Edit Code:' });

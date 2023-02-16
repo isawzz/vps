@@ -140,8 +140,13 @@ function extractKeywords(text) {
 	for (const w of words) { if (isdef(CODE.all[w])) addIf(res, w); }
 	return res;
 }
-async function loadCodebase() {
-	let text = CODE.text = await route_path_text('../allcode.js');
+async function loadCodebase(dir) {
+
+
+	let path_js=isdef(dir)?(dir+'/z_all.js'):'../allcode.js';
+	dir = isdef(dir)?dir:'../basejs';
+
+	let text = CODE.text = await route_path_text(path_js);
 
 	let keysSorted = [];
 	let lines = text.split('\r\n');
@@ -154,9 +159,10 @@ async function loadCodebase() {
 	CODE.keysSorted = keysSorted;
 	//console.log('keysSorted',keysSorted);
 
-	CODE.di = await route_path_yaml_dict('../basejs/z_all.yaml');
-	CODE.justcode = await route_path_yaml_dict('../basejs/z_allcode.yaml');
-	CODE.history = await route_path_yaml_dict('../basejs/z_allhistory.yaml');
+	CODE.di = await route_path_yaml_dict(dir+'/z_all.yaml');
+	CODE.justcode = await route_path_yaml_dict(dir+'/z_allcode.yaml');
+	CODE.codelist=dict2list(CODE.justcode,'key');
+	CODE.history = await route_path_yaml_dict(dir+'/z_allhistory.yaml');
 	let keys = {};
 	for (const k in CODE.di) { for (const k1 in CODE.di[k]) keys[k1] = CODE.di[k][k1]; }
 	CODE.all = keys;
@@ -202,7 +208,7 @@ function mGridFrom(d, m, cols, rows, cellstyles = {}) {
 
 	}
 	//console.log('gta',gta);
-	console.log('words', words);
+	//console.log('words', words);
 	let dParent = mDom100(d, { display: 'grid', 'grid-template-areas': gta });
 	dParent.style.gridTemplateColumns = cols;
 	dParent.style.gridTemplateRows = rows;
