@@ -8,14 +8,15 @@ function test16a() {
 	];
 	let cols = '1fr 200px';
 	let rows = 'auto auto auto 1fr';
+	
 	dPage = mGridFrom(d, areas, cols, rows, { padding: 4, box: true });
-	mStyle(dPage, { fg: 'white', bg: 'silver' }); 
+	mStyle(dPage, { fg: 'white', bg: 'silver' });
 
-	let elem = mSearch('keywords:',mySearch,dSearch); //,{},{value:'+item'}); //search box
+	let elem = mSearch('keywords:', mySearch, dSearch); //,{},{value:'+item'}); //search box
 
-	mStyle(dFiddle, { h: 400 }); 
+	mStyle(dFiddle, { h: 400 });
 	mDom(dFiddle, {}, { html: 'Edit Code:' });
-	AU.ta = mDom(dFiddle, { w100: true, box: true, h: 'rest', bg: '#ffffff80' }, { tag: 'textarea', id: 'ta', className: 'plain hop1' });
+	AU.ta = mDom(dFiddle, { fz:22, w100: true, box: true, h: 'rest', bg: '#000000f0', fg: 'white' }, { tag: 'textarea', id: 'ta', className: 'plain' });
 
 	mFlex(dTestButtons);
 	mButton('TEST', onclickTest, dTestButtons); //mDom(dTestButtons, { bg: '#00000080', hpadding: 10, vpadding: 4, rounding: 8, cursor: 'pointer' }, { onclick: onclickTest, className: 'hop1', html: 'TEST' });

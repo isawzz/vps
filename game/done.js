@@ -213,7 +213,7 @@ function mGridFrom(d, m, cols, rows, cellstyles = {}) {
 	dParent.style.gridTemplateColumns = cols;
 	dParent.style.gridTemplateRows = rows;
 	for (const w of words) {
-		let st = copyKeys({ 'grid-area': w, bg: rColor(50) }, cellstyles);
+		let st = copyKeys({ 'grid-area': w, bg: 'black' }, cellstyles);
 		let cell = window[w] = mDom(dParent, st, { id: w });//	,html:w.substring(1)})
 
 

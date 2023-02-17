@@ -5,7 +5,7 @@ async function _start() {
 	await loadCodebase('../cb2');
 
 	let inp=document.getElementsByTagName('input')[0];
-	inp.value = 'rows item  ';
+	inp.value = 'get';
 	mySearch(inp.value.trim());
 
 	return;
