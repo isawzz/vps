@@ -59836,17 +59836,12 @@ function mCircle(dParent, x, y, rad, color) {
   return d;
 }
 function mClass(d) {
-  d = toElem(d);
-  if (arguments.length == 2) {
-    let arg = arguments[1];
-    if (isString(arg) && arg.indexOf(' ') > 0) { arg = [toWords(arg)]; }
-    else if (isString(arg)) arg = [arg];
-    if (isList(arg)) {
-      for (let i = 0; i < arg.length; i++) {
-        d.classList.add(arg[i]);
-      }
-    }
-  } else for (let i = 1; i < arguments.length; i++) d.classList.add(arguments[i]);
+	d = toElem(d);
+	if (arguments.length == 2) {
+		let arg = arguments[1];
+		if (isString(arg)) arg = toWords(arg, true);
+		arg.map(x => d.classList.add(x));
+	} else for (let i = 1; i < arguments.length; i++) d.classList.add(arguments[i]);
 }
 function mClass0(d) { d = toElem(d); d.className = ''; }
 function mClasses(d, lst) { for (let i = 1; i < lst.length; i++) d.classList.add(lst[i]); }
@@ -71444,6 +71439,20 @@ function rColor(cbrightness, c2, alpha = null) {
     s += rChoose(['f', 'c', '9', '6', '3', '0']);
   }
   return s;
+}
+function rColorTrans(opaPer = 100, lumPer = 70, satPer = 100, hue) {
+	if (isList(hue) && hue.length > 2) {
+		//interpret as choose one of these hues
+		hue = rChoose(hue);
+	} else if (isList(hue)) {
+		//interpret as range min,max
+		hue = Math.random() * (hue[1] - hue[0]) + hue[0];
+	} else if (isdef(hue)) {
+		//interpret as modulo
+		hue = divInt(rHue(), hue) * hue;
+	} else hue = Math.round(Math.random() * 360);
+	console.log('hue', hue)
+	return hslToHslaString(hue, satPer, lumPer, opaPer / 100);
 }
 function rConsonant(w, except = []) { let vowels = w ? getConsonants(w, except) : toLetters('aeiouy'); return chooseRandom(vowels); }
 function rDate(before, after) {

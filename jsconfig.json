@@ -3,6 +3,6 @@
     "module": "commonjs",
     "target": "es6"
   },
-	"include": ["testwindow/**/*","game/**/*","allcode.js"],
-  "exclude": ["node_modules", "temp","*UCODE*","y*", "_ignore","*hallo*"]
+	"include": ["game/**/*","allcode.js"],
+  "exclude": ["node_modules", "temp","*UCODE*","y*", "_ignore","*hallo*","**/*closure.js"]
 }

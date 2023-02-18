@@ -8,6 +8,3 @@
 	},
 	"exclude": ["node_modules", "temp","*UCODE*","y*", "_ignore","*closure*"]
 }
-{
-	"exclude": ["node_modules", "temp","*UCODE*","y*", "_ignore","*closure*"]
-}

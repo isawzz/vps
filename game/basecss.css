@@ -16,6 +16,12 @@ body {
 .a:hover {
 	color: white;
 }
+.airport {
+	background-image: url('../base/assets/img/airport/airport2.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-attachment: fixed;
+}
 .fullpage{
 	width: 100vw;
 	height: 100vh;

@@ -1,5 +1,5 @@
 function test16a() {
-	let d = document.body; mClass(d, 'fullpage');
+	let d = document.body; mClass(d, 'fullpage airport');
 	let areas = [
 		'dTestButtons dTestButtons',
 		'dSearch dSidebar',
@@ -8,18 +8,18 @@ function test16a() {
 	];
 	let cols = '1fr 200px';
 	let rows = 'auto auto auto 1fr';
-	
-	dPage = mGridFrom(d, areas, cols, rows, { padding: 4, box: true });
-	mStyle(dPage, { fg: 'white', bg: 'silver' });
 
-	let elem = mSearch('keywords:', mySearch, dSearch); //,{},{value:'+item'}); //search box
+	let [bg, fg] = [rColorTrans(50, 10, 100, [150,230]), 'contrast']; //console.log('colors:', bg, fg);	//bg='hsla(120,100%,25%,0.3)';
+	dPage = mGridFrom(d, areas, cols, rows, { padding: 4, box: true, bg: bg, fg: fg });	
+
+	let elem = mSearch('keywords:', mySearch, dSearch); 
 
 	mStyle(dFiddle, { h: 400 });
 	mDom(dFiddle, {}, { html: 'Edit Code:' });
-	AU.ta = mDom(dFiddle, { fz:22, w100: true, box: true, h: 'rest', bg: '#000000f0', fg: 'white' }, { tag: 'textarea', id: 'ta', className: 'plain' });
+	AU.ta = mDom(dFiddle, { fz: 18, family:'consolas', w100: true, box: true, h: 'rest', bg: colorTrans(bg,1), fg: 'black' }, { tag: 'textarea', id: 'ta', className: 'plain' });
 
 	mFlex(dTestButtons);
-	mButton('TEST', onclickTest, dTestButtons); //mDom(dTestButtons, { bg: '#00000080', hpadding: 10, vpadding: 4, rounding: 8, cursor: 'pointer' }, { onclick: onclickTest, className: 'hop1', html: 'TEST' });
+	mButton('TEST', onclickTest, dTestButtons); //mDom(dTestButtons, { bg: bg, hpadding: 10, vpadding: 4, rounding: 8, cursor: 'pointer' }, { onclick: onclickTest, className: 'hop1', html: 'TEST' });
 
 }
 function test16() {
