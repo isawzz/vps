@@ -123,7 +123,8 @@ function computeClosure(keysOrText = []) {
 	//downloadAsText(tres, 'mycode', 'js');
 }
 function fiddleSearch(kws) {
-	let words = isList(kws) ? kws : toWords(mBy('iKeywords').value);
+	console.log('kws',kws);
+	let words = isList(kws) ? kws : toWords(mBy('inpSearch').value);
 	console.log('fiddleSearch: keywords are', words);
 	let di = CODE.justcode;
 	let dilist = dict2list(di, 'key');
@@ -141,8 +142,6 @@ function extractKeywords(text) {
 	return res;
 }
 async function loadCodebase(dir) {
-
-
 	let path_js = isdef(dir) ? (dir + '/z_all.js') : '../allcode.js';
 	dir = isdef(dir) ? dir : '../basejs';
 

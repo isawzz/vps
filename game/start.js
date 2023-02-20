@@ -1,6 +1,58 @@
 onload = _start;
 
 async function _start() {
+	test16a();
+	await loadCodebase('../cb2');
+	addIntellisense();
+}
+function addIntellisense(){
+	var tributeAttributes = {
+    autocompleteMode: true,
+    //noMatchTemplate: '', //null, //' ',
+    noMatchTemplate: () => {
+      return '<span style:"visibility: hidden;"></span>';
+    },
+    values: fiddleSearch,
+    selectTemplate: function (item) {
+      if (typeof item === 'undefined') return null;
+      if (this.range.isContentEditable(this.current.element)) {
+        return '<span contenteditable="false"><a>' + item.original.key + '</a></span>';
+      }
+      return item.original.value;
+    },
+    menuItemTemplate: function (item) {
+      return item.string;
+    },
+    replaceTextSuffix: '(',
+    menuShowMinLength: 1,
+  };
+  var trib = DA.tribute = new Tribute(Object.assign({ menuContainer: dFiddle, }, tributeAttributes));
+
+	let ta = document.getElementsByTagName('textarea')[0];
+	DA.tribute.attach(ta);
+  ta.addEventListener('tribute-replaced', fiddleMessageHandler);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function _start123() {
 
 	// console.log('result',toWordsX('hallo rey das ist ein regal'));
 	// console.log('result',toWordsX('hallo rey das is_t -ein +regal'));
@@ -21,7 +73,6 @@ async function _start() {
 		myOnclickCodeInSidebar(x);
 	}
 }
-
 function createSearchOptions(opts) {
 	let res = [];
 	let di = { any: false, casesensitive: false, fulltext: false, how: 'start' };
@@ -30,11 +81,6 @@ function createSearchOptions(opts) {
 	}
 	return res;
 }
-
-
-
-
-
 async function startrest() {
 	set_run_state_no_server(); // set_run_state_no_server | set_run_state_local | set_run_state_vps
 	onpagedeactivated(() => { fiddleSave(); dbSave(); });

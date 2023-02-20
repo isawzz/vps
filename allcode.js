@@ -40602,7 +40602,7 @@ function fiddleSave() {
 }
 function fiddleSearch(text, callback) {
   console.log('text', text)
-  let list = Globals.function;
+  let list = CODE.keys; //Globals.function;
   let list1 = list.filter(x => startsWith(x.key, text));
   callback(list1);
 }
