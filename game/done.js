@@ -143,8 +143,8 @@ function extractKeywords(text) {
 async function loadCodebase(dir) {
 
 
-	let path_js=isdef(dir)?(dir+'/z_all.js'):'../allcode.js';
-	dir = isdef(dir)?dir:'../basejs';
+	let path_js = isdef(dir) ? (dir + '/z_all.js') : '../allcode.js';
+	dir = isdef(dir) ? dir : '../basejs';
 
 	let text = CODE.text = await route_path_text(path_js);
 
@@ -159,10 +159,10 @@ async function loadCodebase(dir) {
 	CODE.keysSorted = keysSorted;
 	//console.log('keysSorted',keysSorted);
 
-	CODE.di = await route_path_yaml_dict(dir+'/z_all.yaml');
-	CODE.justcode = await route_path_yaml_dict(dir+'/z_allcode.yaml');
-	CODE.codelist=dict2list(CODE.justcode,'key');
-	CODE.history = await route_path_yaml_dict(dir+'/z_allhistory.yaml');
+	CODE.di = await route_path_yaml_dict(dir + '/z_all.yaml');
+	CODE.justcode = await route_path_yaml_dict(dir + '/z_allcode.yaml');
+	CODE.codelist = dict2list(CODE.justcode, 'key');
+	CODE.history = await route_path_yaml_dict(dir + '/z_allhistory.yaml');
 	let keys = {};
 	for (const k in CODE.di) { for (const k1 in CODE.di[k]) keys[k1] = CODE.di[k][k1]; }
 	CODE.all = keys;
@@ -187,6 +187,29 @@ function mDom(dParent, styles = {}, opts = {}) {
 		html: 'innerHTML',
 
 	};
+	if (opts.editable) {
+		d.setAttribute('contentEditable', true);
+		mStyle(d, { overflow: 'hidden' })
+		mClass(d, 'plain');
+		d.addEventListener('keydown', (ev) => {
+			if (ev.key === 'Enter') {
+				ev.preventDefault();
+				//if (nundef(mBy('dummy'))) mButton('', null, dTestButtons, { position:'absolute',opacity: 0, h: 0, w: 0, padding: 0, margin: 0, outline: 'none', border: 'none', bg: 'transparent' },{id:'dummy'});
+				mBy('dummy').focus();
+				// mBy('dummy').focus();
+			}
+		});
+		// d.onkeyup = ev=>{if (ev.key == 'Enter') d.parentNode.focus();}
+	}
+	if (nundef(opts.onclick) && opts.selectOnClick) {
+		if (opts.editable) {
+			opts.onclick = ev => selectText(ev.target);
+		} else if (tag == 'input' || tag == 'textarea') {
+			//if (tag != 'input' && tag != 'textarea') d.setAttribute('contentEditable', true); //opts.contenteditable=true;
+			opts.onclick = ev => ev.target.select();
+		}
+	}
+
 	for (const opt in opts) { d[valf(aliases[opt], opt)] = opts[opt] };
 	mStyle(d, styles);
 	return d;
@@ -227,14 +250,14 @@ function mGridFrom(d, m, cols, rows, cellstyles = {}) {
 	return dParent;
 }
 function mInput(dParent, styles = {}, opts = {}) {
-	addKeys({ fz: 'inherit', fg: 'inherit', 'flex-grow': 1, bg: '#00000080', hpadding: 10, vpadding: 4, rounding: 8, cursor: 'pointer' }, styles);
-	addKeys({ id: 'inpSearch', name: 'searchResult', className: 'hop1 plain', type: 'text', tag: 'input' }, opts)
+	addKeys({ fz: 'inherit', fg: 'inherit', 'flex-grow': 1, bg: '#00000080', hpadding: 10, vpadding: 4, rounding: 8 }, styles);
+	addKeys({ id: 'inpSearch', name: 'searchResult', className: 'hop1 plain', type: 'text', tag: 'input' }, opts);
 	return mDom(dParent, styles, opts);
 
 }
 function mSearch(label, handler, dParent, styles = {}, opts = {}) {
 	let html = `
-    <form action="javascript:void(0);">
+    <form action="javascript:void(0);" autocomplete="off">
 		<label>${label}</label>
     </form>
   `;

@@ -2,28 +2,31 @@ onload = _start;
 
 async function _start() {
 
-	console.log('result',toWordsX('hallo rey das ist ein regal'));
-	console.log('result',toWordsX('hallo rey das is_t -ein +regal'));
-	return;
+	// console.log('result',toWordsX('hallo rey das ist ein regal'));
+	// console.log('result',toWordsX('hallo rey das is_t -ein +regal'));
+	// return;
 
 	test16a();
 
 	await loadCodebase('../cb2');
 
-	let inp=document.getElementsByTagName('input')[0];
+	let inp = document.getElementsByTagName('input')[0];
 	inp.value = 'q';
-	CODE.searchOptions = createSearchOptions({how:'either'});
+	return;
+	//CODE.searchOptions = createSearchOptions({how:'either'});
 	mySearch(inp.value.trim());
 
-	let x=rChoose(CODE.selectedKeys);console.log('show code for',x)
-	myOnclickCodeInSidebar(x);
+	if (!isEmpty(CODE.selectedKeys)) {
+		let x = rChoose(CODE.selectedKeys); console.log('show code for', x)
+		myOnclickCodeInSidebar(x);
+	}
 }
 
-function createSearchOptions(opts){
+function createSearchOptions(opts) {
 	let res = [];
-	let di = {any:false,casesensitive:false,fulltext:false,how:'start'};
-	for(const k of ['any','casesensitive','fulltext','how']){
-		res.push(valf(opts[k],di[k]));
+	let di = { any: false, casesensitive: false, fulltext: false, how: 'start' };
+	for (const k of ['any', 'casesensitive', 'fulltext', 'how']) {
+		res.push(valf(opts[k], di[k]));
 	}
 	return res;
 }
@@ -32,7 +35,7 @@ function createSearchOptions(opts){
 
 
 
-async function startrest(){
+async function startrest() {
 	set_run_state_no_server(); // set_run_state_no_server | set_run_state_local | set_run_state_vps
 	onpagedeactivated(() => { fiddleSave(); dbSave(); });
 	await load_syms();

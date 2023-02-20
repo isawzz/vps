@@ -1,5 +1,28 @@
 
-function toWordsX(s, sAllow = '+-_') {
+function selectText(el) {
+	var sel, range;
+	//var el = document.getElementById(id); //get element id
+	if (window.getSelection && document.createRange) { //Browser compatibility
+		sel = window.getSelection();
+		if (sel.toString() == '') { //no text selection
+			window.setTimeout(function () {
+				range = document.createRange(); //range object
+				range.selectNodeContents(el); //sets Range
+				sel.removeAllRanges(); //remove all ranges from selection
+				sel.addRange(range);//add Range to a Selection.
+			}, 1);
+		}
+	} else if (document.selection) { //older ie
+		sel = document.selection.createRange();
+		if (sel.text == '') { //no text selection
+			range = document.body.createTextRange();//Creates TextRange object
+			range.moveToElementText(el);//sets Range
+			range.select(); //make selection.
+		}
+	}
+}
+function parseSearchString(s, sAllow = '+-_') { return toWordsX(s, sAllow); }
+function toWordsX(s, sAllow = '_') {
 	//`[^\w+-_]`
 	//let arr = s.split(/[^\w^+^-^_]/); //new RegExp(`[^\w|${sAllow}]+`)); // toWordsX('+hallo -rey das ist ein regal');
 	//let arr = s.split(/[^(\w|+|\-|_)]/); //new RegExp(`[^\w|${sAllow}]+`)); // toWordsX('+hallo -rey das ist ein regal');
@@ -8,10 +31,10 @@ function toWordsX(s, sAllow = '+-_') {
 	for (let i = 0; i < sAllow.length; i++) {
 		let ch = sAllow[i];
 		s1 += (special.includes(ch) ? '\\' : '') + ch + '|';
-		console.log('s1', s1)
+		//console.log('s1', s1)
 	}
 	s1 = stringMinusLast(s1);
-	console.log('s1', s1);
+	//	console.log('s1', s1);
 	let arr = s.split(new RegExp(`[^(\\w|${s1})]`)); ///[^(\w|+|\-|_)]/); // // toWordsX('+hallo -rey das ist ein regal');
 	// let arr = s.split(new RegExp(`[^(\\w|${sAllow})]`)); ///[^(\w|+|\-|_)]/); // // toWordsX('+hallo -rey das ist ein regal');
 	return arr.filter(x => !isEmpty(x));
@@ -22,6 +45,9 @@ function mySearch(kws) {
 	//kws should be a string
 	assertion(isString(kws), 'mySearch: kws should be a string')
 	console.log(`'${kws}'`);
+	ohneRegexMix(kws); //return;//keyPlusMinus(); return;
+}
+function mySearch_rest() {
 	searchCode(kws, ...CODE.searchOptions); //keyStartsOrEndsWithAnyWord(kws); //keyEndsWithAnyWord(kws); //keyStartsWithAnyWord(kws); //keyContainsAnyWord(kws); //codeContainsString(kws);//
 	//keyContainsString(kws);
 	return;
