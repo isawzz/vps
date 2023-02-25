@@ -132,3 +132,36 @@ myStr[::-1]  # -> "olleh"
 myStr[:-3]  # -> "he"
 
 # functions https://www.techwithtim.net/tutorials/python-programming/beginner-python-tutorials/functions/
+from humpack import adict
+x=adict()
+x.banana = 4
+x.apple = 5
+x.add = lambda a, b : a * b
+print(x, x.add(3,5))
+y=x
+y.hallo = lambda a: print(a)
+print(x.hallo('das')) #x,y ist dasselbe object
+
+def make_adict(skeys,vals):
+  x=adict()
+  keys=skeys.split()
+  for i in range(len(keys)):
+    x[keys[i]] = vals[i]
+  return x
+
+di=make_adict('a b c',[1,2,3])
+print(di.a)
+
+#file IO https://www.techwithtim.net/tutorials/python-programming/beginner-python-tutorials/file-io-reading-files/
+f = open("C:\\D\\a04\\guboa.txt", "r")
+lines = f.readlines() #each line has \n at the end!
+print('lines',lines)
+with open("C:\\D\\a04\\guboa.txt", "r") as f: lines = f.read().splitlines()
+print('lines',lines)
+
+
+
+
+
+
+
