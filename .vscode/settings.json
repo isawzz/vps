@@ -12,11 +12,12 @@
 	"files.exclude": {
 		"node_modules": true,
 		"package-lock*": true,
-		"*vps*": true,
-		"jsconfig.json": false,
-		"*ignore": true,
-		"*versions": true,
+		"package.json": true,
+		"jsconfig.json": true,
+		".gitignore": true,
 		".git": true,
+		"**/.idea": true,
+		"**/__pycache__": true
 	},
 	"phpfmt.passes": [
 		"PSR2KeywordsLowerCase",

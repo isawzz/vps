@@ -1,0 +1,24 @@
+def hallo():
+  print('HAAAAAAAAAAAAAAAAAAAALLLLLLLLLLLLLLLLOOOOOO')
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -155,13 +155,48 @@ print(di.a)
 #file IO https://www.techwithtim.net/tutorials/python-programming/beginner-python-tutorials/file-io-reading-files/
 f = open("C:\\D\\a04\\guboa.txt", "r")
 lines = f.readlines() #each line has \n at the end!
+f.close() #wird nur bei write gebraucht!
 print('lines',lines)
+# or
 with open("C:\\D\\a04\\guboa.txt", "r") as f: lines = f.read().splitlines()
 print('lines',lines)
+# or
+lines = [line.rstrip() for line in open("C:\\D\\a04\\guboa.txt", "r").readlines()]
+print('lines',lines)
 
+#file write https://www.techwithtim.net/tutorials/python-programming/beginner-python-tutorials/file-iowriting-files/
+#file is created if does not exist!
+f = open("C:\\D\\a04\\guboa.txt", "a") #'w' overrides file
+#f.write('\n'+input('enter line: '))
+f.close()
 
+#string methods https://www.techwithtim.net/tutorials/python-programming/beginner-python-tutorials/list-methods-count-find/
+s='hallo was ist da los'
+print(s.find('a')) # -> 1 (geht nur fuer string!!!!!!!)
 
+myList = ["a", "b", "b", "a", "c", "d"]
+myList.count("a")  # -> 2
+myList.index("a")   # -> 0
+myList.count("b")  # -> 2
+if 'hello' in myList: myList.index("hello")  # -> ERROR!!!
+# If the element is not found .find() will return -1
 
+#modular programming https://www.techwithtim.net/tutorials/python-programming/beginner-python-tutorials/introduction-to-modular-programming/
+# math pygame os images numpy
+import math
+x=math.sqrt(44)
+print(x)
 
+import m2
+m2.hallo()
 
+import module1
+module1.hallo()
+x=module1.make_adict('name age',['ma',62])
+#y=module1.make_adict('fen',[1,2,3])
+#x.add(y)
+x.fen=[1,2,3]
+print(x,x.name,x.age,x.todict(),x.fromkeys(['name']))
 
+import cxl
+c=cxl.cartesian([1,2,3],[4,5]); print(c)
