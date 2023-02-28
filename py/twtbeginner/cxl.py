@@ -2,6 +2,13 @@ import omnibelt
 from itertools import chain, combinations, product
 import numpy as np
 
+def make_adict(skeys,vals):
+  x=omnibelt.adict()
+  keys=skeys.split()
+  for i in range(len(keys)):
+    x[keys[i]] = vals[i]
+  return x
+
 def powerset(iterable, lmin, lmax):
     "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
     s = list(iterable)
