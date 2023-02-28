@@ -132,7 +132,7 @@ myStr[::-1]  # -> "olleh"
 myStr[:-3]  # -> "he"
 
 # functions https://www.techwithtim.net/tutorials/python-programming/beginner-python-tutorials/functions/
-from humpack import adict
+from omnibelt import adict
 x=adict()
 x.banana = 4
 x.apple = 5
