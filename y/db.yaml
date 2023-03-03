@@ -370,7 +370,15 @@ appdata:
     - d: 24.2.23
       steps: 14
     - d: 25.2.23
-      steps: 21
+      steps: 14
+    - d: 26.2.23
+      steps: 17
+    - d: 27.2.23
+      steps: 10
+    - d: 28.2.23
+      steps: 18
+    - d: 1.3.23
+      steps: 19
   howto:
     - kw: k92
       c: hallo92

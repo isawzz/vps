@@ -5,7 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c8f4efa5-5f81-4904-a69c-7ea8657795c6" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/twtbeginner/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/twtbeginner/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.vscode/settings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../.vscode/settings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../allcode.js" beforeDir="false" afterPath="$PROJECT_DIR$/../allcode.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/twtbeginner/cxl.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/twtbeginner/m2.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/twtbeginner/module1.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/twtbeginner/test.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/twtbeginner/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../y/db.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../y/db.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

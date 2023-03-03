@@ -1,6 +1,8 @@
 {
 	"editor.tabSize": 2,
+	"editor.insertSpaces": false,
 	"editor.codeLens": false,
+	"editor.formatOnSave": false,
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.dragAndDrop": false,
 	"editor.foldingStrategy": "indentation",
@@ -17,24 +19,29 @@
 		".gitignore": true,
 		".git": true,
 		"**/.idea": true,
-		"**/__pycache__": true
+		"**/__pycache__": true,
+		"**/__init__.py": true,
+		"cb1":true,
+		"cb2":true,
+		"**/degrees*":true,
+		"**/maze*":true,
+		"**/pyscript*":true,
+		"**/tf*":true,
+		"**/t0*":false,
+		"**/t1*":true,
 	},
-	"phpfmt.passes": [
-		"PSR2KeywordsLowerCase",
-		"PSR2ModifierVisibilityStaticOrder",
-		"ReindentSwitchBlocks"
-	],
+	"phpfmt.passes": ["PSR2KeywordsLowerCase", "PSR2ModifierVisibilityStaticOrder", "ReindentSwitchBlocks"],
 	"phpfmt.exclude": [
 		"PSR2SingleEmptyLineAndStripClosingTag",
 		"PSR2CurlyOpenNextLine",
 		"PSR2LnAfterNamespace",
-		"ReindentComments", 
+		"ReindentComments",
 		"StripNewlineWithinClassBody"
 	],
 	"phpfmt.psr2": false,
 	"[php]": {
 		"editor.formatOnSave": true,
-		"editor.tabSize": 2,
+		"editor.tabSize": 2
 	},
 	"phpfmt.php_bin": "C:\\xampp\\php\\php.exe",
 	"phpfmt.indent_with_space": 2,
@@ -53,7 +60,11 @@
 	},
 	"editor.bracketPairColorization.enabled": false,
 	"[python]": {
-		"editor.defaultFormatter": "ms-python.black-formatter"
+		"editor.defaultFormatter": "ms-python.black-formatter",
+		"editor.formatOnSave": true,
+		"editor.insertSpaces": true,
+		"editor.tabSize": 4,
+	  "editor.autoIndent":"advanced"
 	},
+	"python.formatting.provider": "black"
 }
-
