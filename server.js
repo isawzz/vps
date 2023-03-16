@@ -207,11 +207,25 @@ let dirimportant = [
 	// 'C:\\D\\a04\\y\\v2',
 
 ];
+let dir_accuse_small = [
+	'C:\\xampp\\htdocs\\aroot\\games',
+	'C:\\D\\a03\\nodemaster\\basejs',
+	'C:\\D\\a03\\nodemaster\\cai',
+	'C:\\D\\a03\\nodemaster\\noc',
+	'C:\\D\\a03\\nodemaster\\socketstarter',
+	'C:\\D\\a04\\_stuff\\_versions\\v4\\basejs',
+	'C:\\D\\a04\\_stuff\\_versions\\v4\\game',
+	'C:\\D\\a04\\basejs',
+	'C:\\D\\a04\\game',
+	'C:\\D\\a04',
+	'C:\\xampp\\htdocs\\aroot\\accuse',
+
+];
 
 let dirlist = LG ? dirimportant : dirlegacy.concat(dironedrive).concat(dirgit).concat(dirmiddle).concat(dirimportant);
 //#endregion done
 
-const { replaceAllFast, nundef, firstWordAfter, removeInPlace, stringAfter, isEmpty, dict2list, isdef, jsCopy, sortByFunc, parseCodefile, parseCodefile1, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./basejs/servercode.js');
+const { lookupSet, replaceAllFast, nundef, firstWordAfter, removeInPlace, stringAfter, isEmpty, dict2list, isdef, jsCopy, sortByFunc, parseCodefile, parseCodefile1, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./basejs/servercode.js');
 
 //#region funcs done
 function endsWith(s, sSub) { let i = s.indexOf(sSub); return i >= 0 && i == s.length - sSub.length; }
@@ -329,6 +343,27 @@ function sortConstKeys(di) {
 	}
 
 	return donelist; //dinew; //Object.keys(dinew);
+}
+function sortFuncKeys(di) {
+	//let funs = dict2list(di.func, 'key');
+
+	let byfile = {}; //sortBy(funs,'filename');
+	for (const k in di.func) {
+		let o = di.func[k];
+		//console.log('func',k)
+		lookupSet(byfile, [o.filename, o.region, k], o);
+	}
+	let keys = [];
+	for (const fname of sortCaseInsensitive(get_keys(byfile))) {
+		let di1 = byfile[fname];
+		for (const region of sortCaseInsensitive(get_keys(di1))) {
+			let di2 = di1[region];
+			for (const funcname of sortCaseInsensitive(get_keys(di2))) {
+				keys.push(funcname);
+			}
+		}
+	}
+	return keys;
 }
 function toFile(data, filePath) { fs.writeFileSync(filePath, data, 'utf8'); }
 function toTimestamp(strDate) { const dt = Date.parse(strDate); return dt / 1000; }
@@ -729,7 +764,7 @@ function test17() {
 	}
 
 	//delete some var,func,const
-	for (const k of ['c', 'circle', 'uniqueIdEngine', 'maxWidthPreserver','pstOpponent','pstSelf']) { delete superdi.var[k]; }
+	for (const k of ['c', 'circle', 'uniqueIdEngine', 'maxWidthPreserver', 'pstOpponent', 'pstSelf']) { delete superdi.var[k]; }
 	for (const k of ['anyColorToStandardString', 'colorNameToHex', 'update']) { delete superdi.func[k]; }
 	for (const k of ['RLAYOUT']) { delete superdi.const[k]; }
 
@@ -840,8 +875,155 @@ function test17() {
 	toYamlFile(justcode, `C:\\D\\a03\\nodemaster\\z_allcode${LG ? 'LG' : ''}.yaml`);
 	toYamlFile(history, `C:\\D\\a03\\nodemaster\\z_allhistory${LG ? 'LG' : ''}.yaml`);
 }
+
+function compact_code_with_regions(js_path) {
+	let list = getSortedCodefileList(dirlist, 'datetime');
+	let superdi = {};
+	for (const file of list) {
+		let text = fromFile(file.path);
+		if (text.includes('= require(') || text.includes(' ol.')) { continue; } //console.log('skip file', file.path); 
+		parseCodefile1(text, file.fname, true, file, superdi);
+	}
+
+	//delete some var,func,const
+	for (const k of ['c', 'circle', 'uniqueIdEngine', 'maxWidthPreserver', 'pstOpponent', 'pstSelf']) { delete superdi.var[k]; }
+	for (const k of ['anyColorToStandardString', 'colorNameToHex', 'update']) { delete superdi.func[k]; }
+	for (const k of ['RLAYOUT']) { delete superdi.const[k]; }
+
+	//convert const to var for duplicates
+	let ckeys = Object.keys(superdi.const);
+	for (const k of ckeys) {
+		let co = superdi.const[k];
+		let va = superdi.var[k];
+		if (isdef(co) && isdef(va)) {
+			//schau welches neuer ist!
+			let better = co.timestamp > va.timestamp ? co : va;
+			//beide als var eintragen!
+			if (better == co) {
+				let o = jsCopy(co);
+				o.type = 'var';
+				o.code.replace('const', 'var');
+				o.sig.replace('const', 'var');
+				superdi.var[k] = o;
+				delete superdi.const[k];
+			} else {
+				delete superdi.const[k];
+			}
+		} else if (k == 'MyEasing') {
+			let o = jsCopy(co);
+			o.type = 'var';
+			o.code.replace('const', 'var');
+			o.sig.replace('const', 'var');
+			superdi.var[k] = o;
+			delete superdi.const[k];
+		}
+	}
+
+	// *** synthesize z_all.js and z_all.yaml ***
+	let di2 = {};
+	let text = '//#region consts\r\n';
+
+	let constlist = sortConstKeys(superdi);
+	for (const c of constlist) {
+		let constkey = c.key;
+		if (['cx', 'PORT', 'SERVER', 'SERVERRURL'].some(x => x == constkey)) { delete superdi.const[constkey]; continue; }
+		if (isdef(superdi.func[constkey]) || isdef(superdi.cla[constkey])) { delete superdi.const[constkey]; continue; }
+		text += c.code.trim() + '\r\n';
+	}
+
+	text += '//#endregion\r\n//#region vars\r\n';
+	let varkeys = Object.keys(superdi.var);
+	for (const varkey of varkeys) {
+		if (['lifeView', 'exp', 'Deck', 'gridsize'].some(x => x == varkey)) { delete superdi.var[varkey]; continue; }
+
+		// let ch1 = varkey[0];
+		if ((nundef(superdi.chessvar) || nundef(superdi.chessvar[varkey])) && varkey == varkey.toLowerCase() && varkey != 'c52') { delete superdi.var[varkey]; continue; }
+		// if (varkey != 'c52' && ch1 != 'd' && !varkey.startsWith('brd')) { delete superdi.var[varkey]; continue; }
+		// if (varkey.length <= 3) { delete superdi.var[varkey]; continue; }
+		// let ch2 = varkey[1];
+		// if (ch2 != ch2.toUpperCase) { delete superdi.var[varkey]; continue; }
+
+		// if (varkey != 'c52' && !varkey.startsWith('d') && varkey.length <= 3 && varkey.toLowerCase() == varkey) {
+		// 	//console.log('discard var', varkey);
+		// 	delete superdi.var[varkey];
+		// 	continue;
+		// }
+		let o = superdi.var[varkey];
+		//console.log('h2',o)
+		// if (!isEmptyOrWhiteSpace(o.code) && (nundef(superdi.chessvar) || nundef(superdi.chessvar[varkey]))) text += o.code;
+		if (nundef(superdi.chessvar) || nundef(superdi.chessvar[varkey])) text += o.code.trim() + '\r\n';
+	}
+
+	//sonderbehandlung varchess
+	for (const varkey in superdi.chessvar) { let o = superdi.var[varkey]; text += o.code.trim() + '\r\n'; } //o.code=''; }
+
+	let justcode = {};
+	let history = {};
+	text += '//#endregion\r\n';
+	//console.log('text',text)
+	for (const type of ['var', 'const', 'cla', 'func']) {
+		let keys = sortCaseInsensitive(Object.keys(superdi[type]));
+
+		if (type == 'cla') keys = sortClassKeys(superdi);
+		if (type == 'func') keys = sortFuncKeys(superdi);
+		let res = {};
+		let curfilename = null, curregion = null;
+		for (const k of keys) {
+
+			let code = superdi[type][k].code;
+
+			if (['colorDict', 'VectorLayer', 'lCard'].some(x => code.includes(x))) continue;
+
+			if (type == 'cla' && isdef(superdi.func[k])) { continue; } //console.log('skip class', k, superdi.cla[k].path); 
+			let o = res[k] = jsCopy(superdi[type][k]);
+			console.log('',o.filename,o.region,k)
+			//let code = res[k].code;
+			if (type == 'cla') { text += code.trim() + '\r\n'; }
+			else if (type == 'func') {
+				//check if have new filename
+				let samefilename = o.filename == curfilename;
+				let sameregion = samefilename && o.region == curregion;
+				if (curfilename != null && !sameregion) {
+					text += `\r\n//#endregion ${curregion}\r\n`;
+				}
+				if (curfilename != null && !samefilename) {
+					text += `\r\n//#endregion ${curfilename}\r\n`;
+				}
+				if (!samefilename) {
+					curfilename = o.filename;
+					text += `\r\n//#region ${curfilename}\r\n`;
+				}
+				if (!sameregion) {
+					curregion = o.region;
+					text += `\r\n//#region ${curregion}\r\n`;
+				}
+				text += code.trim() + '\r\n';
+			}
+			justcode[k] = res[k].code.trim();
+			delete res[k].code;
+			history[k] = res[k].history;
+			delete res[k].history;
+		}
+		di2[type] = res;
+		console.log('', type, Object.keys(di2[type]).length);
+	}
+
+	//global text replacements
+	for (const pair of [['anyColorToStandardString', 'colorFrom']]) {
+		text = replaceAllFast(text, pair[0], pair[1]);
+		for (const k in justcode) {
+			justcode[k] = replaceAllFast(justcode[k], pair[0], pair[1]);
+		}
+	}
+	toFile(text, isdef(js_path) ? js_path : `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.js`);
+	toYamlFile(di2, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
+	toYamlFile(justcode, `C:\\D\\a03\\nodemaster\\z_allcode${LG ? 'LG' : ''}.yaml`);
+	toYamlFile(history, `C:\\D\\a03\\nodemaster\\z_allhistory${LG ? 'LG' : ''}.yaml`);
+}
 //dirlist = ['C:\\D\\a04','C:\\D\\a04\\game'];
-//test17(); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
+dirlist = dir_accuse_small;
+let js_outputpath = `C:\\xampp\\htdocs\\aroot\\accuse\\all.js`;
+compact_code_with_regions(js_outputpath); //test10(); //test6();//let arr = test6();//CODE.text=fromFile()
 
 //#endregion
 

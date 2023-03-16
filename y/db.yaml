@@ -387,6 +387,26 @@ appdata:
       steps: 11
     - d: 5.3.23
       steps: 14
+    - d: 6.3.23
+      steps: 11
+    - d: 7.3.23
+      steps: 10
+    - d: 8.3.23
+      steps: 40
+    - d: 9.3.23
+      steps: 15
+    - d: 10.3.23
+      steps: 15
+    - d: 11.3.23
+      steps: 12
+    - d: 12.3.23
+      steps: 10
+    - d: 13.3.23
+      steps: 18
+    - d: 14.3.23
+      steps: 23
+    - d: 15.3.23
+      steps: 12
   howto:
     - kw: k92
       c: hallo92
