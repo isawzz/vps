@@ -3,7 +3,7 @@ onload = _start;
 async function _start() {
 	test16a();
 	await loadCodebase('../cb2');
-	addIntellisense();
+	//addIntellisense();
 }
 function addIntellisense(){
 	var tributeAttributes = {

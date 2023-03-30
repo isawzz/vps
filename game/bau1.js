@@ -35,7 +35,6 @@ function ohneRegexMix(s) {
 	console.log('res', res.length > 20 ? res.length : res)
 	if (!isEmpty(res)) show_sidebar(res, myOnclickCodeInSidebar); //console.log('keys', res);
 }
-
 function stringMinusLast(s, n = 1) {
 	return s.substring(0, s.length - n);
 }

@@ -22,7 +22,7 @@
 		"**/__pycache__": true,
 		"**/__init__.py": true,
 		"cb1":true,
-		"cb2":true,
+		"cb2":false,
 		"**/degrees*":true,
 		"**/maze*":true,
 		"**/pyscript*":true,
