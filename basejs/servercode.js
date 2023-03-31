@@ -9107,6 +9107,7 @@ if (this && typeof module == "object" && module.exports && this === module.expor
 		getFruid,
 		getFunctionCallerName,
 		getFunctionsNameThatCalledThisFunction,
+		getFunctionSignature,
 		getGSGElements,
 		getGlobals,
 		getHexPoly,

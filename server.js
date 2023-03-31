@@ -225,7 +225,7 @@ let dir_accuse_small = [
 let dirlist = LG ? dirimportant : dirlegacy.concat(dironedrive).concat(dirgit).concat(dirmiddle).concat(dirimportant);
 //#endregion done
 
-const { lookupSet, replaceAllFast, nundef, firstWordAfter, removeInPlace, stringBefore, stringAfter, isEmpty, dict2list, isdef, jsCopy, sortByFunc, parseCodefile, parseCodefile1, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./basejs/servercode.js');
+const { lookupSet, replaceAllFast, nundef, firstWordAfter, removeInPlace, stringBefore, stringAfter, isEmpty, dict2list, isdef, jsCopy, sortByFunc, parseCodefile, parseCodefile1, getFunctionSignature, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./basejs/servercode.js');
 
 //#region funcs done
 function dropLast(s) { return s.substring(0, s.length - 1); }
@@ -1412,22 +1412,39 @@ function replaceConstByFunc(di, el) {
 	let [key, code] = [el.key, el.code];
 	delete di.const[el];
 
-	let params = stringBefore(code,'=>').trim();
-	let body = stringAfter(code,'=>').trim();
-	if (params.includes('(')){
-		params = stringBefore(params,')');
-		params = stringAfter(params,'(');
-	}else params = '';
-	let text=`function ${key}(${params}) {\r\n`;
-	if (body.startsWith('{')){
-		text+=stringAfter(body,'{');
-	}else {
-		text+='return '+stringAfter(body,'{');
-		text = dropLast(text);
+	let params = stringBefore(code, '=>').trim();
+	let body = stringAfter(code, '=>').trim();
+	if (params.includes('(')) {
+		params = stringBefore(params, ')');
+		params = stringAfter(params, '(');
+	} else params = '';
+	let text = `function ${key}(${params}) {\r\n`;
+	if (body.startsWith('{')) {
+		text += stringAfter(body, '{');
+		text = stringBeforeLast(text, '}') + '}';
+	} else {
+		text += 'return ' + body + '}';
 	}
-	let o=el;
+	let o = el;
 	o.code = text;
-	di.func[key]=o;
+	o.sig = getFunctionSignature(stringBefore(text,'\r\n'), key);
+	if (o.region == 'const') o.region = 'func'; //o.filename;
+	o.type = 'func';
+	di.func[key] = o;
+}
+function assemble_dicts(superdi) {
+	let justcode = {};
+	let history = {};
+	for (const type in superdi) {
+		for (const k in superdi[type]) {
+			let o = superdi[type][k];
+			justcode[k] = o.code;
+			history[k] = o.history;
+			delete superdi[type][k].code;
+			delete superdi[type][k].history;
+		}
+	}
+	return [superdi, justcode, history];
 }
 
 redoCodebase();
@@ -1439,6 +1456,11 @@ function redoCodebase() {
 
 	toFile(text, dir + 'allglobalshuge.js');
 	toFile(rejected, dir + 'allglobalsrejected.js');
+
+	let [di2, justcode, history] = assemble_dicts(superdi);
+	toYamlFile(di2, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
+	toYamlFile(justcode, `C:\\D\\a03\\nodemaster\\z_allcode${LG ? 'LG' : ''}.yaml`);
+	toYamlFile(history, `C:\\D\\a03\\nodemaster\\z_allhistory${LG ? 'LG' : ''}.yaml`);
 
 }
 
