@@ -3670,3 +3670,26 @@ function save_app_data() {
 	console.log('val', val);
 }
 
+function assemble_consts(superdi) {
+	let text = '//#region consts\r\n';
+	let text2 = '//#region consts\r\n';
+	let constlist = sortConstKeys(superdi);
+	for (const c of constlist) {
+		let constkey = c.key;
+		if (['cx', 'PORT', 'SERVER', 'SERVERRURL'].some(x => x == constkey)) { delete superdi.const[constkey]; continue; }
+		if (isdef(superdi.func[constkey]) || isdef(superdi.cla[constkey])) { delete superdi.const[constkey]; continue; }
+		//if (constkey == 'GFUNC') continue;
+		let code = c.code;
+		//if (constkey == 'GFUNC') console.log('code', code, code.includes('colorDarker'))
+		let skip = false;
+		for (const k in superdi.func) {
+			//if (k == 'colorDarker') console.log('!!!!!!!')
+			if (code.includes(k + '(') || code.includes(k + ',')) { console.log('YES', code); skip = true; break; }
+		}
+		for (const k in superdi.cla) { if (code.includes(k + '(')|| code.includes(k + ',') || skip) break; }
+		if (skip) text2 += code.trim() + '\r\n'; else text += code.trim() + '\r\n';
+	}
+	text += '//#endregion\r\n\r\n';
+	text2 += '//#endregion\r\n\r\n';
+	return [text, text2];
+}

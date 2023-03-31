@@ -225,9 +225,10 @@ let dir_accuse_small = [
 let dirlist = LG ? dirimportant : dirlegacy.concat(dironedrive).concat(dirgit).concat(dirmiddle).concat(dirimportant);
 //#endregion done
 
-const { lookupSet, replaceAllFast, nundef, firstWordAfter, removeInPlace, stringAfter, isEmpty, dict2list, isdef, jsCopy, sortByFunc, parseCodefile, parseCodefile1, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./basejs/servercode.js');
+const { lookupSet, replaceAllFast, nundef, firstWordAfter, removeInPlace, stringBefore, stringAfter, isEmpty, dict2list, isdef, jsCopy, sortByFunc, parseCodefile, parseCodefile1, stringBeforeLast, get_keys, sortCaseInsensitive, isEmptyOrWhiteSpace } = require('./basejs/servercode.js');
 
 //#region funcs done
+function dropLast(s) { return s.substring(0, s.length - 1); }
 function endsWith(s, sSub) { let i = s.indexOf(sSub); return i >= 0 && i == s.length - sSub.length; }
 function* entries(obj) {
 	let keys = Object.keys(obj);
@@ -1397,16 +1398,36 @@ function assemble_consts(superdi) {
 		let code = c.code;
 		//if (constkey == 'GFUNC') console.log('code', code, code.includes('colorDarker'))
 		let skip = false;
-		for (const k in superdi.func) {
-			//if (k == 'colorDarker') console.log('!!!!!!!')
-			if (code.includes(k + '(') || code.includes(k + ',')) { console.log('YES', code); skip = true; break; }
-		}
-		for (const k in superdi.cla) { if (code.includes(k + '(')|| code.includes(k + ',') || skip) break; }
+		for (const k in superdi.func) { if (code.includes(k + '(') || code.includes(k + ',')) { skip = true; break; } }
+		for (const k in superdi.cla) { if (code.includes(k + '(') || code.includes(k + ',') || skip) { skip = true; break; } }
+		if (code.includes('=>')) { replaceConstByFunc(superdi, c); skip = true; }
+
 		if (skip) text2 += code.trim() + '\r\n'; else text += code.trim() + '\r\n';
 	}
 	text += '//#endregion\r\n\r\n';
 	text2 += '//#endregion\r\n\r\n';
 	return [text, text2];
+}
+function replaceConstByFunc(di, el) {
+	let [key, code] = [el.key, el.code];
+	delete di.const[el];
+
+	let params = stringBefore(code,'=>').trim();
+	let body = stringAfter(code,'=>').trim();
+	if (params.includes('(')){
+		params = stringBefore(params,')');
+		params = stringAfter(params,'(');
+	}else params = '';
+	let text=`function ${key}(${params}) {\r\n`;
+	if (body.startsWith('{')){
+		text+=stringAfter(body,'{');
+	}else {
+		text+='return '+stringAfter(body,'{');
+		text = dropLast(text);
+	}
+	let o=el;
+	o.code = text;
+	di.func[key]=o;
 }
 
 redoCodebase();

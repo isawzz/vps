@@ -8271,9 +8271,9 @@ DIBOA: "const DIBOA = {\r
 
   \  bw_info: {\r
 
-  \    boa: { userid: 'gleem@gmail.com', pwd: rPassword(20) },\r
+  \    boa: { userid: 'gleem@gmail.com', pwd: 'asffdghsjdfkhdfjfh' },\r
 
-  \    authy: { userid: 'gleem@gmail.com', pwd: rPassword(20) },\r
+  \    authy: { userid: 'gleem@gmail.com', pwd: 'dfgsgbfgbskdgsbg' },\r
 
   \  },\r
 
