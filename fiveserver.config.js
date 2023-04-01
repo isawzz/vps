@@ -1,7 +1,7 @@
 module.exports = {
   // ...
   //watch: ['cai','basejs'],
-  ignore: 'y'
+  ignore: ['y','cb*']
 
   // can also be an array:
   // watch: ['src', 'public'],

@@ -1386,31 +1386,10 @@ function get_current_superdi(dir) {
 	}
 	return superdi;
 }
-function assemble_consts(superdi) {
-	let text = '//#region consts\r\n';
-	let text2 = '//#region consts\r\n';
-	let constlist = sortConstKeys(superdi);
-	for (const c of constlist) {
-		let constkey = c.key;
-		if (['cx', 'PORT', 'SERVER', 'SERVERRURL'].some(x => x == constkey)) { delete superdi.const[constkey]; continue; }
-		if (isdef(superdi.func[constkey]) || isdef(superdi.cla[constkey])) { delete superdi.const[constkey]; continue; }
-		//if (constkey == 'GFUNC') continue;
-		let code = c.code;
-		//if (constkey == 'GFUNC') console.log('code', code, code.includes('colorDarker'))
-		let skip = false;
-		for (const k in superdi.func) { if (code.includes(k + '(') || code.includes(k + ',')) { skip = true; break; } }
-		for (const k in superdi.cla) { if (code.includes(k + '(') || code.includes(k + ',') || skip) { skip = true; break; } }
-		if (code.includes('=>')) { replaceConstByFunc(superdi, c); skip = true; }
-
-		if (skip) text2 += code.trim() + '\r\n'; else text += code.trim() + '\r\n';
-	}
-	text += '//#endregion\r\n\r\n';
-	text2 += '//#endregion\r\n\r\n';
-	return [text, text2];
-}
 function replaceConstByFunc(di, el) {
 	let [key, code] = [el.key, el.code];
-	delete di.const[el];
+	delete di.const[key];
+	console.log('replace',key);
 
 	let params = stringBefore(code, '=>').trim();
 	let body = stringAfter(code, '=>').trim();
@@ -1431,36 +1410,66 @@ function replaceConstByFunc(di, el) {
 	if (o.region == 'const') o.region = 'func'; //o.filename;
 	o.type = 'func';
 	di.func[key] = o;
+	return di;
 }
 function assemble_dicts(superdi) {
 	let justcode = {};
 	let history = {};
+	let res = {};
 	for (const type in superdi) {
+		res[type]={};
 		for (const k in superdi[type]) {
-			let o = superdi[type][k];
+			let o = jsCopy(superdi[type][k]);
 			justcode[k] = o.code;
 			history[k] = o.history;
-			delete superdi[type][k].code;
-			delete superdi[type][k].history;
+			delete o.code;
+			delete o.history;
+			res[type][k] = o;
 		}
 	}
-	return [superdi, justcode, history];
+	return [res, justcode, history];
+}
+function assemble_consts(superdi) {
+	let text = '//#region consts\r\n';
+	let text2 = '//#region consts\r\n';
+	let constlist = sortConstKeys(superdi);
+	for (const c of constlist) {
+		let constkey = c.key;
+		if (['cx', 'PORT', 'SERVER', 'SERVERRURL'].some(x => x == constkey)) { delete superdi.const[constkey]; continue; }
+		if (isdef(superdi.func[constkey]) || isdef(superdi.cla[constkey])) { delete superdi.const[constkey]; continue; }
+		//if (constkey == 'GFUNC') continue;
+		let code = c.code;
+		//if (constkey == 'GFUNC') console.log('code', code, code.includes('colorDarker'))
+		let skip = false;
+		for (const k in superdi.func) { if (code.includes(k + '(') || code.includes(k + ',')) { skip = true; break; } }
+		for (const k in superdi.cla) { if (code.includes(k + '(') || code.includes(k + ',') || skip) { skip = true; break; } }
+		if (code.includes('=>')) { superdi=replaceConstByFunc(superdi, c); skip = true; }
+
+		if (skip) text2 += code.trim() + '\r\n'; else text += code.trim() + '\r\n';
+	}
+	text += '//#endregion\r\n\r\n';
+	text2 += '//#endregion\r\n\r\n';
+	return [text, text2,superdi];
 }
 
 redoCodebase();
 function redoCodebase() {
 
-	let dir = 'C:\\xampp\\htdocs\\aroot\\base\\cb2\\';
+	let dir = 'C:\\xampp\\htdocs\\aroot\\basejs\\cb0\\';
 	let superdi = get_current_superdi(dir);
-	let [text, rejected] = assemble_consts(superdi);
+	let [text, rejected, dinew] = assemble_consts(superdi);
 
-	toFile(text, dir + 'allglobalshuge.js');
-	toFile(rejected, dir + 'allglobalsrejected.js');
+	console.log('const',dinew.const.calculateColorDifference)
+	console.log('func',dinew.func.calculateColorDifference.sig)
 
-	let [di2, justcode, history] = assemble_dicts(superdi);
-	toYamlFile(di2, `C:\\D\\a03\\nodemaster\\z_all${LG ? 'LG' : ''}.yaml`);
-	toYamlFile(justcode, `C:\\D\\a03\\nodemaster\\z_allcode${LG ? 'LG' : ''}.yaml`);
-	toYamlFile(history, `C:\\D\\a03\\nodemaster\\z_allhistory${LG ? 'LG' : ''}.yaml`);
+	let dirout = 'C:\\xampp\\htdocs\\aroot\\basejs\\cb1\\';
+	toFile(text, dirout + 'allglobalshuge.js');
+	toFile(rejected, dirout + 'allglobalsrejected.js');
+
+	let [di2, justcode, history] = assemble_dicts(dinew);
+	toYamlFile(di2, `${dirout}z_all${LG ? 'LG' : ''}.yaml`);
+	toYamlFile(justcode, `${dirout}z_allcode${LG ? 'LG' : ''}.yaml`);
+	toYamlFile(history, `${dirout}z_allhistory${LG ? 'LG' : ''}.yaml`);
 
 }
 
