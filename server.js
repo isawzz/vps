@@ -321,6 +321,46 @@ function sortClassKeys(di) {
 	}
 	return Object.keys(dinew);
 }
+function sortChessVars(di) {
+	let tbd = dict2list(di, 'key');
+	let donelist = [];
+
+	let tbdkeys = sortCaseInsensitive(tbd.map(x => x.key));
+	tbd = sortByFunc(tbd,x=>tbdkeys.indexOf(x.key));
+	//console.log('tbd',tbd)
+	let dinew = {};
+
+	//let keystbd=tbd.map(x=>x.key);
+	let MAX = 8000, i1 = 0, i2 = 0, i3 = 0;
+	console.log('starting chessvar sorting')
+	console.log('keys', tbd.length)
+	while (!isEmpty(tbd)) {
+		if (++i1 > MAX) { console.log("WRONG!!!"); return donelist; }
+
+		//find a key in tbdkeys which code does NOT contain any other key
+		let o = null;
+		i2 = 0;
+		for (const c of tbd) {
+			if (++i2 > MAX) { console.log("WRONG!!!"); return donelist; }
+			i3 = 0;
+			let ok = true;
+			for (const c1 of tbd) {
+				if (++i3 > MAX) { console.log("WRONG!!!"); return donelist; }
+				//if (c1.key == 'BRAUN' && c.key == 'ColorDict') console.log('BRAUN!!!',c1)
+				if (c1 == c) continue;
+				if (c.code.includes(c1.key)) ok = false;
+			}
+			//if (c.key == 'ColorDict') console.log('ColorDict ok',ok);
+			if (ok) { o = c; break; }
+		}
+
+		//let o = tbd.find(x => tbd.every(y => y.key != x.key && !x.code.includes(y.key)));
+		//console.log('o',o)
+		if (isdef(o)) { donelist.push(o); dinew[o.key] = o; removeInPlace(tbd, o); } // console.log('removing',o.key); }
+	}
+
+	return donelist; //dinew; //Object.keys(dinew);
+}
 function sortConstKeys(di) {
 	let tbd = dict2list(di.const, 'key');
 	let donelist = [];
@@ -330,7 +370,7 @@ function sortConstKeys(di) {
 	let dinew = {};
 
 	//let keystbd=tbd.map(x=>x.key);
-	let MAX = 3000, i1 = 0, i2 = 0, i3 = 0;
+	let MAX = 8000, i1 = 0, i2 = 0, i3 = 0;
 	console.log('starting const loop')
 	console.log('const keys', tbd.length)
 	while (!isEmpty(tbd)) {
@@ -394,6 +434,22 @@ function sortFuncsByFile(di) {
 	for (const fname of sortCaseInsensitive(get_keys(byfile))) {
 		keys[fname] = [];
 		for (const funcname of sortCaseInsensitive(get_keys(byfile[fname]))) {
+			keys[fname].push(funcname);
+		}
+	}
+	return keys;
+}
+function sortFuncsAlpha(di) {
+	let byletter = {};
+	for (const k in di.func) {
+		let o = di.func[k];
+		//console.log('func',k)
+		lookupSet(byletter, [k.toUpperCase()[0], k], o);
+	}
+	let keys = {};
+	for (const fname of sortCaseInsensitive(get_keys(byletter))) {
+		keys[fname] = [];
+		for (const funcname of sortCaseInsensitive(get_keys(byletter[fname]))) {
 			keys[fname].push(funcname);
 		}
 	}
@@ -1355,7 +1411,7 @@ function __myproject_aroot(js_path) {
 //#endregion
 
 // let superdi = make_superdi();
-// console.log('superdi', Object.keys(superdi.const.CORNERS0)); //redoCodebase();
+// console.log('superdi', Object.keys(superdi.const.CORNERS0)); //correct_consts_in_yaml_codebase();
 function make_superdi() {
 	let filenames = ['basemin', 'legacy', 'apiserver', 'apisimphp', 'gamehelpers', 'onclick', 'select', 'sim', 'cards'];
 	let list = getFiles(filenames, 'C:\\xampp\\htdocs\\aroot\\SAFE\\bundle');
@@ -1389,7 +1445,7 @@ function get_current_superdi(dir) {
 function replaceConstByFunc(di, el) {
 	let [key, code] = [el.key, el.code];
 	delete di.const[key];
-	console.log('replace',key);
+	//console.log('replace', key);
 
 	let params = stringBefore(code, '=>').trim();
 	let body = stringAfter(code, '=>').trim();
@@ -1397,30 +1453,60 @@ function replaceConstByFunc(di, el) {
 		params = stringBefore(params, ')');
 		params = stringAfter(params, '(');
 	} else params = '';
-	let text = `function ${key}(${params}) {\r\n`;
+	let text = `function ${key}(${params}) {`;
 	if (body.startsWith('{')) {
 		text += stringAfter(body, '{');
 		text = stringBeforeLast(text, '}') + '}';
 	} else {
+		//console.log('body of',key,body[0])
+		//if (body.startsWith('\r\n')) {body=stringAfter(body,'\r\n');console.log('body',body);}
+
 		text += 'return ' + body + '}';
 	}
 	let o = el;
 	o.code = text;
-	o.sig = getFunctionSignature(stringBefore(text,'\r\n'), key);
+	//console.log('new body',text)
+	o.sig = getFunctionSignature(stringBefore(text, '\r\n'), key);
 	if (o.region == 'const') o.region = 'func'; //o.filename;
 	o.type = 'func';
 	di.func[key] = o;
 	return di;
+}
+function replaceALLTESTS(di, el) {
+	let [key, code] = [el.key, el.code];
+	delete di.const[key];
+	//console.log('replace', key);
+
+	let params = '';
+	let body = stringAfter(code, '\r\n').trim();
+	let text = `function ${key}(${params}) {\r\n`;
+	text += `return {\r\n${body}\r\n}`;
+	let o = el;
+	o.code = text;
+	o.sig = getFunctionSignature(stringBefore(text, '\r\n'), key);
+	if (o.region == 'const') o.region = 'func'; //o.filename;
+	o.type = 'func';
+	di.func[key] = o;
+	return di;
+}
+function correct_code_text(code){
+	let lines = code.split('\r\n');
+	for(const line of lines){
+		if (line.includes('\r')) console.log('CR in line!!!!',code);
+		if (line.includes('\t')) console.log('TAB in line!!!!',code);
+	}
+	return lines[0]+lines.slice(1).join('\n');
 }
 function assemble_dicts(superdi) {
 	let justcode = {};
 	let history = {};
 	let res = {};
 	for (const type in superdi) {
-		res[type]={};
+		res[type] = {};
 		for (const k in superdi[type]) {
 			let o = jsCopy(superdi[type][k]);
-			justcode[k] = o.code;
+			let code = remove_all_region_endregion(o.code);
+			justcode[k] = correct_code_text(code);
 			history[k] = o.history;
 			delete o.code;
 			delete o.history;
@@ -1443,28 +1529,166 @@ function assemble_consts(superdi) {
 		let skip = false;
 		for (const k in superdi.func) { if (code.includes(k + '(') || code.includes(k + ',')) { skip = true; break; } }
 		for (const k in superdi.cla) { if (code.includes(k + '(') || code.includes(k + ',') || skip) { skip = true; break; } }
-		if (code.includes('=>')) { superdi=replaceConstByFunc(superdi, c); skip = true; }
+		if (['OPS', 'Perlin', 'EMO'].includes(constkey)) { skip = false; }
+		else if (constkey == 'ALLTESTS') {
+			//sehr spezielle umwandlung:
+			superdi = replaceALLTESTS(superdi, c);
+			skip = true;
+		}
+		else if (code.includes('=>')) { superdi = replaceConstByFunc(superdi, c); skip = true; }
 
 		if (skip) text2 += code.trim() + '\r\n'; else text += code.trim() + '\r\n';
 	}
 	text += '//#endregion\r\n\r\n';
-	text2 += '//#endregion\r\n\r\n';
-	return [text, text2,superdi];
+	//text2 += '//#endregion\r\n\r\n';
+	return [text, text2, superdi];
+}
+function quick_consts(superdi) {
+	let text = '//#region consts\r\n';
+	let constlist = sortConstKeys(superdi);
+	for (const c of constlist) {
+		let constkey = c.key;
+		if (['cx', 'PORT', 'SERVER', 'SERVERRURL'].some(x => x == constkey)) { delete superdi.const[constkey]; continue; }
+		if (isdef(superdi.func[constkey]) || isdef(superdi.cla[constkey])) { delete superdi.const[constkey]; continue; }
+		let code = c.code;
+		text += code.trim() + '\r\n';
+	}
+	text += '//#endregion\r\n\r\n';
+	return text;
+}
+function is_chessvar(o) {
+	//ich brauch die reihenfolge der vars genau gleich wie in 
+	//console.log(get_keys(o));
+	if (o.type == 'var' && o.filename == 'chess.js' && o.name.startsWith('brd_')) {
+		lookupSet(superdi, ['chessvar', o.name], true);
+	}
+	let yes = o.history.some(x => x.includes('chess.js'));
+	return yes;
+	if (o.name.startsWith('brd_')) return true;
+}
+function repair_vars(superdi) {
+	let varkeys = Object.keys(superdi.var);
+	for (const varkey of varkeys) {
+		if (['lifeView', 'exp', 'Deck', 'gridsize'].some(x => x == varkey)) { delete superdi.var[varkey]; continue; }
+		let o = superdi.var[varkey];
+		if (!o.sig.startsWith('var')) {
+			o.sig = `var ${varkey}`
+			//console.log('NOT A VAR SIG', varkey);
+		}
+		if (!o.code.startsWith('var')) {
+			o.code = `var ${stringAfter(o.code, ' ')}`;
+			//console.log('NOT A VAR CODE', varkey);
+		}
+		o.type = 'var';
+	}
+}
+function quick_vars(superdi) {
+	let text = '//#region vars\r\n';
+	let varkeys = Object.keys(superdi.var);
+	let dichess = {};
+	for (const varkey of varkeys) {
+		if (['lifeView', 'exp', 'Deck', 'gridsize'].some(x => x == varkey)) { delete superdi.var[varkey]; continue; }
+		let o = superdi.var[varkey];
+		if (is_chessvar(o)) {
+			//console.log('chessvar', varkey);
+			dichess[varkey] = o;
+		} else if (varkey == varkey.toLowerCase() && varkey != 'c52') {
+			delete superdi.var[varkey];
+			continue;
+		} else {
+			text += o.code.trim() + '\r\n';
+		}
+	}
+	//sonderbehandlung varchess
+	let chessvars = sortChessVars(dichess);
+	//console.log('chessvars[0]',chessvars[0]);
+	let chessvarkeys = chessvars.map(x=>x.name);
+	for (const varkey of chessvarkeys) { let o = superdi.var[varkey]; text += o.code.trim() + '\r\n'; } 
+
+	text += '//#endregion\r\n\r\n';
+	return text;
+}
+function remove_all_region_endregion(code) {
+	let lines = code.split(`\r\n`);
+	let res = '';
+	for (const line of lines) {
+		let trimmed = line.trim();
+		if (trimmed.startsWith('//')) continue;
+		res += line + '\r\n';
+	}
+	return res;
+}
+function quick_classes(superdi) {
+	let text = '//#region classes\r\n';
+	let keys = sortClassKeys(superdi);
+	for (const k of keys) {
+		let code = superdi.cla[k].code;
+		if (['colorDict', 'VectorLayer', 'lCard'].some(x => code.includes(x))) continue;
+		if (isdef(superdi.func[k])) { continue; }
+		//code = remove_all_region_endregion(code);
+		text += code.trim() + '\r\n';
+	}
+	text += '//#endregion\r\n\r\n';
+	return text;
+}
+function quick_funcs(superdi, lstart = '_', lend = 'L') {
+	let text = '';
+	let byletter = sortFuncsAlpha(superdi);
+	let skip = isdef(lstart);
+	for (const letter in byletter) {
+		if (skip && letter != lstart) continue;
+		skip = false;
+		text += `//#region ${letter}\r\n`;
+		for (const k of byletter[letter]) {
+			let code = superdi.func[k].code;
+			if (['colorDict', 'VectorLayer', 'lCard'].some(x => code.includes(x))) continue;
+			//code = remove_all_region_endregion(code);
+			text += code.trim() + '\r\n';
+		}
+		text += '//#endregion\r\n\r\n';
+		if (letter == lend) break;
+	}
+
+	return text;
 }
 
-redoCodebase();
-function redoCodebase() {
+repair_yaml_codebase();
+recompute_const_var_classes();
+recompute_func_alpha();
+function recompute_func_alpha() {
+
+	let dir = 'C:\\xampp\\htdocs\\aroot\\basejs\\cb1\\';
+	let superdi = get_current_superdi(dir);
+	let text = quick_funcs(superdi, null, 'L');
+	let text2 = quick_funcs(superdi, 'M');
+
+	let dirout = 'C:\\xampp\\htdocs\\aroot\\basejs\\cb2\\';
+	toFile(text, dirout + 'allfuncs.js');
+	toFile(text2, dirout + 'allfuncs_m.js');
+}
+function recompute_const_var_classes() {
+
+	let dir = 'C:\\xampp\\htdocs\\aroot\\basejs\\cb1\\';
+	let superdi = get_current_superdi(dir);
+	//let text = quick_vars(superdi);
+	let text = quick_consts(superdi);
+	text += quick_vars(superdi);
+	text += quick_classes(superdi);
+
+	let dirout = 'C:\\xampp\\htdocs\\aroot\\basejs\\cb2\\';
+	toFile(text, dirout + 'allglobalshuge.js');
+}
+function repair_yaml_codebase() {
 
 	let dir = 'C:\\xampp\\htdocs\\aroot\\basejs\\cb0\\';
 	let superdi = get_current_superdi(dir);
 	let [text, rejected, dinew] = assemble_consts(superdi);
+	repair_vars(dinew);
 
-	console.log('const',dinew.const.calculateColorDifference)
-	console.log('func',dinew.func.calculateColorDifference.sig)
 
 	let dirout = 'C:\\xampp\\htdocs\\aroot\\basejs\\cb1\\';
-	toFile(text, dirout + 'allglobalshuge.js');
-	toFile(rejected, dirout + 'allglobalsrejected.js');
+	//toFile(text, dirout + 'allglobalshuge.js');
+	//toFile(rejected, dirout + 'allglobalsrejected.js');
 
 	let [di2, justcode, history] = assemble_dicts(dinew);
 	toYamlFile(di2, `${dirout}z_all${LG ? 'LG' : ''}.yaml`);
