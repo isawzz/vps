@@ -447,6 +447,8 @@ appdata:
       steps: 16
     - d: 4.4.23
       steps: 14
+    - d: 5.4.23
+      steps: 23
   howto:
     - kw: k92
       c: hallo92
