@@ -15,7 +15,7 @@
 		"node_modules": true,
 		"package-lock*": true,
 		"package.json": true,
-		"jsconfig.json": true,
+		"jsconfig.json": false,
 		".gitignore": true,
 		".git": true,
 		"**/.idea": true,

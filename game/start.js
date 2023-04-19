@@ -1,8 +1,8 @@
-onload = _start;
+onload = start;
 
-async function _start() {
+async function start() {
 	test16a();
-	await loadCodebase('../cb2');
+	await loadCodebase('../basejs/cb1');
 	//addIntellisense();
 }
 function addIntellisense(){
