@@ -160,8 +160,10 @@ let dirimportant = [
 	'C:\\xampp\\htdocs\\aroot\\_other\\phpchat\\public\\socket.io-client\\lib',
 	'C:\\xampp\\htdocs\\aroot\\_other\\simply\\js',
 	'C:\\xampp\\htdocs\\aroot\\_other\\v0_chatas',
-	'C:\\xampp\\htdocs\\aroot\\base\\js',
-	'C:\\xampp\\htdocs\\aroot\\base\\code',
+	'C:\\xampp\\htdocs\\aroot\\_other\\game',
+	'C:\\xampp\\htdocs\\aroot\\_other\\coding',
+	// 'C:\\xampp\\htdocs\\aroot\\base\\js',
+	// 'C:\\xampp\\htdocs\\aroot\\base\\code',
 	'C:\\xampp\\htdocs\\aroot\\belinda\\js',
 	'C:\\xampp\\htdocs\\aroot\\belinda\\features',
 	'C:\\xampp\\htdocs\\aroot\\cosensus',
@@ -1684,7 +1686,6 @@ function repair_yaml_codebase() {
 	let superdi = get_current_superdi(dir);
 	let [text, rejected, dinew] = assemble_consts(superdi);
 	repair_vars(dinew);
-
 
 	let dirout = 'C:\\xampp\\htdocs\\aroot\\basejs\\cb1\\';
 	//toFile(text, dirout + 'allglobalshuge.js');
