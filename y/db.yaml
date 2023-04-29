@@ -493,6 +493,8 @@ appdata:
       steps: 11
     - d: 27.4.23
       steps: 18
+    - d: 28.4.23
+      steps: 20
   howto:
     - kw: k92
       c: hallo92
